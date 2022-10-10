@@ -1,7 +1,14 @@
 # GeneTarget : A tool to identify genotype-treatment response
 
+##  Team
+Ahmad
+Thomas
+Marina
+Hiba
+Moustafa
 
-##  Abstract
+
+Abstract
 For a number of neurological diseases, such as Alzheimer’s disease, Parkinson’s disease and many others, there are genes known to be implicated in the mechanism of the disease. A common question in this matter is whether a novel structural variant in any such gene may be related to drug response, and how this information could contribute in the analysis of clinical trials. To this end, we introduce GeneTarget, a tool that will make it possible to identify gene treatment response using genotype data
 
 
