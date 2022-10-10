@@ -1,11 +1,11 @@
 # GeneTarget : A tool to identify genotype-treatment response
 
-##  Team
-Ahmad
-Thomas
-Marina
-Hiba
-Moustafa
+# Team
+Ahmad/
+Thomas/
+Marina/
+Hiba/
+Moustafa/
 
 
 Abstract
