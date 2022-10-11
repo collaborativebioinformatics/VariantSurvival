@@ -1,13 +1,5 @@
 # GeneTarget : A tool to identify genotype-treatment response
 
-# Team
-Ahmad/
-Thomas/
-Marina/
-Hiba/
-Moustafa/
-
-
 ##  Abstract
 For a number of neurological diseases, such as Alzheimer's disease, Parkinson's disease and many others, certain genes are known to be involved in the disease mechanism.
 A common question is whether a structural variant in any such gene may be related to drug response in clinical trials, and how this relationship can contribute to the lifecycle of drug development.
@@ -34,3 +26,23 @@ The downstream pipeline starts with the labelling of clinical trial data, where 
 
 ![image (5)](https://user-images.githubusercontent.com/41301333/194935518-d790a587-f328-4785-8156-6f1d8d6524f1.png)
 
+
+# Team
+
+* Ahmad Al Khleifat
+
+* Thomas Krannich
+
+Methods Development, Research Infrastructure and Information Technology (MFI), Bioinformatics and Systems Biology, Robert Koch Institute, 13353 Berlin, Germany
+
+* Hiba Ben Aribi
+
+Faculty of Science of Tunis, University El Manar (UTM), Tunis, Tunisia
+
+* Marina Herrera Sarrias
+
+Computational Mathematics Division, Department of Mathematics, Stockholm University, Stockholm, Sweden
+
+* Moustafa Shokrof
+
+Department of Computer Science, University of California, Davis, CA, USA 
