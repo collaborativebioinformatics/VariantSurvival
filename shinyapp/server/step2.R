@@ -26,12 +26,38 @@ survdiff(Surv(Time_to_death_or_last_followup_days, Phenotype) ~ significant_vari
 #
 c <- coxph(Surv(Time_to_death_or_last_followup_days,Phenotype)~ significant_variant, data = df)
 
-#plot
-coxph(Surv(Time_to_death_or_last_followup_days,Phenotype) ~ significant_variant, data = df) %>% 
-  tbl_regression(exp = TRUE) 
+#plot1
 
-#
-mv_fit <- coxph(Surv(Time_to_death_or_last_followup_days,Phenotype) ~ significant_variant, data = df)
-cz <- cox.zph(mv_fit)
-print(cz)
-plot(cz)
+output$plot1 <- renderPlot({
+  x <- coxph(Surv(Time_to_death_or_last_followup_days,Phenotype) ~ significant_variant, data = df) %>% 
+    tbl_regression(exp = TRUE) 
+  x
+})
+# plot2
+output$plot2 <- renderPlot({
+  mv_fit <- coxph(Surv(Time_to_death_or_last_followup_days,Phenotype) ~ significant_variant, data = df)
+  cz <- cox.zph(mv_fit)
+  print(cz)
+  p<-plot(cz)
+  p
+})
+
+s <- survfit(Surv(Time_to_death_or_last_followup_days, significant_variant)~ Phenotype, data = df)
+g <- ggsurvplot(
+  s,
+  conf.int = TRUE,
+  data = df,
+  risk.table = TRUE
+)
+
+s <- survfit(Surv(Time_to_death_or_last_followup_days, significant_variant)~ Phenotype, data = df)
+
+g3 <- ggsurvplot_facet(
+  s,
+  conf.int = TRUE,
+  data = df,
+  facet.by = "gene",
+  nrow = 1,
+)
+g3
+
