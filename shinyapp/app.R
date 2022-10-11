@@ -1,6 +1,6 @@
-source("global.R", local = TRUE)
+#source("global.R", local = TRUE)
 
-ui <- fluidPage( 
+ui <- fluidPage(
   dashboardPage(
     dashboardHeader(title = "geneTarget"),
     dashboardSidebar(
@@ -62,28 +62,23 @@ ui <- fluidPage(
                                  h1("barplot count of SV in the selected gene, in each sample + color mark the samples with same group")
                                  #,plotOutput("barplot")
                                )
-                              ),
-                            fluidRow(
-                              box(title = "Variants", width = 12, height = 600,
-                                  br(),
-                                DT::dataTableOutput("data_matrix_vcf") 
-                              )
                               
-                            ),
-                              fluidRow(
-                                box(actionButton("analyze", "Start Analysis"))
-                              )
-                    ), #import tabitem
+
+                    )), #import tabitem
 
                     #
                     tabItem(tabName = "Survival_Analysis", h2("Survival Analysis Results"),
                             box(width = 12,
-                              "survival plot here", 
+                              "survival plot", 
                               br(),
-                              downloadButton("plot.png", "dowload plot"),
-                              plotOutput("plot1", height = 500))
+                              #downloadButton("plot.png", "dowload plot"),
+                              plotOutput("plot1"),
+                            br(),
+                            br(),
+                            plotOutput("plot2"))
+                    )
                               
-                            )
+                            
                   )#tabitems
 
                   )#dashbody
@@ -112,8 +107,8 @@ server <- function(input, output) {
       geneslist  <-read_csv("disease_gene/AD/genes_list.txt")
     } #else if = the other diseases
   }) 
-  #source("server/survival.R", local = TRUE)
-
+  source("server/step1.R", local = TRUE)
+  source("server/step1.R", local = TRUE)
 }
 
 
