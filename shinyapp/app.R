@@ -1,8 +1,7 @@
-#source("global.R", local = TRUE)
+source("global.R", local = TRUE)
 
-
-ui <- fluidPage( #theme = bs_theme(version = 4, bootswatch = "minty"),
-  dashboardPage(#◘skin = "black",
+ui <- fluidPage( 
+  dashboardPage(
     dashboardHeader(title = "geneTarget"),
     dashboardSidebar(
       sidebarMenu(
