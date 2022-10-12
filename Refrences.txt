@@ -1,0 +1,15 @@
+Winston Chang , Joe Cheng,JJ Allaire, Carson Sievert ,  Barret Schloerke , Yihui Xie, et al. shiny: Web Application Framework for R (2022). https://github.com/rstudio/shiny
+Winston Chang, Barbara Borges Ribeiro (2021). https://github.com/rstudio/shinydashboard.
+lboukadel Kassambara [aut, cre], Marcin Kosinski [aut], Przemyslaw Biecek [aut], Scheipl Fabian. survminer: Drawing Survival Curves using 'ggplot2'. 2021. https://rpkgs.datanovia.com/survminer/index.html
+Grolemund G, Wickham H (2011). “Dates and Times Made Easy with lubridate.” Journal of Statistical Software, 40(3), 1–25. https://www.jstatsoft.org/v40/i03/.
+Yihui Xie [aut, cre], Joe Cheng [aut], Xianying Tan [aut], JJ Allaire [ctb], Maximilian Girlich [ctb], Greg Freedman Ellis et al. 2022. DT: A Wrapper of the JavaScript Library 'DataTables'.  https://github.com/rstudio/DT
+Terry M. Therneau, Patricia M. Grambsch (2000). Modeling Survival Data: Extending the Cox Model. Springer, New York. ISBN 0-387-98784-3.
+Therneau T (2022). A Package for Survival Analysis in R. R package version 3.4-0, https://CRAN.R-project.org/package=survival.
+Knaus BJ, Grünwald NJ (2017). “VCFR: a package to manipulate and visualize variant call format data in R.” Molecular Ecology Resources, 17(1), 44–53. ISSN 757, http://dx.doi.org/10.1111/1755-0998.12549.
+Wickham H, Hester J, Bryan J (2022). readr: Read Rectangular Text Data. https://readr.tidyverse.org, https://github.com/tidyverse/readr.
+Wickham H, Bryan J (2022). readxl: Read Excel Files. https://readxl.tidyverse.org, https://github.com/tidyverse/readxl.
+Sjoberg D, Whiting K, Curry M, Lavery J, Larmarange J (2021). “Reproducible Summary Tables with the gtsummary Package.” The R Journal, 13, 570-580. doi:10.32614/RJ-2021-053, https://doi.org/10.32614/RJ-2021-053.
+Daniel D. Sjoberg . ggsurvfit: Easy and Flexible Time-to-Event Figures. 2022.https://github.com/ddsjoberg/ggsurvfit,
+Wickham H, François R, Henry L, Müller K (2022). dplyr: A Grammar of Data Manipulation. https://dplyr.tidyverse.org, https://github.com/tidyverse/dplyr.
+Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” Journal of Open Source Software, 4(43), 1686. doi:10.21105/joss.01686.
+Wickham H (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York. ISBN 978-3-319-24277-4, https://ggplot2.tidyverse.org.
