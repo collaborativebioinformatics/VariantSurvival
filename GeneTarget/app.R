@@ -9,7 +9,8 @@ ui <- fluidPage(
         menuItem("Survival Analysis", tabName = "Survival_Analysis", icon = icon("dna"))
       )
     ),
-    dashboardBody(use_waiter(),
+    dashboardBody(
+      #use_waiter(),
                   
                   tabItems(
                     #### ------------------ Import data dashboard -------------------###############
