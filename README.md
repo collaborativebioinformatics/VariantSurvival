@@ -111,11 +111,17 @@ To validate the pipeline and demonstrate the utility of the developed tool, a ca
 
 
 Figure3. Bar plot representing the structural variant count in the target gene
+![Screenshot 2022-10-12 at 19 02 03](https://user-images.githubusercontent.com/41301333/195415875-7c8d5561-3378-4e15-988f-7e3731d140ab.png)
+
 
 The Survival analysis was performed. The analysis result is illustrated in figure4. On average the treatment group has less than 1000 days of survival score. 
 The Competing risks regression is represented in a table. The results are as follows: HR=2.07, 95%Cl=0.91 4.72, and the pavlue =0.084. The survival plot according to the sr=tructural variants count is represented in Figure5. Only the existence of four or seven structural variants have a significant effect on survival
 
+![Screenshot 2022-10-12 at 19 02 10](https://user-images.githubusercontent.com/41301333/195415920-b7d754a8-e0ff-419b-91fe-0d487f8bc93a.png)
+
+
 Figure 4. Survival plot
+
 
 
 Figure 5. Survival plot according the the SVs count
