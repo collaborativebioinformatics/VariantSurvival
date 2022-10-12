@@ -10,7 +10,6 @@ ui <- fluidPage(
       )
     ),
     dashboardBody(
-      #use_waiter(),
                   
                   tabItems(
                     #### ------------------ Import data dashboard -------------------###############
@@ -70,19 +69,18 @@ ui <- fluidPage(
                     #
                     tabItem(tabName = "Survival_Analysis", h2("Survival Analysis Results"),
                             box(title = "Survival Plot according to existing or not of the SVs",
-                                width = 12, height = 500,
+                                width = 9, height = 500,
                                 plotOutput("plot4")
                                 ),
+                            box(width = 3, height = 200,
+                                title = "table", DT::dataTableOutput("table")),
+                            box(width = 3, height = 200,
+                                title = "table2", DT::dataTableOutput("table2")),
                             box(width = 12, height = 500,
                               title = "Survival Plot according to SV count",
                               plotOutput("plot5")
-                            ),
-                            #box(
-                            #  title = "table",
-                            #  plotOutput("plot6")
-                            #),
-
-                    )
+                            )
+                    ) 
                               
                             
                   )#tabitems
