@@ -99,7 +99,7 @@ The required inputs are : The variant VCF file and a metadata file. Examples of 
 
 ###  Operation
 
-VariantSurvival required a peak main memory of 1,5 GB during our tests. The shiny app was developed using a Windows 10 operating system using an Intel(R) Core(™) i5-10210U @1.60Ghz. However, the shiny app is platform independent.
+The App require 1,5G of Ram and it is plateform independent. VariantSurvival required a peak main memory of 1,5 GB during our tests. The shiny app was developed using a Windows 10 operating system using an Intel(R) Core(™) i5-10210U @1.60Ghz. However, the shiny app is platform independent.
 
 
 ##  Case study
@@ -126,5 +126,10 @@ In summary, VariantSurvival allows the exploration of the prognostic potential o
 
 ### Data and software availability
 The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinformatics/ VariantSurvival. VariantSurvival is freely available under the permissive MIT software license. 
+
+
+### Slides
+[GeneTarget.pptx](https://github.com/collaborativebioinformatics/GeneTarget/files/9767806/GeneTarget.pptx)
+
 
 
