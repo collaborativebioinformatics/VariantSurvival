@@ -49,7 +49,8 @@ The second plot illustrate the survival of the placebo and treatment group accor
 
 ## Output
 
-![image](https://user-images.githubusercontent.com/73958439/195366937-82edb5cb-92d2-4853-9a76-db49c596cd1d.png)
+![image](https://user-images.githubusercontent.com/73958439/195386048-2a978a86-9ba1-4834-b387-f320648de0fb.png)
+
 # Team
 
 * Ahmad Al Khleifat
