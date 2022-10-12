@@ -120,11 +120,6 @@ The Competing risks regression is represented in a table. The results are as fol
 ![Screenshot 2022-10-12 at 19 02 10](https://user-images.githubusercontent.com/41301333/195415920-b7d754a8-e0ff-419b-91fe-0d487f8bc93a.png)
 
 
-Figure 4. Survival plot
-
-
-
-Figure 5. Survival plot according the the SVs count
 
 ### Conclusion and next steps
 In summary, VariantSurvival allows the exploration of the prognostic potential of genes and gene sets in a broad range of neurological and psychiatric conditions. This will assist in developing markers to predict treatment response in clinical trials that might lead to the identification of specific treatment groups. The next step is to integrate multiple levels of data including genomics (SNP and retroviruses), methylation assay, and RNA data. 
