@@ -3,13 +3,11 @@
 
 
 ##  Abstract
-The genomics data-driven identification of gene variants has been utilised for predicting survival and clinical outcome such as clinical management and treatments. Many studies have investigated the relationship between gene and survival using large cohorts however, the integrating genomics with clinical trials outcome remain underutilized. Here we have developed VariantSurvival a bioinformatics tool evaluates the associations between genomic variant and survival. VariantSurvival is web tool to perform survival analysis on next generation sequencing data (NGS) and a variety of other phenotypic inputs such as age, sex, and other clinical information. VariantSurvival contains multiple genetic information from neurological and psychiatric conditions which will be linked with a list of known genes in the disease of interest. Users can upload NGS data or gene sets and select specific gene variant to determine the effect on survival outcomes. The tool provides results including box plots of low and high-risk groups, Cox proportional plots in relation to treatment profile. 
+
+For a number of neurological diseases, such as Alzheimer's disease, Parkinson's disease and many others, certain genes are known to be involved in the disease mechanism. A common question is whether a structural variant in any such gene may be related to drug response in clinical trials, and how this relationship can contribute to the lifecycle of drug development. To this end, we introduce VariantSurvival, a tool that identifies changes in survival relative to structural variants within target genge. VarantSurvival matches annotated structural variants with clinically relevant genes of neurological disease. A cox regression model determines the change in survival between placebo and clinical trial group with respect to the number of structural variants in the drug target genes. We showcase the functionality of our approach on the example of Amyotrophic lateral sclerosis (ALS) and the SETX gene. VariantSurvivor has a user-friendly and lightweight graphical user interface built on the shiny webapp package.
 
 ##  Goal and motivation
-For a number of neurological diseases, such as Alzheimer's disease, Parkinson's disease and many others, certain genes are known to be involved in the disease mechanism. A common question is whether a structural variant in any such gene may be related to drug response in clinical trials, and how this relationship can contribute to the lifecycle of drug development. To this end, we introduce VariantSurvival, a tool that identifies changes in survival relative to structural variants within target genes. \
-In brief, VarantSurvival matches annotated structural variants with clinically relevant genes of neurological disease. A cox regression model determines the change in survival between placebo and clinical trial group with respect to the number of structural variants in the drug target genes. \
-We showcase the functionality of our approach on the example of Amyotrophic lateral sclerosis (ALS) and the SETX gene. VariantSurvivor has a user-friendly and lightweight graphical user interface built on the shiny webapp package.
-
+The genomics data-driven identification of gene variants has been utilised for predicting survival and clinical outcome such as clinical management and treatments. Many studies have investigated the relationship between gene and survival using large cohorts however, the integrating genomics with clinical trials outcome remain underutilized. Here we have developed VariantSurvival a bioinformatics tool evaluates the associations between genomic variant and survival. VariantSurvival is web tool to perform survival analysis on next generation sequencing data (NGS) and a variety of other phenotypic inputs such as age, sex, and other clinical information. VariantSurvival contains multiple genetic information from neurological and psychiatric conditions which will be linked with a list of known genes in the disease of interest. Users can upload NGS data or gene sets and select specific gene variant to determine the effect on survival outcomes. The tool provides results including box plots of low and high-risk groups, Cox proportional plots in relation to treatment profile. 
 
 
 ##  Introduction
@@ -59,12 +57,12 @@ The survival analysis is performed and illustrated using the following R package
 
 # Shiny App
 
-## Figure 1 : The app user interface
+## Input
 
 ![image](https://user-images.githubusercontent.com/73958439/195391270-5c88d73c-1149-4fa5-af31-33e95d41a953.png)
 
 
-## Figure 2 : The survival analysis results
+## Output
 
 ![image](https://user-images.githubusercontent.com/73958439/195386048-2a978a86-9ba1-4834-b387-f320648de0fb.png)
 
