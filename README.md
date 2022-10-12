@@ -70,7 +70,7 @@ The second plot illustrate the survival of the placebo and treatment group accor
 We present VariantSurvival, a lightweight shiny dashboard to visualize genotype-treatment response. The dashboard’s first tab provides all functionality to import VCF data, metadata and to choose a neurological disease as well as one or multiple target genes.
 
 
-![image](https://user-images.githubusercontent.com/73958439/195391270-5c88d73c-1149-4fa5-af31-33e95d41a953.png)
+<img src=![image](https://user-images.githubusercontent.com/73958439/195391270-5c88d73c-1149-4fa5-af31-33e95d41a953.png)
 
 #### Figure1. The VariantSurvival interface (First tab)
 
@@ -80,9 +80,13 @@ We present VariantSurvival, a lightweight shiny dashboard to visualize genotype-
 The second tab visualizes the survival analysis’ results:
 
 
-![image](https://user-images.githubusercontent.com/73958439/195386048-2a978a86-9ba1-4834-b387-f320648de0fb.png)
+![Screenshot 2022-10-12 at 19 02 03](https://user-images.githubusercontent.com/41301333/195415602-a05c29a3-484a-4073-a5db-7441eff03b83.png)
+
 
 #### Figure2. The VariantSurvival interface (Second tab)
+     
+     ![Screenshot 2022-10-12 at 19 02 10](https://user-images.githubusercontent.com/41301333/195415635-8f93434b-032a-43c2-90cf-12f78864b6c0.png)
+
 
 ###  Implementation
 
@@ -100,8 +104,11 @@ The required inputs are : The variant VCF file and a metadata file. Examples of 
 The App require 1,5G of Ram and it is plateform independent. VariantSurvival required a peak main memory of 1,5 GB during our tests. The shiny app was developed using a Windows 10 operating system using an Intel(R) Core(™) i5-10210U @1.60Ghz. However, the shiny app is platform independent.
 
 
-Case study
+##  Case study
 To validate the pipeline and demonstrate the utility of the developed tool, a case study was performed on Amyotrophic lateral sclerosis patients. During the clinical trial the patients were divided to two groups: the “Placebo” group that did not receive the active drug, and the “Treatment” group that received the drug. The patient's DNA was extracted and sequenced. The variants were called using the Illumina ExpansionHunter tool, as recommended by the app. The developed “VariantSurvival” shiny app was used to perform the survival analysis. The merged variant vcf file was imported to the app. The SETX gene was selected from the suggested list. As shown in the figure3, multiple structural variants exist in the gene region, in both the placebo and treatment group.
+
+![Screenshot 2022-10-12 at 19 01 56](https://user-images.githubusercontent.com/41301333/195415440-5dfca42f-28af-401f-b249-b4e831f6216b.png)
+
 
 Figure3. Bar plot representing the structural variant count in the target gene
 
