@@ -26,9 +26,15 @@ The required inputs are : The variant VCF file and a metadata file. Examples of 
 
 
 ##  Operation
-The workflow of our tool is described as follows:
-As an initial step, the user will have the option to choose a disease from a list of neurological conditions. Once this is done, a list of genes known to be associated with the chosen disease is generated. In parallel,  NGs are also required as inputs in order to generate a BAM alignment file, which is then used to generate a VCF file using a specific SV detection method. Subsequently, a filtering step is included, so only the SVs that are in the genes list are included. Provided that this intersection shows results, this step triggers the downstream pipeline.
-The downstream pipeline starts with the labelling of clinical trial data, where a sample of individuals is selected and classified according to a treatment group (placebo/treatment). Next, tabular data regarding structural variant events are collected for all individuals. The latter are then used as input for the survival analysis step, which is performed on each of the treatment groups. 
+The workflow of our tool is described as follows: As an initial step, the user will have the option to choose a disease from a list of neurological conditions ( Alzheimer's disease, Amyotrophic lateral sclerosis, Friedreich ataxia, Huntington's disease, Lewy body disease, Parkinson's disease, and Spinal muscular atrophy).
+Once this is done, a list of genes known to be associated with the chosen disease is generated. 
+
+The user needs to choose the target gene from the gene list. The structural variants count in the target gene region will be represented in a barplot. To verify the of the structural variants before starting the survival analysis.
+
+Only the SVs that are in the target gene are considered significant, as a factor in the survival analysis. The placebo and treatment groups are identified using the metadata file.
+
+The survival analysis result are represented in the second tab of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
+The second plot illustrate the survival of the placebo and treatment group according to the SVs count in the target gene.
 
 ##  Flowchart
 
