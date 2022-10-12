@@ -23,28 +23,7 @@ The third input are the study group labels. Each patient within the tally is cat
 The green box of the pipeline in Figure 1 shows a generic predecessor workflow in order to create the second input for VariantSurvival. This predecessor workflow is not implemented in VariantSurvival. Supplementary section ?? provides recommendations and details about how to generate the required input formats for VariantSurvival.
 
 
-###  Implementation
-The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinformatics/ VariantSurvival/ VariantSurvival_App.
 
-The repository provides detailed instructions for tool usage and installation. 
-
-The required packages to be installed before running the app are in the “requirement.txt” file.
-
-The App require 1,5G of Ram and it is plateform independent.
-
-The required inputs are : The variant VCF file and a metadata file. Examples of the files are in the “demo” folder.
-
-
-###  Operation
-The workflow of our tool is described as follows: As an initial step, the user will have the option to choose a disease from a list of neurological conditions ( Alzheimer's disease, Amyotrophic lateral sclerosis, Friedreich ataxia, Huntington's disease, Lewy body disease, Parkinson's disease, and Spinal muscular atrophy).
-Once this is done, a list of genes known to be associated with the chosen disease is generated. 
-
-The user needs to choose the target gene from the gene list. The structural variants count in the target gene region will be represented in a barplot. To verify the of the structural variants before starting the survival analysis.
-
-Only the SVs that are in the target gene are considered significant, as a factor in the survival analysis. The placebo and treatment groups are identified using the metadata file.
-
-The survival analysis result are represented in the second tab of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
-The second plot illustrate the survival of the placebo and treatment group according to the SVs count in the target gene.
 
 ##  Flowchart
 
@@ -92,6 +71,21 @@ The second tab visualizes the survival analysis’ results:
 ![image](https://user-images.githubusercontent.com/73958439/195386048-2a978a86-9ba1-4834-b387-f320648de0fb.png)
 
 #### Figure2. The VariantSurvival interface (Second tab)
+
+###  Implementation
+
+The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinformatics/ VariantSurvival/ VariantSurvival_App.
+
+The repository provides detailed instructions for tool usage and installation. 
+
+The required packages to be installed before running the app are in the “requirement.txt” file.
+
+The required inputs are : The variant VCF file and a metadata file. Examples of the files are in the “demo” folder.
+
+
+###  Operation
+
+The App require 1,5G of Ram and it is plateform independent.
 
 # Team
 
