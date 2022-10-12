@@ -1,6 +1,18 @@
 # VariantSurvival : A tool to identify genotype-treatment response
 <img src="https://user-images.githubusercontent.com/41301333/195215088-8404f200-8297-4322-a30f-c84f526aa620.png" width="300" height="300">
 
+# Team
+
+* Ahmad Al Khleifat
+
+* Thomas Krannich
+
+* Hiba Ben Aribi
+
+* Marina Herrera Sarrias
+
+* Moustafa Shokrof
+
 
 ##  Abstract
 
@@ -17,10 +29,13 @@ The challenges in developing novel therapeutics for neurodegenerative diseases (
 
 ## Methods
   
-As depicted in Figure1, VariantSurvival requires three types of input data: a neurological disease, treatment group meta data and an annotated multi-sample VCF file of the study group. As a first input, the user has to select from a list of neurological diseases. Following this selection, VariantSurvival curates a list of genes that are known to be associated with the selected disease. Additionally, VariantSurvival suggests SV calling methods that are beneficial to identify variants known to be present in the curated gene list. \
+As depicted in Figure ??, VariantSurvival requires three types of input data: a neurological disease, treatment group meta data and an annotated multi-sample VCF file of the study group. As a first input, the user has to select from a list of neurological diseases. Following this selection, VariantSurvival curates a list of genes that are known to be associated with the selected disease. Additionally, VariantSurvival suggests SV calling methods that are beneficial to identify variants known to be present in the curated gene list. \
 The second input is a set of all annotated structural variants from the study group. VariantSurvival requires a multi-sample VCF file (short “VCF file” from here) where each variant record was annotated with gene identifiers according to the Ensembl (ref) database. From the VCF file, a tally is created of all variant records that match the selected gene. Provided that the matching results in a non-empty set of SVs, the workflow continues with the group labeling.
 The third input are the study group labels. Each patient within the tally is categorized with the study group label. The final labeled tally provides the input data for the survival analysis (ref). Here, VariantSurvival computes the cox regression (ref) to determine the difference in survival between the placebo and drug study group using the structural variant counts as covariates in the cox regression model. \
 The green box of the pipeline in Figure 1 shows a generic predecessor workflow in order to create the second input for VariantSurvival. This predecessor workflow is not implemented in VariantSurvival. Supplementary section ?? provides recommendations and details about how to generate the required input formats for VariantSurvival.
+
+
+
 
 ##  Flowchart
 
@@ -30,19 +45,21 @@ The green box of the pipeline in Figure 1 shows a generic predecessor workflow i
 
 ### Shiny app development
 
-The apps interface was developed using multiple R packages including shiny (Winston Chang et al., 2022), shinydashboard  (Winston Chang et al., 2021).  Multiple other R packages are intagrated including : DT (Yihui Xie et al, 20222), vcfR (Knaus BJ and  Grünwald NJ, 2017), readr (Wickham H et al 2022), readxl (Wickham H, and  Bryan J, 2022). .
-The survival analysis is performed and illustrated using the following R packages: survival (Therneau T, 2022; Terry M et al., 2000), survminer (Alboukadel Kassambara et al., 2021), lubridate (Grolemund G, and Wickham H, 2011), gtsummary(Sjoberg D et al., 2021), ggsurvfit (Daniel D. Sjoberg, 2022), dplyr (Wickham H et al., 2022), tidyverse (Wickham H et al., 2019), ggplot2 (Wickham H, 2016).
+The apps interface was developed using multiple R packages including shiny (Winston Chang
+et al., 2022), shinydashboard  (Winston Chang et al., 2021).  Multiple other R packages are intagrated including : DT (Yihui Xie et al, 20222), vcfR (Knaus BJ and  Grünwald NJ, 2017), readr (Wickham H et al 2022), readxl (Wickham H, and  Bryan J, 2022). .
+The survival analysis
+is performed and illustrated using the following R packages: survival (Therneau T, 2022; Terry M et al., 2000), survminer (Alboukadel Kassambara et al., 2021), lubridate (Grolemund G, and Wickham H, 2011), gtsummary(Sjoberg D et al., 2021), ggsurvfit (Daniel D. Sjoberg, 2022), dplyr (Wickham H et al., 2022), tidyverse (Wickham H et al., 2019), ggplot2 (Wickham H, 2016).
 The packages citation are in the "References.txt" file.
 
 #### Shiny app interface
 
 The workflow of our tool is described as follows: As an initial step, the user will have the option to choose a disease from a list of neurological conditions ( Alzheimer's disease, Amyotrophic lateral sclerosis, Friedreich ataxia, Huntington's disease, Lewy body disease, Parkinson's disease, and Spinal muscular atrophy).
-Once this is done, a list of genes known to be associated with the chosen disease is generated (Figure1). 
+Once this is done, a list of genes known to be associated with the chosen disease is generated. 
 
 The user needs to choose the target gene from the gene list. The structural variants counted in the target gene region will be represented in a barplot to verify the presence of structural variants before starting the survival analysis.
 Only the SVs that are in the target gene are considered, as a factor in the survival analysis. The placebo and treatment groups are identified using the metadata file.
 
-The survival analysis result are represented in the second tab (Figure2) of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
+The survival analysis result are represented in the second tab of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
 The second plot illustrate the survival of the placebo and treatment group according to the SVs count in the target gene.
 
 
@@ -80,17 +97,26 @@ The required inputs are : The variant VCF file and a metadata file. Examples of 
 
 ###  Operation
 
-VariantSurvival required a peak main memory of 1,5 GB during our tests. The shiny app was developed using a Windows 10 operating system using an Intel(R) Core(™) i5-10210U @1.60Ghz. However, the shiny app is platform independent.
+The App require 1,5G of Ram and it is plateform independent. VariantSurvival required a peak main memory of 1,5 GB during our tests. The shiny app was developed using a Windows 10 operating system using an Intel(R) Core(™) i5-10210U @1.60Ghz. However, the shiny app is platform independent.
 
 
-# Team
+Case study
+To validate the pipeline and demonstrate the utility of the developed tool, a case study was performed on Amyotrophic lateral sclerosis patients. During the clinical trial the patients were divided to two groups: the “Placebo” group that did not receive the active drug, and the “Treatment” group that received the drug. The patient's DNA was extracted and sequenced. The variants were called using the Illumina ExpansionHunter tool, as recommended by the app. The developed “VariantSurvival” shiny app was used to perform the survival analysis. The merged variant vcf file was imported to the app. The SETX gene was selected from the suggested list. As shown in the figure3, multiple structural variants exist in the gene region, in both the placebo and treatment group.
 
-* Ahmad Al Khleifat
+Figure3. Bar plot representing the structural variant count in the target gene
 
-* Thomas Krannich
+The Survival analysis was performed. The analysis result is illustrated in figure4. On average the treatment group has less than 1000 days of survival score. 
+The Competing risks regression is represented in a table. The results are as follows: HR=2.07, 95%Cl=0.91 4.72, and the pavlue =0.084. The survival plot according to the sr=tructural variants count is represented in Figure5. Only the existence of four or seven structural variants have a significant effect on survival
 
-* Hiba Ben Aribi
+Figure 4. Survival plot
 
-* Marina Herrera Sarrias
 
-* Moustafa Shokrof
+Figure 5. Survival plot according the the SVs count
+
+### Conclusion and next steps
+In summary, VariantSurvival allows the exploration of the prognostic potential of genes and gene sets in a broad range of neurological and psychiatric conditions. This will assist in developing markers to predict treatment response in clinical trials that might lead to the identification of specific treatment groups. The next step is to integrate multiple levels of data including genomics (SNP and retroviruses), methylation assay, and RNA data. 
+
+Data and software availability
+The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinformatics/ VariantSurvival. VariantSurvival is freely available under the permissive MIT software license. 
+
+
