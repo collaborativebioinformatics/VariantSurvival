@@ -28,11 +28,12 @@ The downstream pipeline starts with the labelling of clinical trial data, where 
 # Shiny App
 
 ## Input
+
 ![image](https://user-images.githubusercontent.com/73958439/195225960-f72b47e7-a9b5-42d4-aca2-7d1c9d1cc2f8.png)
 
 ## Output
-![image](https://user-images.githubusercontent.com/73958439/195229215-6fe5fa2e-ef9e-4bbc-98ed-c4b9b08e6780.png)
 
+![image](https://user-images.githubusercontent.com/73958439/195230856-9d705968-493f-45bc-ac46-0567e2189daf.png)
 
 # Team
 
