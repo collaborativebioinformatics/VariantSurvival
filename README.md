@@ -1,4 +1,5 @@
-# GeneTarget : A tool to identify genotype-treatment response![DALL·E 2022-10-11 15 41 36 (1)](https://user-images.githubusercontent.com/41301333/195215088-8404f200-8297-4322-a30f-c84f526aa620.png)
+# GeneTarget : A tool to identify genotype-treatment response
+<img src="https://user-images.githubusercontent.com/41301333/195215088-8404f200-8297-4322-a30f-c84f526aa620.png" width="300" height="300">
 
 
 ##  Abstract
