@@ -35,6 +35,11 @@ Only the SVs that are in the target gene are considered significant, as a factor
 
 The survival analysis result are represented in the second tab of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
 The second plot illustrate the survival of the placebo and treatment group according to the SVs count in the target gene.
+## Integrated Tools
+
+Multiple R packages are combined to develop the shiny app including : shiny, shinydashboard, DT, vcfR, readr, readxl.
+
+The survival analysis is performed and illustrated using the following R packages: survival, survminer, lubridate, gtsummary, ggsurvfit, dplyr, tidyverse, ggplot2.
 
 ##  Flowchart
 
