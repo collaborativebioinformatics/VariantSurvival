@@ -128,9 +128,6 @@ In summary, VariantSurvival allows the exploration of the prognostic potential o
 The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinformatics/ VariantSurvival. VariantSurvival is freely available under the permissive MIT software license. 
 
 
-### Slides
-
-[VariantSurvival.pdf](https://github.com/collaborativebioinformatics/GeneTarget/files/9767828/VariantSurvival.pdf)
 
 
 
