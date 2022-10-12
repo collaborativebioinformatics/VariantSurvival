@@ -120,6 +120,7 @@ The Survival analysis was performed. The analysis result is illustrated in figur
 The Competing risks regression is represented in a table. The results are as follows: HR=2.07, 95%Cl=0.91 4.72, and the pavlue =0.084. The survival plot according to the sr=tructural variants count is represented in Figure5. Only the existence of four or seven structural variants have a significant effect on survival
 
 ![Screenshot 2022-10-12 at 19 02 10](https://user-images.githubusercontent.com/41301333/195415920-b7d754a8-e0ff-419b-91fe-0d487f8bc93a.png)
+
 Figure 5. Survival plot according the the SVs count
 
 
