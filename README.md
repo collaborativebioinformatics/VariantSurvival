@@ -3,9 +3,9 @@
 
 
 ##  Abstract
-For a number of neurological diseases, such as Alzheimer's disease, Parkinson's disease and many others, certain genes are known to be involved in the disease mechanism.
-A common question is whether a structural variant in any such gene may be related to drug response in clinical trials, and how this relationship can contribute to the lifecycle of drug development.
-To this end, we introduce \<GeneTarget\>, a tool that identifies changes in survival relative to structural variants within target genes. 
+For a number of neurological diseases, such as Alzheimer's disease, Parkinson's disease and many others, certain genes are known to be involved in the disease mechanism. A common question is whether a structural variant in any such gene may be related to drug response in clinical trials, and how this relationship can contribute to the lifecycle of drug development. To this end, we introduce <GeneTarget>, a tool that identifies changes in survival relative to structural variants within target genes. \
+In brief, VarantSurvival matches annotated structural variants with clinically relevant genes of neurological disease. A cox regression model determines the change in survival between placebo and clinical trial group with respect to the number of structural variants in the drug target genes. \
+We showcase the functionality of our approach on the example of Amyotrophic lateral sclerosis (ALS) and the SETX gene. VariantSurvivor has a user-friendly and lightweight graphical user interface built on the shiny webapp package.
 
 
 ##  Introduction
