@@ -49,7 +49,7 @@ The survival analysis is performed and illustrated using the following R package
 
 ## Input
 
-![tab1](https://user-images.githubusercontent.com/73958439/195362195-b7dade92-be11-4a8b-b4a5-b4663cdbd6f5.PNG)
+![image](https://user-images.githubusercontent.com/73958439/195391270-5c88d73c-1149-4fa5-af31-33e95d41a953.png)
 
 
 ## Output
