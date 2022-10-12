@@ -33,9 +33,9 @@ gene_sv
 gene_sv2 <- gene_sv 
 #change name column
 # consider variant 
-colnames(gene_sv2) <- c('patient_ID','gene')
+colnames(gene_sv2) <- c('patient_ID','SV_count')
 gene_sv2$significant <- "No"
-gene_sv2$significant[gene_sv2$gene  > 1 ] <- "Yes"
+gene_sv2$significant[gene_sv2$SV_count  > 1 ] <- "Yes"
 #
 
 #merge metadata file + variant file
