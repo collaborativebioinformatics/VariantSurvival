@@ -99,7 +99,7 @@ The required inputs are : The variant VCF file and a metadata file. Examples of 
 
 ###  Operation
 
-The App require 1,5G of Ram and it is plateform independent. VariantSurvival required a peak main memory of 1,5 GB during our tests. The shiny app was developed using a Windows 10 operating system using an Intel(R) Core(™) i5-10210U @1.60Ghz. However, the shiny app is platform independent.
+VariantSurvival required a peak main memory of 1,5 GB during our tests. The shiny app was developed using a Windows 10 operating system using an Intel(R) Core(™) i5-10210U @1.60Ghz. However, the shiny app is platform independent.
 
 
 ##  Case study
