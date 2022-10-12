@@ -2,7 +2,7 @@ df <-de2
 
 #survival analysis
 df <- de2 %>%
-  mutate(significant= ifelse(significant=="Yes", 1, 0))
+  mutate(variant= ifelse(variant=="Yes", 1, 0))
 
 #df <- df %>% drop_na(Time_to_death_or_last_followup_days)  #why do not work ? # need to remove NAs
 
@@ -12,7 +12,7 @@ df <- de2 %>%
 #survdiff(Surv(Time_to_death_or_last_followup_days, Phenotype) ~ significant_variant, data = df)
 #
 output$plot4 <- renderPlot({
-  s <- survfit(Surv(Time_to_death_or_last_followup_days,Phenotype)~ significant, data = df)
+  s <- survfit(Surv(Time_to_death_or_last_followup_days,Phenotype)~ variant, data = df)
   s
   g <- ggsurvplot(
     s,
@@ -24,7 +24,7 @@ output$plot4 <- renderPlot({
 })
 # sv count
 output$plot5 <- renderPlot({
-  s2 <- survfit(Surv(Time_to_death_or_last_followup_days, significant)~ Phenotype, data = df)
+  s2 <- survfit(Surv(Time_to_death_or_last_followup_days, variant)~ Phenotype, data = df)
   
   g2 <- ggsurvplot_facet(
     s2,
@@ -39,7 +39,7 @@ output$plot5 <- renderPlot({
 
 #
 #output$plot6 <- renderTable({
-  x <- coxph(Surv(Time_to_death_or_last_followup_days,Phenotype) ~ significant, data = df) %>% 
+  x <- coxph(Surv(Time_to_death_or_last_followup_days,Phenotype) ~ variant, data = df) %>% 
     tbl_regression(exp = TRUE) 
   t <- as_data_frame(x)
   t
@@ -49,7 +49,7 @@ output$table <- DT::renderDataTable({
   t
 }) 
 #output$plot6 <- renderTable({
-x2 <- coxph(Surv(Time_to_death_or_last_followup_days, significant)~ Phenotype, data = df) %>% 
+x2 <- coxph(Surv(Time_to_death_or_last_followup_days, variant)~ Phenotype, data = df) %>% 
   tbl_regression(exp = TRUE) 
 t2 <- as_data_frame(x2)
 t2
