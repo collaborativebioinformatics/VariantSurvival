@@ -30,7 +30,7 @@ output$plot5 <- renderPlot({
     s2,
     conf.int = TRUE,
     data = df,
-    facet.by = "gene",
+    facet.by = "SV_count",
     nrow = 1,
   )
   g2
