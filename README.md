@@ -83,6 +83,7 @@ The second tab visualizes the survival analysis’ results:
 ![Tab2](https://user-images.githubusercontent.com/73958439/195416652-8e49b245-64c9-43ba-abcf-144f74f09804.PNG)
 
 Main output:
+     
 ![Screenshot 2022-10-12 at 19 02 03](https://user-images.githubusercontent.com/41301333/195415602-a05c29a3-484a-4073-a5db-7441eff03b83.png)
 
 ###  Implementation
