@@ -1,4 +1,4 @@
-# VariantSurvival : A tool to identify genotype-treatment response
+# VariantSurvival : A tool to identify the impact of structural variants on genotype-informed treatment response
 <img src="https://user-images.githubusercontent.com/41301333/195215088-8404f200-8297-4322-a30f-c84f526aa620.png" width="300" height="300">
 
 
