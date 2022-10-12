@@ -45,13 +45,7 @@ Only the SVs that are in the target gene are considered significant, as a factor
 
 The survival analysis result are represented in the second tab of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
 The second plot illustrate the survival of the placebo and treatment group according to the SVs count in the target gene.
-## Integrated Tools
 
-Multiple R packages are combined to develop the shiny app including : shiny, shinydashboard, DT, vcfR, readr, readxl.
-
-The survival analysis is performed and illustrated using the following R packages: survival, survminer, lubridate, gtsummary, ggsurvfit, dplyr, tidyverse, ggplot2.
-
-The packages citation are in the "References.txt" file.
 ##  Flowchart
 
 <img src="https://github.com/collaborativebioinformatics/GeneTarget/blob/main/img/GeneTargetWorkflow.svg" width="700">
@@ -64,6 +58,7 @@ The apps interface was developed using multiple R packages including shiny (Wins
 et al., 2022), shinydashboard  (Winston Chang et al., 2021).  Multiple other R packages are intagrated including : DT (Yihui Xie et al, 20222), vcfR (Knaus BJ and  Grünwald NJ, 2017), readr (Wickham H et al 2022), readxl (Wickham H, and  Bryan J, 2022). .
 The survival analysis
 is performed and illustrated using the following R packages: survival (Therneau T, 2022; Terry M et al., 2000), survminer (Alboukadel Kassambara et al., 2021), lubridate (Grolemund G, and Wickham H, 2011), gtsummary(Sjoberg D et al., 2021), ggsurvfit (Daniel D. Sjoberg, 2022), dplyr (Wickham H et al., 2022), tidyverse (Wickham H et al., 2019), ggplot2 (Wickham H, 2016).
+The packages citation are in the "References.txt" file.
 
 #### Shiny app interface
 
@@ -71,7 +66,6 @@ The workflow of our tool is described as follows: As an initial step, the user w
 Once this is done, a list of genes known to be associated with the chosen disease is generated. 
 
 The user needs to choose the target gene from the gene list. The structural variants counted in the target gene region will be represented in a barplot to verify the presence of structural variants before starting the survival analysis.
-From vcf to sv_event workflow    @Mostafa 
 Only the SVs that are in the target gene are considered, as a factor in the survival analysis. The placebo and treatment groups are identified using the metadata file.
 
 The survival analysis result are represented in the second tab of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
