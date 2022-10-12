@@ -35,8 +35,7 @@ The downstream pipeline starts with the labelling of clinical trial data, where 
 
 ## Output
 
-![image](https://user-images.githubusercontent.com/73958439/195230856-9d705968-493f-45bc-ac46-0567e2189daf.png)
-
+![image](https://user-images.githubusercontent.com/73958439/195366937-82edb5cb-92d2-4853-9a76-db49c596cd1d.png)
 # Team
 
 * Ahmad Al Khleifat
