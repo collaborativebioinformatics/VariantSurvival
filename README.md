@@ -129,7 +129,7 @@ Figure 5. Survival plot according the the SVs count
 ### Conclusion and next steps
 In summary, VariantSurvival allows the exploration of the prognostic potential of genes and gene sets in a broad range of neurological and psychiatric conditions. This will assist in developing markers to predict treatment response in clinical trials that might lead to the identification of specific treatment groups. The next step is to integrate multiple levels of data including genomics (SNP and retroviruses), methylation assay, and RNA data. 
 
-Data and software availability
+### Data and software availability
 The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinformatics/ VariantSurvival. VariantSurvival is freely available under the permissive MIT software license. 
 
 
