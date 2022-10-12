@@ -59,12 +59,12 @@ The survival analysis is performed and illustrated using the following R package
 
 # Shiny App
 
-## Input
+## Figure 1 : The app user interface
 
 ![image](https://user-images.githubusercontent.com/73958439/195391270-5c88d73c-1149-4fa5-af31-33e95d41a953.png)
 
 
-## Output
+## Figure 2 : The survival analysis results
 
 ![image](https://user-images.githubusercontent.com/73958439/195386048-2a978a86-9ba1-4834-b387-f320648de0fb.png)
 
