@@ -42,16 +42,8 @@ The downstream pipeline starts with the labelling of clinical trial data, where 
 
 * Thomas Krannich
 
-Methods Development, Research Infrastructure and Information Technology (MFI), Bioinformatics and Systems Biology, Robert Koch Institute, 13353 Berlin, Germany
-
 * Hiba Ben Aribi
-
-Faculty of Science of Tunis, University El Manar (UTM), Tunis, Tunisia
 
 * Marina Herrera Sarrias
 
-Computational Mathematics Division, Department of Mathematics, Stockholm University, Stockholm, Sweden
-
 * Moustafa Shokrof
-
-Department of Computer Science, University of California, Davis, CA, USA 
