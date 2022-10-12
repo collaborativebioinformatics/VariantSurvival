@@ -76,18 +76,14 @@ We present VariantSurvival, a lightweight shiny dashboard to visualize genotype-
 
 ## Output
 
+### Figure2. The VariantSurvival interface (Second tab)
 
 The second tab visualizes the survival analysis’ results:
+
 ![Tab2](https://user-images.githubusercontent.com/73958439/195416652-8e49b245-64c9-43ba-abcf-144f74f09804.PNG)
 
-
+Main output:
 ![Screenshot 2022-10-12 at 19 02 03](https://user-images.githubusercontent.com/41301333/195415602-a05c29a3-484a-4073-a5db-7441eff03b83.png)
-
-
-#### Figure2. The VariantSurvival interface (Second tab)
-     
-     ![Screenshot 2022-10-12 at 19 02 10](https://user-images.githubusercontent.com/41301333/195415635-8f93434b-032a-43c2-90cf-12f78864b6c0.png)
-
 
 ###  Implementation
 
