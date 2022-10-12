@@ -107,7 +107,8 @@ The App require 1,5G of Ram and it is plateform independent. VariantSurvival req
 ##  Case study
 To validate the pipeline and demonstrate the utility of the developed tool, a case study was performed on Amyotrophic lateral sclerosis patients. During the clinical trial the patients were divided to two groups: the “Placebo” group that did not receive the active drug, and the “Treatment” group that received the drug. The patient's DNA was extracted and sequenced. The variants were called using the Illumina ExpansionHunter tool, as recommended by the app. The developed “VariantSurvival” shiny app was used to perform the survival analysis. The merged variant vcf file was imported to the app. The SETX gene was selected from the suggested list. As shown in the figure3, multiple structural variants exist in the gene region, in both the placebo and treatment group.
 
-![Screenshot 2022-10-12 at 19 01 56](https://user-images.githubusercontent.com/41301333/195415440-5dfca42f-28af-401f-b249-b4e831f6216b.png)
+![Screenshot 2022-10-12 at 19 01 56](https://user-images.githubusercontent.com/41301333/195416421-4e688191-f890-41e6-8222-717c971d1a39.png)
+
 
 
 Figure3. Bar plot representing the structural variant count in the target gene
