@@ -14,7 +14,15 @@ The challenges in developing novel therapeutics for neurodegenerative diseases (
 
 
 ##  Implementation
-GeneTarget is available on GitHub https://github.com/collaborativebioinformatics/directed_sv_annotation. The repository provides detailed instructions for tool usage and installation. A bash script for an automated installation of the required dependencies.
+The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinformatics/ VariantSurvival/ VariantSurvival_App.
+
+The repository provides detailed instructions for tool usage and installation. 
+
+The required packages to be installed before running the app are in the “requirement.txt” file.
+
+The App require 1,5G of Ram and it is plateform independent.
+
+The required inputs are : The variant VCF file and a metadata file. Examples of the files are in the “demo” folder.
 
 
 ##  Operation
