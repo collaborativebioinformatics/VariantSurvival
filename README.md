@@ -17,13 +17,10 @@ The challenges in developing novel therapeutics for neurodegenerative diseases (
 
 ## Methods
   
-As depicted in Figure ??, VariantSurvival requires three types of input data: a neurological disease, treatment group meta data and an annotated multi-sample VCF file of the study group. As a first input, the user has to select from a list of neurological diseases. Following this selection, VariantSurvival curates a list of genes that are known to be associated with the selected disease. Additionally, VariantSurvival suggests SV calling methods that are beneficial to identify variants known to be present in the curated gene list. \
+As depicted in Figure1, VariantSurvival requires three types of input data: a neurological disease, treatment group meta data and an annotated multi-sample VCF file of the study group. As a first input, the user has to select from a list of neurological diseases. Following this selection, VariantSurvival curates a list of genes that are known to be associated with the selected disease. Additionally, VariantSurvival suggests SV calling methods that are beneficial to identify variants known to be present in the curated gene list. \
 The second input is a set of all annotated structural variants from the study group. VariantSurvival requires a multi-sample VCF file (short “VCF file” from here) where each variant record was annotated with gene identifiers according to the Ensembl (ref) database. From the VCF file, a tally is created of all variant records that match the selected gene. Provided that the matching results in a non-empty set of SVs, the workflow continues with the group labeling.
 The third input are the study group labels. Each patient within the tally is categorized with the study group label. The final labeled tally provides the input data for the survival analysis (ref). Here, VariantSurvival computes the cox regression (ref) to determine the difference in survival between the placebo and drug study group using the structural variant counts as covariates in the cox regression model. \
 The green box of the pipeline in Figure 1 shows a generic predecessor workflow in order to create the second input for VariantSurvival. This predecessor workflow is not implemented in VariantSurvival. Supplementary section ?? provides recommendations and details about how to generate the required input formats for VariantSurvival.
-
-
-
 
 ##  Flowchart
 
@@ -33,21 +30,19 @@ The green box of the pipeline in Figure 1 shows a generic predecessor workflow i
 
 ### Shiny app development
 
-The apps interface was developed using multiple R packages including shiny (Winston Chang
-et al., 2022), shinydashboard  (Winston Chang et al., 2021).  Multiple other R packages are intagrated including : DT (Yihui Xie et al, 20222), vcfR (Knaus BJ and  Grünwald NJ, 2017), readr (Wickham H et al 2022), readxl (Wickham H, and  Bryan J, 2022). .
-The survival analysis
-is performed and illustrated using the following R packages: survival (Therneau T, 2022; Terry M et al., 2000), survminer (Alboukadel Kassambara et al., 2021), lubridate (Grolemund G, and Wickham H, 2011), gtsummary(Sjoberg D et al., 2021), ggsurvfit (Daniel D. Sjoberg, 2022), dplyr (Wickham H et al., 2022), tidyverse (Wickham H et al., 2019), ggplot2 (Wickham H, 2016).
+The apps interface was developed using multiple R packages including shiny (Winston Chang et al., 2022), shinydashboard  (Winston Chang et al., 2021).  Multiple other R packages are intagrated including : DT (Yihui Xie et al, 20222), vcfR (Knaus BJ and  Grünwald NJ, 2017), readr (Wickham H et al 2022), readxl (Wickham H, and  Bryan J, 2022). .
+The survival analysis is performed and illustrated using the following R packages: survival (Therneau T, 2022; Terry M et al., 2000), survminer (Alboukadel Kassambara et al., 2021), lubridate (Grolemund G, and Wickham H, 2011), gtsummary(Sjoberg D et al., 2021), ggsurvfit (Daniel D. Sjoberg, 2022), dplyr (Wickham H et al., 2022), tidyverse (Wickham H et al., 2019), ggplot2 (Wickham H, 2016).
 The packages citation are in the "References.txt" file.
 
 #### Shiny app interface
 
 The workflow of our tool is described as follows: As an initial step, the user will have the option to choose a disease from a list of neurological conditions ( Alzheimer's disease, Amyotrophic lateral sclerosis, Friedreich ataxia, Huntington's disease, Lewy body disease, Parkinson's disease, and Spinal muscular atrophy).
-Once this is done, a list of genes known to be associated with the chosen disease is generated. 
+Once this is done, a list of genes known to be associated with the chosen disease is generated (Figure1). 
 
 The user needs to choose the target gene from the gene list. The structural variants counted in the target gene region will be represented in a barplot to verify the presence of structural variants before starting the survival analysis.
 Only the SVs that are in the target gene are considered, as a factor in the survival analysis. The placebo and treatment groups are identified using the metadata file.
 
-The survival analysis result are represented in the second tab of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
+The survival analysis result are represented in the second tab (Figure2) of the app. The first plot, compare the survival of the placebo and treatment group. The existence or not of the SVs is a factor, however, the count of the SVs is not considered.
 The second plot illustrate the survival of the placebo and treatment group according to the SVs count in the target gene.
 
 
@@ -85,7 +80,8 @@ The required inputs are : The variant VCF file and a metadata file. Examples of 
 
 ###  Operation
 
-The App require 1,5G of Ram and it is plateform independent.
+VariantSurvival required a peak main memory of 1,5 GB during our tests. The shiny app was developed using a Windows 10 operating system using an Intel(R) Core(™) i5-10210U @1.60Ghz. However, the shiny app is platform independent.
+
 
 # Team
 
