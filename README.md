@@ -51,6 +51,7 @@ Multiple R packages are combined to develop the shiny app including : shiny, shi
 
 The survival analysis is performed and illustrated using the following R packages: survival, survminer, lubridate, gtsummary, ggsurvfit, dplyr, tidyverse, ggplot2.
 
+The packages citation are in the "References.txt" file.
 ##  Flowchart
 
 <img src="https://github.com/collaborativebioinformatics/GeneTarget/blob/main/img/GeneTargetWorkflow.svg" width="700">
