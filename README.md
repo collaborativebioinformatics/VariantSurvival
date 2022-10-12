@@ -129,7 +129,8 @@ The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinfor
 
 
 ### Slides
-[GeneTarget.pptx](https://github.com/collaborativebioinformatics/GeneTarget/files/9767806/GeneTarget.pptx)
+
+[VariantSurvival.pdf](https://github.com/collaborativebioinformatics/GeneTarget/files/9767828/VariantSurvival.pdf)
 
 
 
