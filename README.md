@@ -132,7 +132,7 @@ The VariantSurvival shiny app on GitHub https://github.com/collaborativebioinfor
 @AhmadAlKhleifat
 @mostafashokrof2 
 @Hiba_BenAribi
- krannich479
+@krannich479
 
 
 
