@@ -38,10 +38,23 @@ output$plot5 <- renderPlot({
 })
 
 #
-output$plot6 <- renderTable({
+#output$plot6 <- renderTable({
   x <- coxph(Surv(Time_to_death_or_last_followup_days,Phenotype) ~ significant, data = df) %>% 
     tbl_regression(exp = TRUE) 
-  x
-})
+  t <- as_data_frame(x)
+  t
+  
+#}) 
+output$table <- DT::renderDataTable({
+  t
+}) 
+#output$plot6 <- renderTable({
+x2 <- coxph(Surv(Time_to_death_or_last_followup_days, significant)~ Phenotype, data = df) %>% 
+  tbl_regression(exp = TRUE) 
+t2 <- as_data_frame(x2)
+t2
 
-
+#}) 
+output$table2 <- DT::renderDataTable({
+  t2
+}) 
