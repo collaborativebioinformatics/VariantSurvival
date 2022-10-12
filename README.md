@@ -80,13 +80,14 @@ The second plot illustrate the survival of the placebo and treatment group accor
 
 ## Input
 
-Shiny app interface./
+### Shiny app interface
+
 We present VariantSurvival, a lightweight shiny dashboard to visualize genotype-treatment response. The dashboard’s first tab provides all functionality to import VCF data, metadata and to choose a neurological disease as well as one or multiple target genes.
 
 
 ![image](https://user-images.githubusercontent.com/73958439/195391270-5c88d73c-1149-4fa5-af31-33e95d41a953.png)
 
-Figure1. The VariantSurvival interface (First tab)
+#### Figure1. The VariantSurvival interface (First tab)
 
 ## Output
 
@@ -95,7 +96,8 @@ The second tab visualizes the survival analysis’ results:
 
 
 ![image](https://user-images.githubusercontent.com/73958439/195386048-2a978a86-9ba1-4834-b387-f320648de0fb.png)
-Figure2. The VariantSurvival interface (Second tab)
+
+#### Figure2. The VariantSurvival interface (Second tab)
 
 # Team
 
