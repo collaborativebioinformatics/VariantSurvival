@@ -12,7 +12,7 @@ _TODO : we expect that structural variant calling was done and VCFs are present.
 
 ## Merge VCFs across samples
 
-_TODO : use [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR) or [svimmer](https://github.com/DecodeGenetics/svimmer) to merge SVs_
+_TODO : use [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR), [Jasmine](https://github.com/mkirsche/Jasmine) or [svimmer](https://github.com/DecodeGenetics/svimmer) to merge SVs_
 
 ## Annotate genes in the multi-sample VCF file
 
