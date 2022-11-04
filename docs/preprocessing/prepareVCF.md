@@ -80,3 +80,4 @@ bcftools annotate \
 ```
 In more detail, the first two commands prepare (compress and index) the VCF file resulting from the merge step.
 The `bcftools annotate` command adds the gene identifiers to the variant records' INFO field and modifies the VCF file's header section accordingly.
+Mind that the BED file does not need a header line as we define it with `-c`.
