@@ -16,7 +16,7 @@ The following sections provide recommendations on how to prepare the input data 
 ## Merge variant callsets across individuals
 
 ### TL;DR:
-Use a tool of your choice to merge SV callsets across all individuals of your study groups. Recommendations listed below:
+Use a tool of your choice to merge SV callsets across all individuals of your study groups. Some recommendations listed below:
 - [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR)
 - [Jasmine](https://github.com/mkirsche/Jasmine)
 - [svimmer](https://github.com/DecodeGenetics/svimmer)
@@ -38,15 +38,44 @@ project
 First, SURVIVOR requires a list of VCF files to merge.
 From your shell you can list all your VCF files and write them into a text file called _samples_ via
 ```
-ls project/variants/*.vcf > project/samples
+ls variants/*.vcf > samples
 ```
 Next, we use SURVIVOR to actually merge the variant callsets (now listed in the 'samples' file) into one multi-sample VCF file via
 ```
-SURVIVOR merge project/samples 1000 1 1 1 0 30 samples_merged.vcf
+SURVIVOR merge samples 1000 1 1 1 0 30 samples_merged.vcf
 ```
 For more details on the individual parameters of the `SURVIVOR merge` command please see the official SURVIVOR [Wiki](https://github.com/fritzsedlazeck/SURVIVOR/wiki).
 In the next step we will look into how each individual SV within `samples_merged.vcf` can be annotated with gene identifiers in order for VariantSurvival to filter variants of interest.
 
 ## Annotate genes in the multi-sample VCF file
 
-_TODO : gff overlap right now? GeneVar soon?_
+### TL;DR:
+Use a tool of your choice to annotate the variants of your study group with gene identifiers. Some recommendations listed below:
+- [bcftools](https://samtools.github.io/bcftools/)
+- [vcfanno](https://github.com/brentp/vcfanno)
+- [vcf-annotator](https://github.com/rpetit3/vcf-annotator)
+
+### Step-by-step
+The first step towards the input file format of VariantSurvival is to annotate the merged SV callset of your study group with gene identifiers.
+A list of gene identifiers together with their genomic coordinates can be retrieved from arbitrary databases or resources.
+The format of that list depends on the annotation tool of choice.
+We will demonstrate the annotation procedure using bcftools, hence we require the list in the standard [BED file](http://www.ensembl.org/info/website/upload/bed.html) format.
+Given the minimum information required in the leading four columns of a BED file `genes.bed.gz`, like
+| CHROM | FROM | TO | GENE |
+| --- | --- | --- | --- |
+| chr1 | 11200 | 11500 | TERC |
+| chr1 | 465076 | 465431 | SOX |
+| chr4 | 5333101 | 5333440 | HOXD |
+| ... | ... | ... | ... |
+
+we can use bcftools to annotate the variant records of our merged VCF file via
+```
+bgzip -c samples_merged.vcf > samples_merged.vcf.gz
+tabix -p vcf samples_merged.vcf.gz
+bcftools annotate \
+  -a genes.bed.gz \
+  -c CHROM,FROM,TO,GENE \
+  -h <(echo '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene name">') \
+  samples_merged.vcf.gz
+```
+
