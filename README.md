@@ -10,9 +10,9 @@
 
 ## VariantSurvival
 We present VariantSurvival, a lightweight dashboard application to visualize genotype-treatment response.
-The dashboard provides full functionality to import VCF data, metadata and to select a neurological disease as well as one or multiple target genes.
+The dashboard provides full functionality to import VCF data, metadata and to select a neurological disease.
 <br><br>
-<img src="https://github.com/collaborativebioinformatics/GeneTarget/blob/main/img/GeneTargetWorkflow.svg" width="600">
+<img src="https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/img/VariantSurvival.svg">
 
 
 ## The shiny app
