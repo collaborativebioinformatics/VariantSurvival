@@ -4,7 +4,7 @@
 ### Table of Contents
 1. [VariantSurvival](#variantsurvival)
 2. [The shiny app](#the-shiny-app)
-3. [The developer team](#the-developers-team)
+3. [The developers team](#the-developers-team)
 <br>
 
 
