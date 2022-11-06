@@ -4,7 +4,7 @@
 ### Table of Contents
 1. [VariantSurvival](#variantsurvival)
 2. [The shiny app](#the-shiny-app)
-3. [The developer team](#the-developer-team)
+3. [The developer team](#the-developers-team)
 <br>
 
 
@@ -29,7 +29,7 @@ https://github.com/collaborativebioinformatics/VariantSurvival/VariantSurvival_A
 * WIP: example as in “demo” folder.
 
 
-## The developer team
+## The developers team
 
 * Ahmad Al Khleifat [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/AhmadAlKhleifat.svg?style=social&label=Follow%20%40AhmadAlKhleifat)](https://twitter.com/AhmadAlKhleifat)
 * Thomas Krannich [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/krannich479.svg?style=social&label=Follow%20%40krannich479)](https://twitter.com/krannich479)
