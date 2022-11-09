@@ -23,7 +23,9 @@ https://github.com/collaborativebioinformatics/VariantSurvival/VariantSurvival_A
 [This](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/requirements.txt) document provides a list of R packages required prior to running the app.
 * WIP: steps to install
 * WIP: steps to start
-
+The package could be installed in R studio using this command :
+devtools::install_github("collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package")
+library(VariantSurvival)
 ### Running your data analysis
 * WIP: what input to load into VariantSurvival: [VCF file](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/docs/preprocessing/prepareVCF.md), study groups metadata
 * WIP: example as in “demo” folder.
