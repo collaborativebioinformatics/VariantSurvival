@@ -24,10 +24,13 @@ https://github.com/collaborativebioinformatics/VariantSurvival/VariantSurvival_A
 * WIP: steps to install
 * WIP: steps to start
 
+install.packages('devtools')
+
+library(devtools)
 
 The package could be installed in R studio using this command :
 
-devtools::install_github("collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package")
+devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
 
 library(VariantSurvival)
 
