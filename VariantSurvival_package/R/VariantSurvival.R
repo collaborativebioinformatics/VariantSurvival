@@ -84,7 +84,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                  ),
 
                  tabPanel(title = "Survival Plot according to SV count",
-                          "set the second factor as the structural variant count, to visualize the count effect.",
+                          
                           h6("starta 0 = Placebo ; 1= Treatment"),
                           plotOutput("plot3"),downloadButton("download3plot", "Download as PNG")
                  ),
