@@ -1,0 +1,28 @@
+Package: VariantSurvival
+Type: Package
+Title: VariantSurvival
+Version: 0.1.0
+Author: person("Hiba", "Ben Aribi", , "benaribi.hiba@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-9547-8725"))
+Maintainer: The package maintainer <benaribi.hiba@gmail.com>
+Description: Survival analysis and data visualization.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.1
+Imports: 
+    dplyr,
+    DT,
+    ggplot2,
+    ggsurvfit,
+    gtsummary,
+    lubridate,
+    readr,
+    readxl,
+    shiny,
+    shinydashboard,
+    survival,
+    survminer,
+    vcfR
+Depends: 
+    tidyverse
