@@ -17,13 +17,11 @@ The dashboard provides full functionality to import VCF data, metadata and to se
 
 ## The shiny app
 The VariantSurvival is implemented in R together with the 'shiny' R package and is available _here_ on GitHub at:<br>
-https://github.com/collaborativebioinformatics/VariantSurvival/VariantSurvival_App.
+https://github.com/collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package
 
 ### Installation
-[This](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/requirements.txt) document provides a list of R packages required prior to running the app.
-* WIP: steps to install
-* WIP: steps to start
 
+* WIP: steps to install
 install.packages('devtools')
 
 library(devtools)
@@ -31,6 +29,10 @@ library(devtools)
 The package could be installed in R studio using this command :
 
 devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
+
+Note: All required packages will be installed automatically when installing "VariantSurvival".
+
+* WIP: steps to start
 
 library(VariantSurvival)
 
