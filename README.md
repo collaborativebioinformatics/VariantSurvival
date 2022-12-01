@@ -16,35 +16,33 @@ The dashboard provides full functionality to import VCF data, metadata and to se
 
 
 ## The shiny app
-The VariantSurvival is implemented in R together with the 'shiny' R package and is available _here_ on GitHub at:<br>
-https://github.com/collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package
+The VariantSurvival is implemented in R together with the 'shiny' R package. Available [_here_](https://github.com/collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package).
+
 
 ### Installation
 
-* WIP: steps to install
-install.packages('devtools')
+The package can be installed in R studio using the following command:
 
+```
+#install.packages('devtools') #install devtools package
 library(devtools)
-
-The package could be installed in R studio using this command :
-
 devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
-
+```
 Note: All required packages will be installed automatically when installing "VariantSurvival".
 
-* WIP: steps to start
-
-library(VariantSurvival)
 
 ### Running your data analysis
 * WIP: what input to load into VariantSurvival: [VCF file](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/docs/preprocessing/prepareVCF.md), study groups metadata
 * WIP: example as in “demo” folder.
 
-The package include 1 shiny app function:
-
-to run the app, the user need to define the paths:
-
+VariantSurvival run example:
+```
+library(VariantSurvival)
 VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile= "metadata_file.xlsx")
+```
+
+
+
 
 ## The developers team
 
