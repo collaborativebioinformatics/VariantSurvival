@@ -7,45 +7,19 @@
 #' @export
 #'
 
+source("global.R") # install/load requirements
+source("fun.R") # main functions
 
 VariantSurvival <- function(vcffile, metadatafile){
-  if (!require("shiny")) install.packages("shiny")
-  if (!require("shinydashboard")) install.packages("shinydashboard")
-  if (!require("DT")) install.packages("DT")
-  if (!require("dplyr")) install.packages("dplyr")
-  if (!require("tidyverse")) install.packages("tidyverse")
-  if (!require("vcfR")) install.packages("vcfR")
-  if (!require("readr")) install.packages("readr")
-  if (!require("ggsurvfit")) install.packages("ggsurvfit")
-  if (!require("survival")) install.packages("survival")
-  if (!require("ggplot2")) install.packages("ggplot2")
-  if (!require("survminer")) install.packages("survminer")
-  if (!require("lubridate")) install.packages("lubridate")
-  if (!require("gtsummary")) install.packages("gtsummary")
-  library(shiny)
-  library(shinydashboard)
-  library(DT)
-  library(dplyr)
-  library(tidyverse)
-  library(vcfR)
-  library(readr)
-  library(readxl)
-  library(ggsurvfit)
-  library(survival)
-  library(ggplot2)
-  library(survminer)
-  library(lubridate)
-  library(gtsummary)
-
+  # parse inputs
   vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
   metadata <- readxl::read_excel(metadatafile)
-
-
+  # create user interface layout
   ui <- fluidPage(
     dashboardPage(
       dashboardHeader(title = "VariantSurvival"),
       dashboardSidebar(
-        selectizeInput("disease", "Diseases",
+        selectizeInput("disease_n", "Diseases",
                        choices = c("Amyotrophic lateral sclerosis"=1,
                                    "Parkinson's disease"=2,
                                    "Alzheimer's disease"=3,
@@ -55,7 +29,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                    "Spinal muscular atrophy"=7,
                                    selected = 1)
                        ),
-        textInput("targetGene", label = "Gene of interest"
+        textInput("target Gene", label = "Gene of interest"
                   ),
         selectInput("time", label = "Select the time factor:",
                     choices = colnames(metadata)
@@ -69,11 +43,10 @@ VariantSurvival <- function(vcffile, metadatafile){
         fluidRow(
           box(width = 6, #height = 600,
               title = "Genes",
-              "Based on literature The following genes are associated with the /
-              disease mechanism",
+              "Based on literature The following genes are associated
+              with the disease mechanism",
               br(),
               DT::dataTableOutput("geneslist")
-              #renderDataTable("geneslist")
               ),
           box(width = 6, #height = 600,
               title = "Structural Variant in selected gene",
@@ -117,23 +90,10 @@ VariantSurvival <- function(vcffile, metadatafile){
   # Define server logic required to draw a histogram
   server <- function(input, output) {
     output$geneslist <- DT::renderDataTable(
-      {
-        if(as.numeric(input$disease == 1)){
-          geneslist  <-read_csv("disease_gene/ALS/genes_list.txt")
-          }
-        else if(as.numeric(input$disease == 2)){
-          geneslist  <-read_csv("disease_gene/PD/genes_list.txt")
-          }
-        else if(as.numeric(input$disease == 3)) {
-          geneslist  <-read_csv("disease_gene/AD/genes_list.txt")
-          }
-        else if(as.numeric(input$disease == 4)) {
-          geneslist  <-read_csv("disease_gene/FD/genes_list.txt")
-          }
-        else {
-          geneslist  <-read_csv("disease_gene/DLB/genes_list.txt")
-        }
-        }
+      datatable(
+        get_disease_gene_list(input$disease_n),
+        selection = 'none'
+        )
       )
 
     geneIDS<- read.csv(file = 'ensembleTogenes.csv')
@@ -463,3 +423,4 @@ VariantSurvival <- function(vcffile, metadatafile){
   # Run the application
   shinyApp(ui = ui, server = server)
 }
+
