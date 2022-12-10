@@ -45,103 +45,102 @@ VariantSurvival <- function(vcffile, metadatafile){
     dashboardPage(
       dashboardHeader(title = "VariantSurvival"),
       dashboardSidebar(
-        selectizeInput("disease", "Diseases", choices = c("Amyotrophic lateral sclerosis"=1,"Parkinson's disease"=2,"Alzheimer's disease"=3,
-                                                          "Friedreich ataxia"=4, "Huntington's disease"=5, "Lewy body disease"=6,
-                                                          "Spinal muscular atrophy"=7, selected = 1)),
+        selectizeInput("disease", "Diseases",
+                       choices = c("Amyotrophic lateral sclerosis"=1,
+                                   "Parkinson's disease"=2,
+                                   "Alzheimer's disease"=3,
+                                   "Friedreich ataxia"=4,
+                                   "Huntington's disease"=5,
+                                   "Lewy body disease"=6,
+                                   "Spinal muscular atrophy"=7,
+                                   selected = 1)
+                       ),
         textInput("targetGene", label = "Gene of interest"
-        ),
+                  ),
         selectInput("time", label = "Select the time factor:",
-                    choices = colnames(metadata)),
+                    choices = colnames(metadata)
+                    ),
         br(),
-
         selectInput("phenotype", label = "Select the phenotype factor:",
                     choices = colnames(metadata)
-        )
-      ),
-
+                    )
+        ),
       dashboardBody(
         fluidRow(
           box(width = 6, #height = 600,
               title = "Genes",
-              "Based on literature The following genes are associated with the disease mechanism",
+              "Based on literature The following genes are associated with the /
+              disease mechanism",
               br(),
               DT::dataTableOutput("geneslist")
               #renderDataTable("geneslist")
-          ),
+              ),
           box(width = 6, #height = 600,
               title = "Structural Variant in selected gene",
               br(),
-
               plotOutput("barplot")
-          )),
-
+              )
+          ),
         fluidRow(
-
           tabBox(width = 6,# height = 600,
                  tabPanel(title = "Survival Plot",
                           h6("Phenotype 0 = Placebo ; 1= Treatment"),
-                          plotOutput("plot2"),downloadButton("download2plot", "Download as PNG")
-                 ),
-
+                          plotOutput("plot2"),
+                          downloadButton("download2plot", "Download as PNG")
+                          ),
                  tabPanel(title = "Survival Plot according to SV count",
-                          
                           h6("starta 0 = Placebo ; 1= Treatment"),
-                          plotOutput("plot3"),downloadButton("download3plot", "Download as PNG")
+                          plotOutput("plot3"),
+                          downloadButton("download3plot", "Download as PNG")
+                          ),
+                 tabPanel( title = "Competing risks regression",
+                           DT::dataTableOutput("table3"),
+                           "HR = Hazard Ratio, CI = Confidence Interval")
                  ),
-                 tabPanel(
-                   title = "Competing risks regression",
-                   DT::dataTableOutput("table3")
-                   ,"HR = Hazard Ratio, CI = Confidence Interval")
-
-          ),
-
           tabBox(width = 6, #height = 700,
                  tabPanel(title = "Kaplan-Meier plot",
-
-                          plotOutput("plot1"),downloadButton("download1plot", "Download as PNG")
-                 ),
-                 tabPanel(
-                   title = "x-year survival time time",
-                   DT::dataTableOutput("table1")
-                   ,"CI = Confidence Interval"),
-                 tabPanel(
-                   title = "median survival time",
-                   DT::dataTableOutput("table2")
-                   ,"CI = Confidence Interval"))
-
+                          plotOutput("plot1"),
+                          downloadButton("download1plot", "Download as PNG")
+                          ),
+                 tabPanel(title = "x-year survival time time",
+                          DT::dataTableOutput("table1"),
+                          "CI = Confidence Interval"),
+                 tabPanel(title = "median survival time",
+                          DT::dataTableOutput("table2"),
+                          "CI = Confidence Interval")
+                 )
+          )
         )
-      )))
-
-
+      )
+    )
 
   # Define server logic required to draw a histogram
   server <- function(input, output) {
-
-    output$geneslist <- DT::renderDataTable({
-
-      if(as.numeric(input$disease == 1)){
-        geneslist  <-read_csv("disease_gene/ALS/genes_list.txt")
-      } else if(as.numeric(input$disease == 2)){
-        geneslist  <-read_csv("disease_gene/PD/genes_list.txt")
-      } else if(as.numeric(input$disease == 3)) {
-        geneslist  <-read_csv("disease_gene/AD/genes_list.txt")
-      } else if(as.numeric(input$disease == 4)) {
-        geneslist  <-read_csv("disease_gene/FD/genes_list.txt")
-      } else {
-        geneslist  <-read_csv("disease_gene/DLB/genes_list.txt")
-      }
-
-    })
+    output$geneslist <- DT::renderDataTable(
+      {
+        if(as.numeric(input$disease == 1)){
+          geneslist  <-read_csv("disease_gene/ALS/genes_list.txt")
+          }
+        else if(as.numeric(input$disease == 2)){
+          geneslist  <-read_csv("disease_gene/PD/genes_list.txt")
+          }
+        else if(as.numeric(input$disease == 3)) {
+          geneslist  <-read_csv("disease_gene/AD/genes_list.txt")
+          }
+        else if(as.numeric(input$disease == 4)) {
+          geneslist  <-read_csv("disease_gene/FD/genes_list.txt")
+          }
+        else {
+          geneslist  <-read_csv("disease_gene/DLB/genes_list.txt")
+        }
+        }
+      )
 
     geneIDS<- read.csv(file = 'ensembleTogenes.csv')
     rownames(geneIDS) <- geneIDS$ensembleID
-
-
     samples=colnames(vcf@gt)
     samples=samples[2:length(samples)]
-
     genes=geneIDS$GeneName
-
 
     getGeneName <- function(info) {
       s <- str_extract(info["INFO"], "ensembl_gene_id=[^;]*")
@@ -150,11 +149,12 @@ VariantSurvival <- function(vcffile, metadatafile){
       apply(s3,1,(\(x) geneIDS[x,]$GeneName))
     }
 
-
     sv_gene <- apply(vcf@fix,1,getGeneName)
-
-
-    allgenes_sv <- data.frame(matrix(0,ncol = length(genes), nrow = length(samples)))
+    allgenes_sv <- data.frame(matrix(0,
+                                     ncol = length(genes),
+                                     nrow = length(samples)
+                                     )
+                              )
     colnames(allgenes_sv) = genes
     rownames(allgenes_sv) = samples
 
@@ -165,12 +165,12 @@ VariantSurvival <- function(vcffile, metadatafile){
         gt=vcf@gt[i,samples[j]]
         if(!is.na(gt))
         {
-          allgenes_sv[samples[j], sv_gene[[i]] ]=allgenes_sv[samples[j], sv_gene[[i]] ]+1
+          allgenes_sv[samples[j], sv_gene[[i]]] = allgenes_sv[samples[j],
+                                                              sv_gene[[i]] ] + 1
         }
       }
     }
     allgenes_sv<- rownames_to_column(allgenes_sv, "patient_ID")
-
 
     metadata2 = data.frame(metadata)
     #test
@@ -183,38 +183,53 @@ VariantSurvival <- function(vcffile, metadatafile){
     #
     output$barplot <- renderPlot({
 
-      dx3 <- as.data.frame(c(dx2["patient_ID.x"] ,dx2[input$targetGene], dx2[input$phenotype]))
+      dx3 <- as.data.frame(
+        c(dx2["patient_ID.x"],
+          dx2[input$targetGene],
+          dx2[input$phenotype]
+          )
+        )
 
-      #dx3 <- as.data.frame(c(dx2["patient_ID.x"] ,dx2["SETX"], dx2["Phenotype"]))
-
-      colnames(dx3) <- c('patient_ID','gene', 'Phenotype')
+      colnames(dx3) <- c('patient_ID', 'gene', 'Phenotype')
       dx3 <- dx3 %>%
         mutate(Phenotype= ifelse(Phenotype=="0", "Placebo","treatment" ))
-      ggplot(data=dx3, aes(x=patient_ID, y=gene,fill=Phenotype)) +
-        geom_bar(stat="identity")+
-        theme_classic()
-    })
+      ggplot(data=dx3,
+             aes(x=patient_ID,
+                 y=gene,
+                 fill=Phenotype)
+             ) + geom_bar(stat="identity") + theme_classic()
+      }
+      )
 
     #reactive output
     output$svtable <-DT::renderDataTable({
-
-      gene_sv <- as.data.frame(c(allgenes_sv["patient_ID"], allgenes_sv[input$targetGene]))
-
-    })
-
+      gene_sv <- as.data.frame(
+        c(allgenes_sv["patient_ID"],
+          allgenes_sv[input$targetGene]
+          )
+        )
+      }
+      )
     #step 1 kaplan-meier
     output$plot1 <- renderPlot({
-      gene_sv2 <- as.data.frame(c(allgenes_sv["patient_ID"], allgenes_sv[input$targetGene]))
-      colnames(gene_sv2) <- c('patient_ID','Structural_Variants_count')
+      gene_sv2 <- as.data.frame(
+        c(allgenes_sv["patient_ID"],
+          allgenes_sv[input$targetGene]
+          )
+        )
+      colnames(gene_sv2) <- c('patient_ID',
+                              'Structural_Variants_count')
       gene_sv2$variant <- "No"
       gene_sv2$variant[gene_sv2$Structural_Variants_count > 1 ] <- "Yes"
-      de2 <- merge(gene_sv2, metadata2, by=0, all=TRUE)
+      de2 <- merge(gene_sv2,
+                   metadata2,
+                   by=0,
+                   all=TRUE)
       de2 <- de2[-(1)]
       de2 <- de2[-(4)]
+
       df <- de2 %>%
         mutate(variant= ifelse(variant=="Yes", 1, 0))
-      #input factors
-      #df <- df %>% rename(Time = Time_to_death_or_last_followup_days)
       df <- df %>% rename(Time = input$time)
       df <- df %>% rename(Phenotype = input$phenotype)
       #
@@ -226,21 +241,20 @@ VariantSurvival <- function(vcffile, metadatafile){
         ) +
         add_confidence_interval() +
         add_risktable()
-
-    })
-
+      }
+      )
 
     # x-year survival time
-
     output$table1 <- DT::renderDataTable({
       x<- survfit(Surv(Time,variant)~ 1, data = df) %>%
         tbl_survfit(
           times = 365.25,
           label_header = "**1-year survival (95% CI)**"
-        )
+          )
       t <- as_data_frame(x)
       t
-    })
+      }
+      )
 
     # Median survival time
     output$table2 <- DT::renderDataTable({
@@ -256,8 +270,13 @@ VariantSurvival <- function(vcffile, metadatafile){
     # step2 survival curve
     #plot2
     output$plot2 <- renderPlot({
-      gene_sv2 <- as.data.frame(c(allgenes_sv["patient_ID"], allgenes_sv[input$targetGene]))
-      colnames(gene_sv2) <- c('patient_ID','Structural_Variants_count')
+      gene_sv2 <- as.data.frame(
+        c(allgenes_sv["patient_ID"],
+          allgenes_sv[input$targetGene]
+          )
+        )
+      colnames(gene_sv2) <- c('patient_ID',
+                              'Structural_Variants_count')
       gene_sv2$variant <- "No"
       gene_sv2$variant[gene_sv2$Structural_Variants_count > 1 ] <- "Yes"
       de2 <- merge(gene_sv2, metadata2, by=0, all=TRUE)
@@ -284,8 +303,13 @@ VariantSurvival <- function(vcffile, metadatafile){
 
     #plot3
     output$plot3 <- renderPlot({
-      gene_sv2 <- as.data.frame(c(allgenes_sv["patient_ID"], allgenes_sv[input$targetGene]))
-      colnames(gene_sv2) <- c('patient_ID','Structural_Variants_count')
+      gene_sv2 <- as.data.frame(
+        c(allgenes_sv["patient_ID"],
+          allgenes_sv[input$targetGene]
+          )
+        )
+      colnames(gene_sv2) <- c('patient_ID',
+                              'Structural_Variants_count')
       gene_sv2$variant <- "No"
       gene_sv2$variant[gene_sv2$Structural_Variants_count > 1 ] <- "Yes"
       de2 <- merge(gene_sv2, metadata2, by=0, all=TRUE)
@@ -328,8 +352,13 @@ VariantSurvival <- function(vcffile, metadatafile){
       },
       content = function(file){
         png(file)
-        gene_sv2 <- as.data.frame(c(allgenes_sv["patient_ID"], allgenes_sv[input$targetGene]))
-        colnames(gene_sv2) <- c('patient_ID','Structural_Variants_count')
+        gene_sv2 <- as.data.frame(
+          c(allgenes_sv["patient_ID"],
+            allgenes_sv[input$targetGene]
+            )
+          )
+        colnames(gene_sv2) <- c('patient_ID',
+                                'Structural_Variants_count')
         gene_sv2$variant <- "No"
         gene_sv2$variant[gene_sv2$Structural_Variants_count > 1 ] <- "Yes"
         de2 <- merge(gene_sv2, metadata2, by=0, all=TRUE)
@@ -360,13 +389,22 @@ VariantSurvival <- function(vcffile, metadatafile){
       },
       content = function(file){
         png(file)
-        gene_sv2 <- as.data.frame(c(allgenes_sv["patient_ID"], allgenes_sv[input$targetGene]))
-        colnames(gene_sv2) <- c('patient_ID','Structural_Variants_count')
+        gene_sv2 <- as.data.frame(
+          c(allgenes_sv["patient_ID"],
+            allgenes_sv[input$targetGene]
+            )
+          )
+        colnames(gene_sv2) <- c('patient_ID',
+                                'Structural_Variants_count')
         gene_sv2$variant <- "No"
         gene_sv2$variant[gene_sv2$Structural_Variants_count > 1 ] <- "Yes"
-        de2 <- merge(gene_sv2, metadata2, by=0, all=TRUE)
+        de2 <- merge(gene_sv2,
+                     metadata2,
+                     by=0,
+                     all=TRUE)
         de2 <- de2[-(1)]
         de2 <- de2[-(4)]
+
         df <- de2 %>%
           mutate(variant= ifelse(variant=="Yes", 1, 0))
         #input factors
@@ -391,20 +429,24 @@ VariantSurvival <- function(vcffile, metadatafile){
       },
       content = function(file){
         png(file)
-        gene_sv2 <- as.data.frame(c(allgenes_sv["patient_ID"], allgenes_sv[input$targetGene]))
-        colnames(gene_sv2) <- c('patient_ID','Structural_Variants_count')
+        gene_sv2 <- as.data.frame(
+          c(allgenes_sv["patient_ID"],
+            allgenes_sv[input$targetGene]
+            )
+          )
+        colnames(gene_sv2) <- c('patient_ID',
+                                'Structural_Variants_count')
         gene_sv2$variant <- "No"
         gene_sv2$variant[gene_sv2$Structural_Variants_count > 1 ] <- "Yes"
-        de2 <- merge(gene_sv2, metadata2, by=0, all=TRUE)
+        de2 <- merge(gene_sv2,
+                     metadata2,
+                     by=0,
+                     all=TRUE)
         de2 <- de2[-(1)]
         de2 <- de2[-(4)]
         df <- de2 %>%
           mutate(variant= ifelse(variant=="Yes", 1, 0))
-        #input factors
-        #• df <- df %>% rename(Time = Time_to_death_or_last_followup_days)
         df <- df %>% rename(Time = input$time)
-
-        #df <- df %>% rename(Phenotype = "Phenotype")
         df <- df %>% rename(Phenotype = input$phenotype)
         #
         s <- survfit(Surv(Time,variant)~ Phenotype, data = df)
