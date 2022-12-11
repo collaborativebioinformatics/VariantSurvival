@@ -116,7 +116,7 @@ VariantSurvival <- function(vcffile, metadatafile){
     
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
-    gene_names = gene_ids_table$GeneName
+    disease_genes_names = gene_ids_table$GeneName
     sample_names = colnames(vcf@gt)[-1] # VCF genotype information
     
     getGeneName <- function(info) {
@@ -124,28 +124,15 @@ VariantSurvival <- function(vcffile, metadatafile){
       return(geneIDS[x,]$GeneName)
     }
     
-    sv_gene <- apply(vcf@fix,1,getGeneName)
-    #     allgenes_sv <- data.frame(matrix(0,
-    #                                      ncol = length(genes),
-    #                                      nrow = length(samples)
-    #                                      )
-    #                               )
-    #     colnames(allgenes_sv) = genes
-    #     rownames(allgenes_sv) = samples
-    #
-    #     for (i in 1:length(sv_gene)) {
-    #       if(is.na(sv_gene[i]))
-    #         next;
-    #       for(j in 1:length(samples)){
-    #         gt=vcf@gt[i,samples[j]]
-    #         if(!is.na(gt))
-    #         {
-    #           allgenes_sv[samples[j], sv_gene[[i]]] = allgenes_sv[samples[j],
-    #                                                               sv_gene[[i]] ] + 1
-    #         }
-    #       }
-    #     }
-    #     allgenes_sv<- rownames_to_column(allgenes_sv, "patient_ID")
+    # genes are repeated since a single gene can have more than one SV.
+    genes_with_svs_in_sample <- apply(vcf@fix,1,getGeneName)
+    
+    sample_disease_gene_df <- CountSVsDf(length(disease_genes_names),
+                                         length(sample_names),
+                                         disease_genes_names,
+                                         sample_names,
+                                         genes_with_svs_in_sample,
+                                         vcf)
     #
     #     metadata2 = data.frame(metadata)
     #     #test
