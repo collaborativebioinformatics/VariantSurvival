@@ -97,7 +97,7 @@ VariantSurvival <- function(vcffile, metadatafile){
   
   # Define server logic required to draw a histogram
   server <- function(input, output, session) {
-    # Update genes drop-down after disease input is given
+    # get disease_n input and update the genes list accordingly
     observeEvent(input$disease_n,
                  {
                    genes_list = c(get_disease_gene_list(input$disease_n))
@@ -107,6 +107,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                         selected = NULL)
                  }
     )
+    # Update genes drop-down after disease input is given
     reactive_gene_list <- reactive({get_disease_gene_list(input$disease_n)})
     output$geneslist <- DT::renderDataTable(
       datatable(reactive_gene_list(),
@@ -114,24 +115,16 @@ VariantSurvival <- function(vcffile, metadatafile){
     )
     
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
+    rownames(gene_ids_table) <- gene_ids_table$ensembleID
     gene_names = gene_ids_table$GeneName
-    gene_ids = gene_ids_table$ensembleID
     sample_names = colnames(vcf@gt)[-1] # VCF genotype information
     
-    # geneIDS<- read.csv(file = 'ensembleTogenes.csv')
-    # rownames(geneIDS) <- geneIDS$ensembleID
-    # samples=colnames(vcf@gt)
-    # samples=samples[2:length(samples)]
-    # genes=geneIDS$GeneName
+    getGeneName <- function(info) {
+      x <- str_extract(info['INFO'], "(?<=ensembl_gene_id=)[^;]+")
+      return(geneIDS[x,]$GeneName)
+    }
     
-    #     getGeneName <- function(info) {
-    #       s <- str_extract(info["INFO"], "ensembl_gene_id=[^;]*")
-    #       s2=str_split(s,'=')[[1]][2]
-    #       s3=as.array(str_split(s2,',')[[1]])
-    #       apply(s3,1,(\(x) gene_ids_table[x,]$GeneName))
-    #     }
-    #
-    #     sv_gene <- apply(vcf@fix, 1, getGeneName)
+    sv_gene <- apply(vcf@fix,1,getGeneName)
     #     allgenes_sv <- data.frame(matrix(0,
     #                                      ncol = length(genes),
     #                                      nrow = length(samples)
