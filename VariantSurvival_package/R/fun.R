@@ -1,10 +1,7 @@
-# Define server logic required to draw a histogram
-
-#' Sum of vector elements
+#' `get_disease_gene_list` 
 #'
-#' `sum` returns the sum of all the values present in its arguments.
-#' @param input 
-#' @param output 
+#' @param input_disease 
+#' @return  genes_list 
 get_disease_gene_list <- function(input_disease) {
   if(as.numeric(input_disease == 1)){
     genes_list  <-read_csv("disease_gene/ALS/genes_list.txt")
@@ -24,12 +21,24 @@ get_disease_gene_list <- function(input_disease) {
   return(genes_list)
 }
 
-
+#' `getGeneName` 
+#'
+#' @param info 
+#' @return   
 getGeneName <- function(info) {
   x <- str_extract(info['INFO'], "(?<=ensembl_gene_id=)[^;]+")
   return(geneIDS[x,]$GeneName)
 }
 
+#' `CountSVsDf` 
+#'
+#' @param ncol
+#' @param nrow
+#' @param disease_genes_names 
+#' @param  sample_names
+#' @param genes_with_svs_in_sample
+#' @param vcf
+#' @return 
 CountSVsDf <- function(ncol, nrow,
                        disease_genes_names,
                        sample_names,
@@ -63,11 +72,7 @@ CountSVsDf <- function(ncol, nrow,
   return(sample_disease_gene_df)
 }
 
-
-getGeneName <- function(info) {
-  x <- str_extract(info['INFO'], "(?<=ensembl_gene_id=)[^;]+")
-  return(geneIDS[x,]$GeneName)
-}
-
-
+#' implementation of += operator
+#' https://stackoverflow.com/questions/5738831/
 `%+=%` = function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
+
