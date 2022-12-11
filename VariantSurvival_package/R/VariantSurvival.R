@@ -60,7 +60,8 @@ VariantSurvival <- function(vcffile, metadatafile){
           box(width = 6, #height = 600,
               title = "Structural Variant in selected gene",
               br(),
-              plotOutput("barplot")
+              plotOutput("barplot"),
+              downloadButton("download2plot", "Download as PNG")
           )
         ),
         fluidRow(
@@ -95,8 +96,6 @@ VariantSurvival <- function(vcffile, metadatafile){
       )
     )
   )
-  
-  # Define server logic required to draw a histogram
   # Run the application
   shinyApp(ui = ui, server = server)
 }
