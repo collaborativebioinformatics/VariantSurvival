@@ -63,4 +63,11 @@ CountSVsDf <- function(ncol, nrow,
   return(sample_disease_gene_df)
 }
 
+
+getGeneName <- function(info) {
+  x <- str_extract(info['INFO'], "(?<=ensembl_gene_id=)[^;]+")
+  return(geneIDS[x,]$GeneName)
+}
+
+
 `%+=%` = function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
