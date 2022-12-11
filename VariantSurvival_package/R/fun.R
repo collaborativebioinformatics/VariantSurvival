@@ -72,6 +72,32 @@ CountSVsDf <- function(ncol, nrow,
   return(sample_disease_gene_df)
 }
 
+
+#' `hist_df` 
+#'
+#' @param df 
+#' @param input
+#' @return  
+hist_df <- function(df,input){
+  svs_gene_input_df <- as.data.frame(
+    c(df["patient_ID"] ,
+      df[input$target_gene],
+      df[input$phenotype]
+    )
+  )
+  colnames(svs_gene_input_df) <- c('patient_ID',
+                                   'SVs_number_per_gene',
+                                   'Phenotype')
+  
+  svs_gene_input_df <- svs_gene_input_df %>%
+    mutate(Phenotype = ifelse(Phenotype=="0",
+                              "Placebo", 
+                              "Treatment" )
+    )
+  return(svs_gene_input_df)
+}
+
+
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
 `%+=%` = function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
