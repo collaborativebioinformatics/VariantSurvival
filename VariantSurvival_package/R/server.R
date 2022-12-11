@@ -14,6 +14,7 @@ server <- function(input, output, session) {
   )
   # Update genes drop-down after disease input is given
   reactive_gene_list <- reactive({get_disease_gene_list(input$disease_n)})
+  ## output ##
   output$geneslist <- DT::renderDataTable(
     datatable(reactive_gene_list(),
               selection = 'none')
@@ -33,44 +34,41 @@ server <- function(input, output, session) {
                                        genes_with_svs_in_sample,
                                        vcf)
   
-  metadata2 = data.frame(metadata)
-  #     #test
-  #     metadata3 = metadata2[c(1,2)]
-  #     #merge with metadata
-  #     dx <- merge(allgenes_sv, metadata3, by=0, all=TRUE)
-  #
-  #     dx2 <- dx[-(1)]
-  #     dx2 <- dx2[-(22)]
-  #     #
-  #     output$barplot <- renderPlot({
-  #
-  #       dx3 <- as.data.frame(
-  #         c(dx2["patient_ID.x"],
-  #           dx2[input$targetGene],
-  #           dx2[input$phenotype]
-  #           )
-  #         )
-  #
-  #       colnames(dx3) <- c('patient_ID', 'gene', 'Phenotype')
-  #       dx3 <- dx3 %>%
-  #         mutate(Phenotype= ifelse(Phenotype=="0", "Placebo","treatment" ))
-  #       ggplot(data=dx3,
-  #              aes(x=patient_ID,
-  #                  y=gene,
-  #                  fill=Phenotype)
-  #              ) + geom_bar(stat="identity") + theme_classic()
-  #       }
-  #       )
-  #
-  #     #reactive output
-  #     output$svtable <-DT::renderDataTable({
-  #       gene_sv <- as.data.frame(
-  #         c(allgenes_sv["patient_ID"],
-  #           allgenes_sv[input$targetGene]
-  #           )
-  #         )
-  #       }
-  #       )
+  #incorporate phenotype column (placebo/treatment)
+  new_sample_disease_gene_df <- merge(sample_disease_gene_df, 
+                                      metadata[, 1:2],
+                                      on = "patient_ID")
+  
+  ## output ##
+  output$barplot <- renderPlot(
+    {
+    svs_gene_input_df <- as.data.frame(
+      c(new_sample_disease_gene_df["patient_ID"] ,
+        new_sample_disease_gene_df[input$target_gene],
+        new_sample_disease_gene_df[input$phenotype]
+        )
+      )
+    colnames(svs_gene_input_df) <- c('patient_ID',
+                                     'SVs_number_per_gene',
+                                     'Phenotype')
+
+    svs_gene_input_df <- svs_gene_input_df %>%
+      mutate(Phenotype = ifelse(Phenotype=="0",
+                                "Placebo", 
+                                "Treatment" )
+             )
+    ggplot(svs_gene_input_df,
+           aes(SVs_number_per_gene, 
+               fill=Phenotype)) +
+      geom_histogram(binwidth=1) +
+      stat_bin(binwidth=1,
+               geom='text',
+               color='white',
+               aes(label=after_stat(count)),
+               position=position_stack(vjust = 0.5)) + 
+      xlab("Number of SVs in target gene") + ylab("Frequency")
+    }
+    )
   #     #step 1 kaplan-meier
   #     output$plot1 <- renderPlot({
   #       gene_sv2 <- as.data.frame(
