@@ -100,7 +100,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                           plotOutput("plot1"),downloadButton("download1plot", "Download as PNG")
                  ),
                  tabPanel(
-                   title = "x-year survival time time",
+                   title = "1-year survival time time",
                    DT::dataTableOutput("table1")
                    ,"CI = Confidence Interval"),
                  tabPanel(
