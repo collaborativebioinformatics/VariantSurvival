@@ -88,7 +88,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                           plotOutput("plot3"),downloadButton("download3plot", "Download as PNG")
                  ),
                  tabPanel(
-                   title = "Competing risks regression",
+                   title = "Cox regression model",
                    DT::dataTableOutput("table3")
                    ,"HR = Hazard Ratio, CI = Confidence Interval")
 
