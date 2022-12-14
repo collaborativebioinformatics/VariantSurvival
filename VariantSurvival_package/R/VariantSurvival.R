@@ -83,8 +83,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                           plotOutput("plot2"),downloadButton("download2plot", "Download as PNG")
                  ),
 
-                 tabPanel(title = "Survival Plot according to SV count",
-                          
+                 tabPanel(title = "Survival Plot according to SV count",                     
                           h6("starta 0 = Placebo ; 1= Treatment"),
                           plotOutput("plot3"),downloadButton("download3plot", "Download as PNG")
                  ),
@@ -324,7 +323,7 @@ VariantSurvival <- function(vcffile, metadatafile){
       t3 <- as_tibble(x3)
 
     })
-#d plot1
+# plot1
     output$download1plot <- downloadHandler(
       filename = function(){
         paste("kaplan_meier_plot", "png", sep=".")
