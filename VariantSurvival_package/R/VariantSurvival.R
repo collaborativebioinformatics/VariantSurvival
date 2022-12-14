@@ -191,8 +191,12 @@ VariantSurvival <- function(vcffile, metadatafile){
       dx3 <- dx3 %>%
         mutate(Phenotype= ifelse(Phenotype=="0", "Placebo","treatment" ))
       ggplot(data=dx3, aes(x=patient_ID, y=gene,fill=Phenotype)) +
+        labs(y = "Structural variant count", x = "Sample")+
         geom_bar(stat="identity")+
-        theme_classic()
+        theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank())
+
     })
 
     #reactive output
@@ -238,8 +242,8 @@ VariantSurvival <- function(vcffile, metadatafile){
           times = 365.25,
           label_header = "**1-year survival (95% CI)**"
         )
-      t <- as_data_frame(x)
-      t
+      t <- as_tibble(x)
+
     })
 
     # Median survival time
@@ -249,8 +253,8 @@ VariantSurvival <- function(vcffile, metadatafile){
           probs = 0.5,
           label_header = "**Median survival (95% CI)**"
         )
-      t2 <- as_data_frame(x2)
-      t2
+      t2 <- as_tibble(x2)
+ 
     })
 
     # step2 survival curve
@@ -317,9 +321,8 @@ VariantSurvival <- function(vcffile, metadatafile){
       x3 <- coxph(Surv(Time,variant)~ Phenotype, data = df) %>%
         tbl_regression(exp = TRUE)
 
-      t3 <- as_data_frame(x3)
+      t3 <- as_tibble(x3)
 
-      t3
     })
 #d plot1
     output$download1plot <- downloadHandler(
