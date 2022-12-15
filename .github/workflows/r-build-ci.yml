@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        r-version: ['4.0.5','4.1.1']
+        r-version: ['4.0.5']
 
     steps:
       - uses: actions/checkout@v3
@@ -23,13 +23,8 @@ jobs:
           
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck", "devtools"))
-          remotes::install_deps(dependencies = TRUE)
+          install.packages("devtools")
           library(devtools)
-        shell: Rscript {0}
-        
-      - name: Check cmd
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
 
       - name: Install VariantSurvival
