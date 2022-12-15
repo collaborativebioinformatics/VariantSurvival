@@ -16,6 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - name: Set up UNIX
+      - run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libbz2-dev libcurl4-openssl-dev
+      
       - name: Set up R ${{ matrix.r-version }}
         uses: r-lib/actions/setup-r@v2
         with:
@@ -31,7 +36,8 @@ jobs:
         run: |
           devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
           library(VariantSurvival)
+        shell: Rscript {0}
           
       - name: Run VariantSurvival
         run: VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile="metadata_file.xlsx")
-        
+        shell: Rscript {0}
