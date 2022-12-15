@@ -17,11 +17,11 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: Set up R ${{ matrix.r-version }}
-      - uses: r-lib/actions/setup-r@v2
+        uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.r-version }}
-      - uses: r-lib/actions/setup-r-dependencies@v2          
-
+      - uses: r-lib/actions/setup-r-dependencies@v2
+          
       - name: Install dependencies
         run: |
           install.packages("devtools")
@@ -32,8 +32,7 @@ jobs:
         run: |
           devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
           library(VariantSurvival)
-        shell: Rscript {0}
-
+          
       - name: Run VariantSurvival
         run: VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile="metadata_file.xlsx")
-        shell: Rscript {0}
+        
