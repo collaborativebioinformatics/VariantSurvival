@@ -83,13 +83,12 @@ VariantSurvival <- function(vcffile, metadatafile){
                           plotOutput("plot2"),downloadButton("download2plot", "Download as PNG")
                  ),
 
-                 tabPanel(title = "Survival Plot according to SV count",
-                          
+                 tabPanel(title = "Survival Plot according to SV count",                     
                           h6("starta 0 = Placebo ; 1= Treatment"),
                           plotOutput("plot3"),downloadButton("download3plot", "Download as PNG")
                  ),
                  tabPanel(
-                   title = "Competing risks regression",
+                   title = "Cox regression model",
                    DT::dataTableOutput("table3")
                    ,"HR = Hazard Ratio, CI = Confidence Interval")
 
@@ -101,7 +100,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                           plotOutput("plot1"),downloadButton("download1plot", "Download as PNG")
                  ),
                  tabPanel(
-                   title = "x-year survival time time",
+                   title = "1-year survival time time",
                    DT::dataTableOutput("table1")
                    ,"CI = Confidence Interval"),
                  tabPanel(
@@ -191,8 +190,12 @@ VariantSurvival <- function(vcffile, metadatafile){
       dx3 <- dx3 %>%
         mutate(Phenotype= ifelse(Phenotype=="0", "Placebo","treatment" ))
       ggplot(data=dx3, aes(x=patient_ID, y=gene,fill=Phenotype)) +
+        labs(y = "Structural variant count", x = "Sample")+
         geom_bar(stat="identity")+
-        theme_classic()
+        theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank())
+
     })
 
     #reactive output
@@ -238,8 +241,8 @@ VariantSurvival <- function(vcffile, metadatafile){
           times = 365.25,
           label_header = "**1-year survival (95% CI)**"
         )
-      t <- as_data_frame(x)
-      t
+      t <- as_tibble(x)
+
     })
 
     # Median survival time
@@ -249,8 +252,8 @@ VariantSurvival <- function(vcffile, metadatafile){
           probs = 0.5,
           label_header = "**Median survival (95% CI)**"
         )
-      t2 <- as_data_frame(x2)
-      t2
+      t2 <- as_tibble(x2)
+ 
     })
 
     # step2 survival curve
@@ -317,11 +320,10 @@ VariantSurvival <- function(vcffile, metadatafile){
       x3 <- coxph(Surv(Time,variant)~ Phenotype, data = df) %>%
         tbl_regression(exp = TRUE)
 
-      t3 <- as_data_frame(x3)
+      t3 <- as_tibble(x3)
 
-      t3
     })
-#d plot1
+# plot1
     output$download1plot <- downloadHandler(
       filename = function(){
         paste("kaplan_meier_plot", "png", sep=".")
