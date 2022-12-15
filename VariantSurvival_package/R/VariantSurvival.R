@@ -146,7 +146,7 @@ VariantSurvival <- function(vcffile, metadatafile){
       s <- str_extract(info["INFO"], "ensembl_gene_id=[^;]*")
       s2=str_split(s,'=')[[1]][2]
       s3=as.array(str_split(s2,',')[[1]])
-      apply(s3,1,(\(x) geneIDS[x,]$GeneName))
+      apply(s3,1,function(x) {geneIDS[x,]$GeneName})
     }
 
 
