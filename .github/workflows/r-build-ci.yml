@@ -32,8 +32,6 @@ jobs:
         run: |
           devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
           library(VariantSurvival)
-        shell: Rscript {0}
           
       - name: Run VariantSurvival
         run: VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile="metadata_file.xlsx")
-        shell: Rscript {0}
