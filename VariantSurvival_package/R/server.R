@@ -15,10 +15,10 @@ server <- function(input, output, session) {
   # Update genes drop-down after disease input is given
   reactive_gene_list <- reactive({get_disease_gene_list(input$disease_n)})
   ## output ##
-  output$geneslist <- DT::renderDataTable(
-    datatable(reactive_gene_list(),
-              selection = 'none')
-  )
+  # output$geneslist <- DT::renderDataTable(
+  #   datatable(reactive_gene_list(),
+  #             selection = 'none')
+  # )
   
   disease_genes_names = gene_ids_table$GeneName
   sample_names = colnames(vcf@gt)[-1] # VCF genotype information
@@ -36,45 +36,55 @@ server <- function(input, output, session) {
                          )
   
   
-  sample_disease_gene_df <- eventReactive(input$time,
-                                         {
-                                           # If any, drop Nas from the metadata.
-                                           new_md <- RemoveNAs(metadata, input$time)
-                                           #only get those records that have an input factor
-                                           new_df <- subset(count_df,
-                                                            patient_ID 
-                                                            %in% new_md$patient_ID
-                                                            )
-                                           #incorporate phenotype column (placebo/treatment)
-                                           merge(new_df, 
-                                                 #-- need to fix this so it's not hardcoded!!
-                                                 new_md[c("patient_ID",
-                                                          "Phenotype", 
-                                                          "survival.status_bin")],
-                                                 on = "patient_ID"
-                                                 )
-                                           }
-                                         )
-  
+  reactive_no_NAs_metadata <- reactive({
+    new_md <- RemoveNAs(metadata, input$time)
+    new_df <- subset(count_df,
+                     patient_ID %in% new_md$patient_ID)
+    no_na_df <- merge(new_df, 
+          #-- need to fix this so it's not hardcoded!!
+          new_md[c("patient_ID",
+                   "Phenotype", 
+                   input$event,
+                   input$time)],
+          on = "patient_ID") %>%  rename(time = input$time, 
+                                         event = input$event)
+    no_na_df <- transform(no_na_df,
+                          time = as.numeric(time),
+                          event = as.numeric(event)
+                          )
+    no_na_df %>% mutate(SV_binary = ifelse(new_df[input$target_gene]>0, 1, 0))
+                    })
 
   ## output - histogram ##
   output$barplot <- renderPlot(
     {
+      new_df <- reactive_no_NAs_metadata()
       # get a df with counts
-      svs_gene_input_df <- hist_df(sample_disease_gene_df(), input)
-    ggplot(svs_gene_input_df,
-           aes(SV_count_per_gene, 
-               fill=Phenotype)) +
-      geom_histogram(binwidth=1) +
-      stat_bin(binwidth=1,
-               geom='text',
-               color='white',
-               aes(label=after_stat(count)),
-               position=position_stack(vjust = 0.5)) + 
-      xlab("Number of SVs in target gene") + ylab("Frequency")
-    }
+      svs_gene_input_df <- hist_df(new_df, input)
+      ggplot(svs_gene_input_df,
+             aes(SV_count_per_gene, 
+                 fill=Phenotype)) +
+        geom_histogram(binwidth=1) +
+        stat_bin(binwidth=1,
+                 geom='text',
+                 color='white',
+                 aes(label=after_stat(count)),
+                 position=position_stack(vjust = 0.5)) + 
+        xlab("Number of SVs in target gene") + ylab("Frequency")
+      }
     )
   
+  output$sc_no_sv <- renderPlot(
+    {
+      svs_gene_input_df <- reactive_no_NAs_metadata()
+      # subset those patients with no sv
+      no_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 0,]
+      survfit2(Surv(time, event)~ Phenotype, data = no_sv) %>%
+      ggsurvfit() + labs(x = "Days", y = "Overall survival probability") +
+        add_confidence_interval() + add_risktable()
+      }
+    )
+    
   # survival_ <- apply(vcf@fix,1,getGeneName)
   #       
   # ## output - Kaplan - Meier ##
