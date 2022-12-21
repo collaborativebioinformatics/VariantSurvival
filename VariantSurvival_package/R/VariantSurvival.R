@@ -35,16 +35,20 @@ VariantSurvival <- function(vcffile, metadatafile){
                        selected = FALSE
         ),
         selectInput(inputId = "target_gene",
-                    label = "Gene of interest",
+                    label = "Gene of interest:",
                     choices = NULL,
-                    selected = FALSE
+                    selected = "SETX"
         ),
         selectInput(inputId = "time",
                     label = "Select the time factor:",
                     choices = colnames(metadata),
                     selected = FALSE
         ),
-        br(),
+        selectInput(inputId = "event",
+                    label = "Select the event factor:",
+                    choices = colnames(metadata),
+                    selected = FALSE
+        ),
         selectInput(inputId = "phenotype",
                     label = "Select the phenotype factor:",
                     choices = colnames(metadata),
@@ -53,14 +57,12 @@ VariantSurvival <- function(vcffile, metadatafile){
       ),
       dashboardBody(
         fluidRow(
-          box(width = 6, #height = 600,
-              title = "Genes",
-              "Based on literature The following genes are associated
-              with the disease mechanism",
+          box(width = 7, #height = 600,
+              title = "TBC",
               br(), #linebreak
-              DT::dataTableOutput("geneslist")
+              plotOutput("sc_no_sv")
           ),
-          box(width = 6, #height = 600,
+          box(width = 5, #height = 600,
               title = "Structural Variant in selected gene",
               br(),
               plotOutput("barplot")
