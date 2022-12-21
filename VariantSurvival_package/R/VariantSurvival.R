@@ -14,7 +14,10 @@ VariantSurvival <- function(vcffile, metadatafile){
   # parse inputs
   vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
   metadata <- readxl::read_excel(metadatafile)
+  # remove empty extra lines
+  metadata <- na.omit(metadata)
   gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
+  rownames(gene_ids_table) <- gene_ids_table$ensembleID
   # create user interface layout
   ui <- fluidPage(
     dashboardPage(
@@ -60,8 +63,7 @@ VariantSurvival <- function(vcffile, metadatafile){
           box(width = 6, #height = 600,
               title = "Structural Variant in selected gene",
               br(),
-              plotOutput("barplot"),
-              downloadButton("download2plot", "Download as PNG")
+              plotOutput("barplot")
           )
         ),
         fluidRow(
