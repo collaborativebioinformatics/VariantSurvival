@@ -78,10 +78,39 @@ server <- function(input, output, session) {
     {
       svs_gene_input_df <- reactive_no_NAs_metadata()
       # subset those patients with no sv
-      no_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 0,]
-      survfit2(Surv(time, event)~ Phenotype, data = no_sv) %>%
-      ggsurvfit() + labs(x = "Days", y = "Overall survival probability") +
-        add_confidence_interval() + add_risktable()
+      without_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 0,]
+      with_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 1,]
+      sc_without <- survfit2(Surv(time, event)~Phenotype,data = with_sv)
+      sv_with <- survfit2(Surv(time, event)~Phenotype,data = without_sv)
+      surv_fit_list <- list("with SV"=sv_with,
+                            "without SV"=sc_without) 
+      ggsurvplot_combine(surv_fit_list,
+                         data=svs_gene_input_df,
+                         risk.table=TRUE,
+                         conf.int = FALSE,
+                         conf.int.style = "step",
+                         risk.table.y.text = FALSE,
+                         ggtheme = theme_light(),
+                         legend.labs =
+                           c(paste("with", input$target_gene, "- placeb"), 
+                             "with sv - treatment",
+                             "without sv - placebo",
+                             "without sv - treatment"),
+                         palette = c("royalblue4", 
+                                     "steelblue",
+                                     "seagreen3",
+                                     "turquoise3")
+      )
+      
+      # ggsurvplot_combine(surv_fit_list, 
+      #                    data = svs_gene_input_df,
+      #                    risk.table=TRUE,
+      #                    conf.int = FALSE,
+      #                    conf.int.style = "step")
+      # survfit2(Surv(time, event)~ Phenotype, data = patients_without) %>%
+      # ggsurvfit() + labs(x = "Years",
+      #                    y = "Overall survival probability") +
+      #   add_confidence_interval() + add_risktable()
       }
     )
     
