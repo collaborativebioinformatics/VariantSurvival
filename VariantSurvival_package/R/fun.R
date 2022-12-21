@@ -83,13 +83,6 @@ hist_df <- function(df,input){
                             input$target_gene,
                             input$phenotype)
                           ]
-  # svs_gene_input_df <- as.data.frame(
-  #   c(df["patient_ID"],
-  #     df["survival.status_bin"],
-  #     df[input$target_gene],
-  #     df[input$phenotype]
-  #   )
-  # )
   colnames(svs_gene_input_df) <- c('patient_ID',
                                    'SV_count_per_gene',
                                    'Phenotype')
