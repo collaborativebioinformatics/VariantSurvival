@@ -79,24 +79,45 @@ CountSVsDf <- function(ncol, nrow,
 #' @param input
 #' @return  
 hist_df <- function(df,input){
-  svs_gene_input_df <- as.data.frame(
-    c(df["patient_ID"] ,
-      df[input$target_gene],
-      df[input$phenotype]
-    )
-  )
+  svs_gene_input_df <- df[c("patient_ID",
+                            input$target_gene,
+                            input$phenotype)
+                          ]
+  # svs_gene_input_df <- as.data.frame(
+  #   c(df["patient_ID"],
+  #     df["survival.status_bin"],
+  #     df[input$target_gene],
+  #     df[input$phenotype]
+  #   )
+  # )
   colnames(svs_gene_input_df) <- c('patient_ID',
-                                   'SVs_number_per_gene',
+                                   'SV_count_per_gene',
                                    'Phenotype')
   
   svs_gene_input_df <- svs_gene_input_df %>%
     mutate(Phenotype = ifelse(Phenotype=="0",
                               "Placebo", 
                               "Treatment" )
-    )
+           )
   return(svs_gene_input_df)
 }
 
+#' `RemoveNAs` 
+#'
+#' @param info 
+#' @return   
+RemoveNAs <- function(df, time_col) {
+  entries <- df[[time_col]]
+  nas_entries <- is.na(entries)
+  NAs_entries <- entries=="NA"
+  if (sum(nas_entries) > 0){
+    return(df[!nas_entries,])
+    } else if (sum(NAs_entries) > 0){
+    return(df[!NAs_entries,])
+    } else {
+      return(df)
+    }
+}
 
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
