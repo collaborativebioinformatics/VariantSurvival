@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        r-version: ['4.0.5']
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Unix
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -y && sudo apt-get install -y libcurl4-openssl-dev libharfbuzz-dev libfribidi-dev
+
+      - name: Set up R ${{ matrix.r-version }}
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r-version }}
+          
+      - name: Install dependencies
+        run: |
+          install.packages("devtools")
+          library(devtools)
+        shell: Rscript {0}
+
+      - name: Install VariantSurvival
+        run: |
+          devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
+          library(VariantSurvival)
+        shell: Rscript {0}
