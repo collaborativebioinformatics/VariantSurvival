@@ -38,7 +38,7 @@ Note: All required packages will be installed automatically when installing "Var
 VariantSurvival run example:
 ```
 library(VariantSurvival)
-VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile= "metadata_file.xlsx")
+VariantSurvival::VariantSurvival(vcffile="merged.filtered.vcf", metadatafile= "metadata.xlsx")
 ```
 
 
