@@ -14,12 +14,6 @@ server <- function(input, output, session) {
   )
   # Update genes drop-down after disease input is given
   reactive_gene_list <- reactive({get_disease_gene_list(input$disease_n)})
-  ## output ##
-  # output$geneslist <- DT::renderDataTable(
-  #   datatable(reactive_gene_list(),
-  #             selection = 'none')
-  # )
-  
   disease_genes_names = gene_ids_table$GeneName
   sample_names = colnames(vcf@gt)[-1] # VCF genotype information
   
@@ -34,7 +28,6 @@ server <- function(input, output, session) {
                          genes_with_svs_in_sample,
                          vcf
                          )
-  
   
   reactive_no_NAs_metadata <- reactive({
     new_md <- RemoveNAs(metadata, input$time)
@@ -77,11 +70,13 @@ server <- function(input, output, session) {
   output$sc_no_sv <- renderPlot(
     {
       svs_gene_input_df <- reactive_no_NAs_metadata()
-      # subset those patients with no sv
+      # subset those patients with and without the SV
       without_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 0,]
       with_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 1,]
-      sc_without <- survfit2(Surv(time, event)~Phenotype,data = with_sv)
-      sv_with <- survfit2(Surv(time, event)~Phenotype,data = without_sv)
+      # generate survival curve objects for each group
+      sc_without <- survfit2(Surv(time, event)~Phenotype, data = with_sv)
+      sv_with <- survfit2(Surv(time, event)~Phenotype, data = without_sv)
+      # create a list and plot
       surv_fit_list <- list("with SV"=sv_with,
                             "without SV"=sc_without) 
       ggsurvplot_combine(surv_fit_list,
@@ -92,26 +87,16 @@ server <- function(input, output, session) {
                          risk.table.y.text = FALSE,
                          ggtheme = theme_light(),
                          legend.labs =
-                           c(paste("with", input$target_gene, "- placeb"), 
-                             "with sv - treatment",
-                             "without sv - placebo",
-                             "without sv - treatment"),
+                           c(paste("with", input$target_gene, "- placebo"), 
+                             paste("with", input$target_gene, "- treatment"),
+                             paste("without", input$target_gene, "- placebo"),
+                             paste("without", input$target_gene, "- treatment")
+                             ),
                          palette = c("royalblue4", 
                                      "steelblue",
                                      "seagreen3",
                                      "turquoise3")
       )
-      
-      # ggsurvplot_combine(surv_fit_list, 
-      #                    data = svs_gene_input_df,
-      #                    risk.table=TRUE,
-      #                    conf.int = FALSE,
-      #                    conf.int.style = "step")
-      # survfit2(Surv(time, event)~ Phenotype, data = patients_without) %>%
-      # ggsurvfit() + labs(x = "Years",
-      #                    y = "Overall survival probability") +
-      #   add_confidence_interval() + add_risktable()
-      }
     )
     
   # survival_ <- apply(vcf@fix,1,getGeneName)
