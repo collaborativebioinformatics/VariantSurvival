@@ -15,87 +15,79 @@ VariantSurvival <- function(vcffile, metadatafile){
   # remove empty extra lines
   metadata <- na.omit(metadata)
   # create user interface layout
-  ui <- fluidPage(
-    dashboardPage(
-      dashboardHeader(title = "VariantSurvival"),
-      dashboardSidebar(
-        selectizeInput(inputId ="disease_n",
-                       label = "Diseases",
-                       choices = c("Amyotrophic lateral sclerosis"=1,
-                                   "Parkinson's disease"=2,
-                                   "Alzheimer's disease"=3,
-                                   "Friedreich ataxia"=4,
-                                   "Huntington's disease"=5,
-                                   "Lewy body disease"=6,
-                                   "Spinal muscular atrophy"=7),
-                       selected = FALSE
-        ),
-        selectInput(inputId = "target_gene",
-                    label = "Gene of interest:",
-                    choices = NULL,
-                    selected = "SETX"
-        ),
-        selectInput(inputId = "time",
-                    label = "Select the time factor:",
-                    choices = colnames(metadata),
-                    selected = FALSE
-        ),
-        selectInput(inputId = "event",
-                    label = "Select the event factor:",
-                    choices = colnames(metadata),
-                    selected = FALSE
-        ),
-        selectInput(inputId = "phenotype",
-                    label = "Select the phenotype factor:",
-                    choices = colnames(metadata),
-                    selected = FALSE
-        )
-      ),
-      dashboardBody(
-        fluidRow(
-          box(width = 7, #height = 600,
-              title = "TBC",
-              br(), #linebreak
-              plotOutput("sc_no_sv")
-          ),
-          box(width = 5, #height = 600,
-              title = "Structural Variant in selected gene",
-              br(),
-              plotOutput("barplot")
-          )
-        ),
-        fluidRow(
-          tabBox(width = 6,# height = 600,
-                 tabPanel(title = "Survival Plot",
-                          h6("Phenotype 0 = Placebo ; 1= Treatment"),
-                          plotOutput("plot2"),
-                          downloadButton("download2plot", "Download as PNG")
+
+
+  ui <- bootstrapPage(
+    navbarPage(theme = shinytheme("flatly"),
+               collapsible = TRUE,
+               HTML('<a style="text-decoration:none;
+               cursor:default;
+                    color:#FFFFFF;
+                    " class="active" href="#">VariantSurvival</a>'),
+               id="nav",
+               windowTitle ="VariantSurvival",
+               sidebarLayout(
+                 sidebarPanel(
+                   pickerInput(inputId ="disease_n",
+                               label = "Diseases",
+                               choices = c("Amyotrophic lateral sclerosis"=1,
+                                           "Parkinson's disease"=2,
+                                           "Alzheimer's disease"=3,
+                                           "Friedreich ataxia"=4,
+                                           "Huntington's disease"=5,
+                                           "Lewy body disease"=6,
+                                           "Spinal muscular atrophy"=7),
+                               selected = FALSE
+                               ),
+                               span(shiny::tags$i(
+                               h6("Based on literature the following genes are
+                               associated with the disease mechanism")
+                               ),
+                               style="color:#045a8d"),
+                   selectInput(inputId = "target_gene",
+                               label = "Gene of interest:",
+                               choices = NULL,
+                               selected = FALSE
+                               ),
+                   selectInput("time",
+                               label = "Select the time factor:",
+                               choices = colnames(metadata)
+                               ),
+                   selectInput("phenotype",
+                               label = "Select the phenotype factor:",
+                               choices = colnames(metadata)
+                               ),
+                   selectInput("event",
+                               label = "Select the alive/dead factor:",
+                               choices = colnames(metadata)
+                               )
+                   ),
+                 mainPanel(
+                   shinycssloaders::withSpinner(plotOutput("histogram"))
+                   )
                  ),
-                 tabPanel(title = "Survival Plot according to SV count",
-                          h6("starta 0 = Placebo ; 1= Treatment"),
-                          plotOutput("plot3"),
-                          downloadButton("download3plot", "Download as PNG")
-                 ),
-                 tabPanel( title = "Competing risks regression",
-                           DT::dataTableOutput("table3"),
-                           "HR = Hazard Ratio, CI = Confidence Interval")
-          ),
-          tabBox(width = 6, #height = 700,
-                 tabPanel(title = "Kaplan-Meier plot",
-                          plotOutput("plot1"),
-                          downloadButton("download1plot", "Download as PNG")
-                 ),
-                 tabPanel(title = "x-year survival time time",
-                          DT::dataTableOutput("table1"),
-                          "CI = Confidence Interval"),
-                 tabPanel(title = "median survival time",
-                          DT::dataTableOutput("table2"),
-                          "CI = Confidence Interval")
-          )
-        )
-      )
+               sidebarLayout(
+                 sidebarPanel(
+                   span(shiny::tags$i(h6("add text here")),
+                        style="color:#045a8d"),
+                   DT::dataTableOutput("table1"),
+                   br(),
+                   br(),
+                   span(shiny::tags$i( h6("add text here")),
+                        style="color:#045a8d"),
+                   DT::dataTableOutput("table2"),
+                   br(),
+                   br(),
+                   span(shiny::tags$i(h6("add text here")),
+                        style="color:#045a8d"),
+                   DT::dataTableOutput("table3")
+                   ),
+                 mainPanel(
+                   shinycssloaders::withSpinner(plotOutput("plot_km"))
+                   )
+                 )
+               )
     )
-  )
 
   server <- function(input, output, session) {
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
@@ -147,7 +139,7 @@ VariantSurvival <- function(vcffile, metadatafile){
     })
 
     ## output - histogram ##
-    output$barplot <- renderPlot(
+    output$histogram <- renderPlot(
       {
         new_df <- reactive_no_NAs_metadata()
         # get a df with counts
@@ -165,7 +157,7 @@ VariantSurvival <- function(vcffile, metadatafile){
       }
     )
 
-    output$sc_no_sv <- renderPlot(
+    output$plot_km <- renderPlot(
       {
         svs_gene_input_df <- reactive_no_NAs_metadata()
         # subset those patients with and without the SV
@@ -204,10 +196,11 @@ VariantSurvival <- function(vcffile, metadatafile){
 
 
 ############# Helper functions ###################
-
-
 install_load_requirements<- function() {
   if (!require("shiny")) install.packages("shiny")
+  if (!require("shinyWidgets")) install.packages("shinyWidgets")
+  if (!require("shinythemes")) install.packages("shinythemes")
+  if (!require("shinycssloaders")) install.packages("shinycssloaders")
   if (!require("shinydashboard")) install.packages("shinydashboard")
   if (!require("DT")) install.packages("DT")
   if (!require("dplyr")) install.packages("dplyr")
@@ -222,6 +215,9 @@ install_load_requirements<- function() {
   if (!require("gtsummary")) install.packages("gtsummary")
   library(shiny)
   library(shinydashboard)
+  library(shinythemes)
+  library(shinyWidgets)
+  library(shinycssloaders)
   library(DT)
   library(dplyr)
   library(tidyverse)
@@ -236,9 +232,11 @@ install_load_requirements<- function() {
   library(gtsummary)
 }
 
-#' `get_disease_gene_list`
-#'
-#' @param input_disease
+
+#' `get_disease_gene_list` parses an existing .txt
+#' file containing all known target genes associated
+#' with the selected disease.
+#' @param input_disease: input disease selection
 #' @return  genes_list
 get_disease_gene_list <- function(input_disease) {
   if(as.numeric(input_disease == 1)){
@@ -267,6 +265,7 @@ getGeneName <- function(info, geneIDS) {
   x <- str_extract(info['INFO'], "(?<=ensembl_gene_id=)[^;]+")
   return(geneIDS[x,]$GeneName)
 }
+
 
 #' `CountSVsDf`
 #'
@@ -333,9 +332,11 @@ hist_df <- function(df,input){
   return(svs_gene_input_df)
 }
 
-#' `RemoveNAs`
-#'
-#' @param info
+
+#' `RemoveNAs` removes all rows with Na
+#' entries in the time factor column.
+#' @param df: metadata data frame
+#' @param time_col: time factor input
 #' @return
 RemoveNAs <- function(df, time_col) {
   entries <- df[[time_col]]
@@ -349,6 +350,7 @@ RemoveNAs <- function(df, time_col) {
     return(df)
   }
 }
+
 
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
