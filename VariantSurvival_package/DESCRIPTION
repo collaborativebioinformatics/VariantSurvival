@@ -26,3 +26,5 @@ Imports:
     vcfR
 Depends: 
     tidyverse
+Suggests:
+    shinytest
