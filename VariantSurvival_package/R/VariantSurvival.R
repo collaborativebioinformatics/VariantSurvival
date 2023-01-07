@@ -266,6 +266,7 @@ install_load_requirements<- function() {
   if (!require("survminer")) install.packages("survminer")
   if (!require("lubridate")) install.packages("lubridate")
   if (!require("gtsummary")) install.packages("gtsummary")
+  if (!require("tibble")) install.packages("tibble")
   library(shiny)
   library(shinydashboard)
   library(shinythemes)
@@ -283,6 +284,7 @@ install_load_requirements<- function() {
   library(survminer)
   library(lubridate)
   library(gtsummary)
+  library(tibble)
 }
 
 
