@@ -30,13 +30,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                  sidebarPanel(
                    pickerInput(inputId ="disease_n",
                                label = "Diseases",
-                               choices = c("Amyotrophic lateral sclerosis"=1,
-                                           "Parkinson's disease"=2,
-                                           "Alzheimer's disease"=3,
-                                           "Friedreich ataxia"=4,
-                                           "Huntington's disease"=5,
-                                           "Lewy body disease"=6,
-                                           "Spinal muscular atrophy"=7),
+                               choices = colnames(disease_gene),
                                selected = FALSE
                                ),
                                span(shiny::tags$i(
@@ -233,27 +227,16 @@ install_load_requirements<- function() {
 }
 
 
-#' `get_disease_gene_list` parses an existing .txt
+#' `get_disease_gene_list` parses an existing excel 
 #' file containing all known target genes associated
 #' with the selected disease.
 #' @param input_disease: input disease selection
 #' @return  genes_list
 get_disease_gene_list <- function(input_disease) {
-  if(as.numeric(input_disease == 1)){
-    genes_list  <-read_csv("disease_gene/ALS.txt")
-  }
-  else if(as.numeric(input_disease == 2)){
-    genes_list  <-read_csv("disease_gene/PD.txt")
-  }
-  else if(as.numeric(input_disease == 3)) {
-    genes_list  <-read_csv("disease_gene/AD.txt")
-  }
-  else if(as.numeric(input_disease == 4)) {
-    genes_list  <-read_csv("disease_gene/FD.txt")
-  }
-  else {
-    genes_list  <-read_csv("disease_gene/DLB.txt")
-  }
+  disease_gene_select <- disease_gene[,input$disease_n]
+  colnames(disease_gene_select)[1] = "gene"
+  genes_list <- disease_gene_select[1]
+  genes_list <- na.omit(genes_list)
   return(genes_list)
 }
 
