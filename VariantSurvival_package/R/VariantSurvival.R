@@ -15,6 +15,7 @@ VariantSurvival <- function(vcffile, metadatafile){
   # remove empty extra lines
   metadata <- na.omit(metadata)
   # create user interface layout
+  disease_gene <- read_excel("disease_gene.xlsx")
 
 
   ui <- bootstrapPage(
