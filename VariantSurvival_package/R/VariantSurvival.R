@@ -57,6 +57,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                )
                    ),
                  mainPanel(
+                   span(shiny::tags$i(h2("Structural Variants Distribution")),
                    shinycssloaders::withSpinner(plotOutput("histogram"))
                    )
                  ),
@@ -77,6 +78,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                    DT::dataTableOutput("table3")
                    ),
                  mainPanel(
+                   span(shiny::tags$i(h2("Kaplan–Meier")), 
                    shinycssloaders::withSpinner(plotOutput("plot_km"))
                    )
                  )
