@@ -205,6 +205,42 @@ VariantSurvival <- function(vcffile, metadatafile){
                                        "turquoise3")
         )
       },,height = 900)
+    # 1-year survival time
+    
+    output$table1 <- DT::renderDataTable({
+      svs_gene_input_df <- reactive_no_NAs_metadata()
+      
+      x<- survfit(Surv(time, event)~Phenotype, data = svs_gene_input_df ) %>%
+        tbl_survfit(
+          times = 365.25,
+          label_header = "**1-year survival (95% CI)**"
+        )
+      t <-as_tibble(x)
+      t
+    })
+    # Median survival time
+    output$table2 <- DT::renderDataTable({
+      svs_gene_input_df <- reactive_no_NAs_metadata()
+      
+      x2 <-  survfit(Surv(time, event)~Phenotype, data = svs_gene_input_df ) %>%
+        gtsummary::tbl_survfit(
+          probs = 0.5,
+          label_header = "**Median survival (95% CI)**"
+        )
+      t2 <- as_tibble(x2)
+      t2
+    })
+    #regression table
+    
+    output$table3 <- DT::renderDataTable({
+      svs_gene_input_df <- reactive_no_NAs_metadata()
+      
+      x3 <- coxph(Surv(time, event)~Phenotype, data = svs_gene_input_df ) %>%
+        tbl_regression(exp = TRUE)
+      
+      t3 <-as_tibble(x3)
+      t3
+    })
   }
 
   # Run the application
