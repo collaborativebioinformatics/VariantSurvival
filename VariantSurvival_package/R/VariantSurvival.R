@@ -181,17 +181,28 @@ VariantSurvival <- function(vcffile, metadatafile){
                            conf.int = FALSE,
                            conf.int.style = "step",
                            risk.table.y.text = FALSE,
-                           ggtheme = theme_light(),
-                           legend.labs =
-                             c(paste("with", input$target_gene, "- placebo"),
-                               paste("with", input$target_gene, "- treatment"),
-                               paste("without", input$target_gene, "- placebo"),
-                               paste("without", input$target_gene, "- treatment")
+                           ggtheme = theme(
+                             
+                             text = element_text(size = 20),
+                             panel.background = element_rect(fill = "white",
+                                                             colour = "black"
                              ),
-                           palette = c("royalblue4",
-                                                   "steelblue",
-                                                   "seagreen3",
-                                                   "turquoise3")
+                             panel.border = element_blank(),
+                             panel.grid.major = element_blank(),
+                             panel.grid.minor = element_blank()#change font size of legend title   
+                           ), #♣ NEW + SIZE
+                           legend.title = "Group", #♣ NEW 
+                           legend = "right", #♣ NEW 
+                           legend.labs = 
+                             c(paste("with", input$target_gene, "Variant - placebo"), #NEW = added "variant"
+                               paste("with", input$target_gene, "Variant - treatment"),#NEW = added "variant"
+                               paste("without", input$target_gene, "Variant - placebo"),#NEW = added "variant"
+                               paste("without", input$target_gene, "Variant - treatment")#NEW = added "variant"
+                             ),
+                           palette = c("Violetred4",
+                                       "steelblue",
+                                       "Violetred2",
+                                       "turquoise3")
         )
       })
   }
