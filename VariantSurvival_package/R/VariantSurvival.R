@@ -34,7 +34,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                selected = FALSE
                                ),
                                span(shiny::tags$i(
-                               h6("Based on literature the following genes are
+                               h4("Based on literature the following genes are
                                associated with the disease mechanism")
                                ),
                                style="color:#045a8d"),
@@ -48,7 +48,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                choices = colnames(metadata)
                                ),
                    selectInput("phenotype",
-                               label = "Select the phenotype factor:",
+                               label = "Select the study group / phenotype factor:",
                                choices = colnames(metadata)
                                ),
                    selectInput("event",
