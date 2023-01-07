@@ -204,7 +204,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                        "Violetred2",
                                        "turquoise3")
         )
-      })
+      },,height = 900)
   }
 
   # Run the application
