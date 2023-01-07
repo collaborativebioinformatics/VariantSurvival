@@ -149,7 +149,17 @@ VariantSurvival <- function(vcffile, metadatafile){
                    color='white',
                    aes(label=after_stat(count)),
                    position=position_stack(vjust = 0.5)) +
-          xlab("Number of SVs in target gene") + ylab("Frequency")
+          xlab("Number of SVs in target gene") + ylab("Frequency")+
+        theme(                                             # All font sizes
+            text = element_text(size = 20),
+            panel.background = element_rect(fill = "white",
+                                            colour = "black"),
+            panel.border = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank()#change font size of legend title   
+            
+          )+
+          scale_fill_manual(values=c("#8B1D4D", "#5275A6")) #  bins color
       }
     )
 
