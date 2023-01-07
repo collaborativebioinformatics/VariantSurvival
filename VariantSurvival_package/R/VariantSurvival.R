@@ -63,17 +63,17 @@ VariantSurvival <- function(vcffile, metadatafile){
                  ),
                sidebarLayout(
                  sidebarPanel(
-                   span(shiny::tags$i(h6("add text here")),
+                   span(shiny::tags$i(h3("1-year survival time")),
                         style="color:#045a8d"),
                    DT::dataTableOutput("table1"),
                    br(),
                    br(),
-                   span(shiny::tags$i( h6("add text here")),
+                   span(shiny::tags$i(h3("Median survival time")),
                         style="color:#045a8d"),
                    DT::dataTableOutput("table2"),
                    br(),
                    br(),
-                   span(shiny::tags$i(h6("add text here")),
+                   span(shiny::tags$i(h3("Cox regression table")),
                         style="color:#045a8d"),
                    DT::dataTableOutput("table3")
                    ),
