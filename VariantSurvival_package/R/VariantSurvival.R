@@ -191,20 +191,20 @@ VariantSurvival <- function(vcffile, metadatafile){
                              panel.grid.major = element_blank(),
                              panel.grid.minor = element_blank()#change font size of legend title   
                            ), #♣ NEW + SIZE
-                           legend.title = "Group", #♣ NEW 
-                           legend = "right", #♣ NEW 
+                           legend.title = "Group",
+                           legend = "right",
                            legend.labs = 
-                             c(paste("with", input$target_gene, "Variant - placebo"), #NEW = added "variant"
-                               paste("with", input$target_gene, "Variant - treatment"),#NEW = added "variant"
-                               paste("without", input$target_gene, "Variant - placebo"),#NEW = added "variant"
-                               paste("without", input$target_gene, "Variant - treatment")#NEW = added "variant"
+                             c(paste("with", input$target_gene, "Variant - placebo"), 
+                               paste("with", input$target_gene, "Variant - treatment"),
+                               paste("without", input$target_gene, "Variant - placebo"),
+                               paste("without", input$target_gene, "Variant - treatment")
                              ),
                            palette = c("Violetred4",
                                        "steelblue",
                                        "Violetred2",
                                        "turquoise3")
         )
-      },,height = 900)
+      },height = 900)
     # 1-year survival time
     
     output$table1 <- DT::renderDataTable({
