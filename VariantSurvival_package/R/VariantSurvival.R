@@ -7,7 +7,7 @@
 #' @export
 #'
 
-function(vcffile, metadatafile){
+VariantSurvival <- function(vcffile, metadatafile){
   install_load_requirements()
   # parse inputs
   vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
@@ -71,27 +71,31 @@ function(vcffile, metadatafile){
                    )
                  ),
                  mainPanel(
-                   shinycssloaders::withSpinner(plotOutput("histogram"))
+                   span(shiny::tags$i(h2("Structural Variants Distribution")),
+                        shinycssloaders::withSpinner(plotOutput("histogram"))
+                        )
                  )
                ),
                sidebarLayout(
                  sidebarPanel(
-                   span(shiny::tags$i(h6("add text here")),
+                   span(shiny::tags$i(h3("1-year survival time")),
                         style="color:#045a8d"),
                    DT::dataTableOutput("table1"),
                    br(),
                    br(),
-                   span(shiny::tags$i( h6("add text here")),
+                   span(shiny::tags$i(h3("Median survival time")),
                         style="color:#045a8d"),
                    DT::dataTableOutput("table2"),
                    br(),
                    br(),
-                   span(shiny::tags$i(h6("add text here")),
+                   span(shiny::tags$i(h3("Cox regression table")),
                         style="color:#045a8d"),
                    DT::dataTableOutput("table3")
                  ),
                  mainPanel(
-                   shinycssloaders::withSpinner(plotOutput("plot_km"))
+                   span(shiny::tags$i(h2("Kaplan–Meier")),
+                        shinycssloaders::withSpinner(plotOutput("plot_km"))
+                        )
                  )
                )
     )
@@ -168,56 +172,95 @@ function(vcffile, metadatafile){
                    color='white',
                    aes(label=after_stat(count)),
                    position=position_stack(vjust = 0.5)) +
-          xlab("Number of SVs in target gene") + ylab("Frequency")
-      }
-    )
+          xlab("Number of SVs in target gene") + ylab("Frequency") +
+          theme(text = element_text(size = 20),
+                panel.background = element_rect(fill = "white",colour = "black"),
+                panel.border = element_blank(),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank() #change font size of legend title
+                ) +
+          scale_fill_manual(values=c("#8B1D4D", "#5275A6")) #  bins color
+        }
+      )
 
-    output$plot_km <- renderPlot({
+    output$plot_km <- renderPlot(
+      {
+        svs_gene_input_df <- reactive_no_NAs_metadata()
+        # subset those patients with and without the SV
+        without_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 0,]
+        with_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 1,]
+        # generate survival curve objects for each group
+        sc_without <- survfit2(Surv(time, event)~trial_group, data = with_sv)
+        sv_with <- survfit2(Surv(time, event)~trial_group, data = without_sv)
+        # create a list and plot
+        surv_fit_list <- list("with SV"=sv_with,
+                              "without SV"=sc_without)
+        ggsurvplot_combine(surv_fit_list,
+                           data=svs_gene_input_df,
+                           risk.table=TRUE,
+                           conf.int = FALSE,
+                           conf.int.style = "step",
+                           risk.table.y.text = FALSE,
+                           ggtheme = theme(
+
+                             text = element_text(size = 20),
+                             panel.background = element_rect(fill = "white",
+                                                             colour = "black"
+                             ),
+                             panel.border = element_blank(),
+                             panel.grid.major = element_blank(),
+                             panel.grid.minor = element_blank()#change font size of legend title
+                           ), #♣ NEW + SIZE
+                           legend.title = "Group",
+                           legend = "right",
+                           legend.labs =
+                             c(paste("with", input$target_gene, "variant - placebo"),
+                               paste("with", input$target_gene, "variant - treatment"),
+                               paste("without", input$target_gene, "variant - placebo"),
+                               paste("without", input$target_gene, "variant - treatment")
+                             ),
+                           palette = c("Violetred4",
+                                       "steelblue",
+                                       "Violetred2",
+                                       "turquoise3")
+        )
+      },height = 900)
+
+    output$table1 <- DT::renderDataTable({
       svs_gene_input_df <- reactive_no_NAs_metadata()
-      survfit2(Surv(time, event)~ trial_group + SV_binary,
-               data = svs_gene_input_df) %>%
-        ggsurvfit() +
-        labs(
-          x = "years",
-          y = "Overall survival probability"
-        ) +
-        theme(legend.position = c(0.85, 0.85))+
-        add_confidence_interval() +
-        add_risktable()
+
+      x<- survfit(Surv(time, event)~trial_group, data = svs_gene_input_df ) %>%
+        tbl_survfit(
+          times = 365.25,
+          label_header = "**1-year survival (95% CI)**"
+        )
+      t <-as_tibble(x)
+      t
+    })
+    # Median survival time
+    output$table2 <- DT::renderDataTable({
+      svs_gene_input_df <- reactive_no_NAs_metadata()
+
+      x2 <-  survfit(Surv(time, event)~trial_group, data = svs_gene_input_df ) %>%
+        gtsummary::tbl_survfit(
+          probs = 0.5,
+          label_header = "**Median survival (95% CI)**"
+        )
+      t2 <- as_tibble(x2)
+      t2
+    })
+    #regression table
+
+    output$table3 <- DT::renderDataTable({
+      svs_gene_input_df <- reactive_no_NAs_metadata()
+
+      x3 <- coxph(Surv(time, event)~trial_group, data = svs_gene_input_df ) %>%
+        tbl_regression(exp = TRUE)
+
+      t3 <-as_tibble(x3)
+      t3
     })
 
-
-    # output$plot_km <- renderPlot(
-    #   {
-    #     svs_gene_input_df <- reactive_no_NAs_metadata()
-    #     # subset those patients with and without the SV
-    #     without_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 0,]
-    #     with_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 1,]
-    #     # generate survival curve objects for each group
-    #     sc_without <- survfit2(Surv(time, event)~Phenotype, data = with_sv)
-    #     sv_with <- survfit2(Surv(time, event)~Phenotype, data = without_sv)
-    #     # create a list and plot
-    #     surv_fit_list <- list("with SV"=sv_with,
-    #                           "without SV"=sc_without)
-    #     ggsurvplot_combine(surv_fit_list,
-    #                        data=svs_gene_input_df,
-    #                        risk.table=TRUE,
-    #                        conf.int = FALSE,
-    #                        conf.int.style = "step",
-    #                        risk.table.y.text = FALSE,
-    #                        ggtheme = theme_light(),
-    #                        legend.labs =
-    #                          c(paste("with", input$target_gene, "- placebo"),
-    #                            paste("with", input$target_gene, "- treatment"),
-    #                            paste("without", input$target_gene, "- placebo"),
-    #                            paste("without", input$target_gene, "- treatment")
-    #                          ),
-    #                        palette = c("royalblue4",
-    #                                                "steelblue",
-    #                                                "seagreen3",
-    #                                                "turquoise3")
-    #     )
-    #   })
   }
 
   # Run the application
