@@ -130,17 +130,19 @@ function(vcffile, metadatafile){
                              genes_with_svs_in_sample,
                              vcf,
                              input$ids)
-      new_md <- RemoveNAs(metadata, input$time)  %>% rename(ids = input$ids)
+      new_md <- (RemoveNAs(metadata, input$time)
+                 %>% rename(ids = input$ids,
+                            trial_group = input$group,
+                            time = input$time,
+                            event = input$event)
+                 )
       new_df <- (subset(count_df, ids %in% new_md$ids)
-                 %>% rename(SV_count_per_gene = input$target_gene))
-      no_na_df <- merge(new_df,
-                        new_md[c("ids",
-                                 input$group,
-                                 input$event,
-                                 input$time)],
-                        on = "ids") %>% rename(trial_group = input$group,
-                                               time = input$time,
-                                               event = input$event)
+                 %>% rename(SV_count_per_gene = input$target_gene)
+                 )
+      no_na_df <- merge(new_df, new_md[c("ids",
+                                         "trial_group",
+                                         "event",
+                                         "time")], on = "ids")
       no_na_df <- transform(no_na_df,
                             time = as.numeric(time),
                             event = as.numeric(event),
@@ -148,8 +150,8 @@ function(vcffile, metadatafile){
       )
       no_na_df <- (no_na_df
                    %>% mutate(SV_binary = ifelse(new_df$SV_count_per_gene>0, 1, 0))
-      )
-    })
+                   )
+      })
 
     ## output - histogram ##
     output$histogram <- renderPlot(
