@@ -78,7 +78,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                    DT::dataTableOutput("table3")
                    ),
                  mainPanel(
-                   span(shiny::tags$i(h2("Kaplan–Meier")), 
+                   span(shiny::tags$i(h2("Kaplan–Meier"))), 
                    shinycssloaders::withSpinner(plotOutput("plot_km"))
                    )
                  )
