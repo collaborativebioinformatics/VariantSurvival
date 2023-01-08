@@ -14,8 +14,8 @@ VariantSurvival <- function(vcffile, metadatafile){
   metadata <- readxl::read_excel(metadatafile)
   # remove empty extra lines
   metadata <- na.omit(metadata)
+  disease_gene <- read_excel("disease_gene.xlsx")
   # create user interface layout
-
 
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
@@ -30,52 +30,44 @@ VariantSurvival <- function(vcffile, metadatafile){
                  sidebarPanel(
                    pickerInput(inputId ="disease_n",
                                label = "Diseases",
-                               choices = c("Amyotrophic lateral sclerosis"=1,
-                                           "Parkinson's disease"=2,
-                                           "Alzheimer's disease"=3,
-                                           "Friedreich ataxia"=4,
-                                           "Huntington's disease"=5,
-                                           "Lewy body disease"=6,
-                                           "Spinal muscular atrophy"=7),
-                               selected = FALSE
-                   ),
+                               choices = colnames(disease_gene)
+                               ),
                    selectInput(inputId = "ids",
                                label = "Select the identifier factor:",
                                choices = colnames(metadata)
-                   ),
+                               ),
                    span(shiny::tags$i(
                      h6("Based on literature the following genes are
                       associated with the disease mechanism")
-                   ),
-                   style="color:#045a8d"),
+                     ),
+                     style="color:#045a8d"),
                    selectInput(inputId = "target_gene",
                                label = "Gene of interest:",
                                choices = NULL,
                                selected = FALSE
-                   ),
+                               ),
                    selectInput(inputId = "time",
                                label = "Select the time factor:",
                                choices = colnames(metadata)
-                   ),
+                               ),
                    span(shiny::tags$i(
-                     h6("The following selections must refer to binary columns")
-                   ),
-                   style="color:#045a8d"),
+                     h6("The following selections must refer to binary columns")),
+                     style="color:#045a8d"),
                    selectInput(inputId = "group",
                                label = "Select the clinical trial groups factor:",
                                choices = colnames(metadata)
-                   ),
+                               ),
                    selectInput(inputId = "event",
                                label = "Select the alive/dead factor:",
                                choices = colnames(metadata)
-                   )
-                 ),
+                               )
+                   ),
                  mainPanel(
                    span(shiny::tags$i(h2("Structural Variants Distribution")),
                         shinycssloaders::withSpinner(plotOutput("histogram"))
                         )
-                 )
-               ),
+                   )
+                 ),
                sidebarLayout(
                  sidebarPanel(
                    span(shiny::tags$i(h3("1-year survival time")),
@@ -96,10 +88,10 @@ VariantSurvival <- function(vcffile, metadatafile){
                    span(shiny::tags$i(h2("Kaplan–Meier")),
                         shinycssloaders::withSpinner(plotOutput("plot_km"))
                         )
+                   )
                  )
                )
     )
-  )
 
   server <- function(input, output, session) {
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
@@ -107,7 +99,10 @@ VariantSurvival <- function(vcffile, metadatafile){
     # get disease_n input and update the genes list accordingly
     observeEvent(input$disease_n,
                  {
-                   genes_list = c(get_disease_gene_list(input$disease_n))
+                   print(input$disease_n)
+                   genes_list = c(get_disease_gene_list(disease_gene,
+                                                        input$disease_n))
+                   print(genes_list)
                    updateSelectizeInput(session,
                                         input = "target_gene",
                                         choices = genes_list,
@@ -115,7 +110,8 @@ VariantSurvival <- function(vcffile, metadatafile){
                  }
     )
     # Update genes drop-down after disease input is given
-    reactive_gene_list <- reactive({get_disease_gene_list(input$disease_n)})
+    reactive_gene_list <- reactive({get_disease_gene_list(disease_gene,
+                                                          input$disease_n)})
 
     reactive_no_NAs_metadata <- reactive({
       disease_genes_names = gene_ids_table$GeneName
@@ -311,24 +307,13 @@ install_load_requirements<- function() {
 #' with the selected disease.
 #' @param input_disease: input disease selection
 #' @return  genes_list
-get_disease_gene_list <- function(input_disease) {
-  if(as.numeric(input_disease == 1)){
-    genes_list  <-read_csv("disease_gene/ALS.txt")
-  }
-  else if(as.numeric(input_disease == 2)){
-    genes_list  <-read_csv("disease_gene/PD.txt")
-  }
-  else if(as.numeric(input_disease == 3)) {
-    genes_list  <-read_csv("disease_gene/AD.txt")
-  }
-  else if(as.numeric(input_disease == 4)) {
-    genes_list  <-read_csv("disease_gene/FD.txt")
-  }
-  else {
-    genes_list  <-read_csv("disease_gene/DLB.txt")
-  }
-  return(genes_list)
+get_disease_gene_list <- function(disease_gene, input_disease) {
+  genes_list <-( na.omit(disease_gene[,input_disease])
+                 %>% rename(genes = input_disease))
+  return(genes_list$genes)
 }
+
+
 
 #' `getGeneName`
 #' @param info
