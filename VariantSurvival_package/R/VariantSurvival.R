@@ -198,15 +198,16 @@ VariantSurvival <- function(vcffile, metadatafile){
                            conf.int.style = "step",
                            risk.table.y.text = FALSE,
                            ggtheme = theme(
-
                              text = element_text(size = 20),
                              panel.background = element_rect(fill = "white",
                                                              colour = "black"
                              ),
-                             panel.border = element_blank(),
-                             panel.grid.major = element_blank(),
-                             panel.grid.minor = element_blank()#change font size of legend title
-                           ), #♣ NEW + SIZE
+                             # panel.border = element_blank(),
+                             # panel.grid.major = element_blank(),
+                             # panel.grid.minor = element_blank(),
+                             panel.grid.major.y = element_line(),
+                             panel.grid.minor.y = element_line()
+                           ),
                            legend.title = "Group",
                            legend = "right",
                            legend.labs =
@@ -214,7 +215,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                paste("with", input$target_gene, "variant - treatment"),
                                paste("without", input$target_gene, "variant - placebo"),
                                paste("without", input$target_gene, "variant - treatment")
-                             ),
+                               ),
                            palette = c("Violetred4",
                                        "steelblue",
                                        "Violetred2",
