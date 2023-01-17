@@ -69,11 +69,43 @@ VariantSurvival <- function(vcffile, metadatafile){
                    ),
                  mainPanel(
                    span(shiny::tags$i(h2("Structural Variants Distribution")),
-                        shinycssloaders::withSpinner(plotOutput("histogram"))
-                        ),
+                        shinycssloaders::withSpinner(plotOutput(outputId = "histogram",
+                                                                width = "100%"))),
                    br()
                    )
-                 ),
+                 )
+               #,
+               # sidebarLayout(
+               #   sidebarPanel(
+               #     span(shiny::tags$i(h3("1-year survival time")),
+               #          style="color:#045a8d"),
+               #     DT::dataTableOutput("table1"),
+               #     br(),
+               #     br(),
+               #     span(shiny::tags$i(h3("Median survival time")),
+               #          style="color:#045a8d"),
+               #     DT::dataTableOutput("table2"),
+               #     br(),
+               #     br(),
+               #     span(shiny::tags$i(h3("Cox regression table")),
+               #          style="color:#045a8d"),
+               #     DT::dataTableOutput("table3")
+               #   ),
+               #   mainPanel(
+               #     span(shiny::tags$i(h2("Kaplan–Meier")),
+               #          shinycssloaders::withSpinner(plotOutput("plot_km"))
+               #          )
+               #     )
+               #   )
+               ),
+    navbarPage(theme = shinytheme("flatly"),
+               collapsible = TRUE,
+               HTML('<a style="text-decoration:none;
+               cursor:default;
+                    color:#FFFFFF;
+                    " class="active" href="#">SurvivalAnalysis</a>'),
+               id="nev",
+               windowTitle ="SurvivalAnalysis",
                sidebarLayout(
                  sidebarPanel(
                    span(shiny::tags$i(h3("1-year survival time")),
@@ -92,8 +124,8 @@ VariantSurvival <- function(vcffile, metadatafile){
                  ),
                  mainPanel(
                    span(shiny::tags$i(h2("Kaplan–Meier")),
-                        shinycssloaders::withSpinner(plotOutput("plot_km"))
-                        )
+                        shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
+                                                                width = "100%")))
                    )
                  )
                )
@@ -148,7 +180,8 @@ VariantSurvival <- function(vcffile, metadatafile){
       no_na_df <- merge(new_df, new_md[c("ids",
                                          "trial_group",
                                          "event",
-                                         "time")], on = "ids")
+                                         "time")],
+                        on = "ids")
       no_na_df <- transform(no_na_df,
                             time = as.numeric(time),
                             event = as.numeric(event),
@@ -183,7 +216,9 @@ VariantSurvival <- function(vcffile, metadatafile){
                 ) +
 
           scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
-        }
+        },
+      height = 500,
+      width = 700
       )
 
     output$plot_km <- renderPlot(
@@ -200,7 +235,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                               "without SV"=sc_without)
         ggsurvplot_combine(surv_fit_list,
                            data=svs_gene_input_df,
-                           risk.table=TRUE,
+                           risk.table=FALSE,
                            conf.int = FALSE,
                            conf.int.style = "step",
                            risk.table.y.text = FALSE,
@@ -209,24 +244,26 @@ VariantSurvival <- function(vcffile, metadatafile){
                              text = element_text(size = 20),
                              panel.background = element_rect(fill = "white",colour = "white"),
                              axis.line = element_line(colour = "black"),
-                             #panel.grid.major.y = element_line(colour="grey"),
-                             #panel.grid.minor.y = element_line(colour="grey")
+                             panel.grid.major.y = element_line(colour="grey"),
+                             panel.grid.minor.y = element_line(colour="grey")
                            ),
                            legend.title = "Group",
+                           legend = "right",
                            legend.labs =
                              c(paste("with variant - placebo"),
                                paste("with variant - treatment"),
                                paste("without variant - placebo"),
                                paste("without variant - treatment")
                                ),
-                           legend.position = c(0.7, 0.5),
+                           #legend.position = c(0.7, 0.5),
                            palette = c("Violetred4",
                                        "steelblue",
                                        "Violetred2",
                                        "turquoise3")
                                        )
         },
-      height = 900)
+      height = 600,
+      width = 1000)
 
     output$table1 <- DT::renderDataTable({
       svs_gene_input_df <- reactive_no_NAs_metadata()
