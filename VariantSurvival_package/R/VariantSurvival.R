@@ -50,6 +50,11 @@ VariantSurvival <- function(vcffile, metadatafile){
                                label = "Select the time factor:",
                                choices = colnames(metadata)
                                ),
+                   radioButtons(inputId = "time_unit",
+                                label = "Time factor unit:",
+                                choices =  c("years", "days"),
+                                inline = TRUE
+                                ),
                    span(shiny::tags$i(
                      h6("The following selections must refer to binary columns")),
                      style="color:#045a8d"),
@@ -65,7 +70,8 @@ VariantSurvival <- function(vcffile, metadatafile){
                  mainPanel(
                    span(shiny::tags$i(h2("Structural Variants Distribution")),
                         shinycssloaders::withSpinner(plotOutput("histogram"))
-                        )
+                        ),
+                   br()
                    )
                  ),
                sidebarLayout(
@@ -159,9 +165,8 @@ VariantSurvival <- function(vcffile, metadatafile){
         new_df <- reactive_no_NAs_metadata()
         # get a df with counts
         svs_gene_input_df <- hist_df(new_df, input)
-        ggplot(svs_gene_input_df,
-               aes(SV_count_per_gene,
-                   fill=trial_group)) +
+        legend_title <- "Group"
+        ggplot(svs_gene_input_df, aes(SV_count_per_gene, fill=trial_group)) +
           geom_histogram(binwidth=1) +
           stat_bin(binwidth=1,
                    geom='text',
@@ -170,12 +175,14 @@ VariantSurvival <- function(vcffile, metadatafile){
                    position=position_stack(vjust = 0.5)) +
           xlab("Number of SVs in target gene") + ylab("Frequency") +
           theme(text = element_text(size = 20),
-                panel.background = element_rect(fill = "white",colour = "black"),
-                panel.border = element_blank(),
+                panel.background = element_rect(fill = "white",colour = "white"),
+                axis.line = element_line(colour = "black"),
+                #panel.border = element_blank(),
                 panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank() #change font size of legend title
                 ) +
-          scale_fill_manual(values=c("#8B1D4D", "#5275A6")) #  bins color
+
+          scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
         }
       )
 
@@ -197,31 +204,29 @@ VariantSurvival <- function(vcffile, metadatafile){
                            conf.int = FALSE,
                            conf.int.style = "step",
                            risk.table.y.text = FALSE,
+                           xlab = toTitleCase(input$time_unit),
                            ggtheme = theme(
                              text = element_text(size = 20),
-                             panel.background = element_rect(fill = "white",
-                                                             colour = "black"
-                             ),
-                             # panel.border = element_blank(),
-                             # panel.grid.major = element_blank(),
-                             # panel.grid.minor = element_blank(),
-                             panel.grid.major.y = element_line(),
-                             panel.grid.minor.y = element_line()
+                             panel.background = element_rect(fill = "white",colour = "white"),
+                             axis.line = element_line(colour = "black"),
+                             #panel.grid.major.y = element_line(colour="grey"),
+                             #panel.grid.minor.y = element_line(colour="grey")
                            ),
                            legend.title = "Group",
-                           legend = "right",
                            legend.labs =
-                             c(paste("with", input$target_gene, "variant - placebo"),
-                               paste("with", input$target_gene, "variant - treatment"),
-                               paste("without", input$target_gene, "variant - placebo"),
-                               paste("without", input$target_gene, "variant - treatment")
+                             c(paste("with variant - placebo"),
+                               paste("with variant - treatment"),
+                               paste("without variant - placebo"),
+                               paste("without variant - treatment")
                                ),
+                           legend.position = c(0.7, 0.5),
                            palette = c("Violetred4",
                                        "steelblue",
                                        "Violetred2",
                                        "turquoise3")
-        )
-      },height = 900)
+                                       )
+        },
+      height = 900)
 
     output$table1 <- DT::renderDataTable({
       svs_gene_input_df <- reactive_no_NAs_metadata()
@@ -237,7 +242,6 @@ VariantSurvival <- function(vcffile, metadatafile){
     # Median survival time
     output$table2 <- DT::renderDataTable({
       svs_gene_input_df <- reactive_no_NAs_metadata()
-
       x2 <-  survfit(Surv(time, event)~trial_group, data = svs_gene_input_df ) %>%
         gtsummary::tbl_survfit(
           probs = 0.5,
@@ -250,10 +254,8 @@ VariantSurvival <- function(vcffile, metadatafile){
 
     output$table3 <- DT::renderDataTable({
       svs_gene_input_df <- reactive_no_NAs_metadata()
-
       x3 <- coxph(Surv(time, event)~trial_group, data = svs_gene_input_df ) %>%
         tbl_regression(exp = TRUE)
-
       t3 <-as_tibble(x3)
       t3
     })
@@ -283,6 +285,7 @@ install_load_requirements<- function() {
   if (!require("survminer")) install.packages("survminer")
   if (!require("lubridate")) install.packages("lubridate")
   if (!require("gtsummary")) install.packages("gtsummary")
+  if (!require("tools")) install.packages("tools")
   library(shiny)
   library(shinydashboard)
   library(shinythemes)
@@ -379,7 +382,7 @@ hist_df <- function(df,input){
   svs_gene_input_df <- (svs_gene_input_df
                         %>% mutate(trial_group = ifelse(trial_group=="0",
                                                         "Placebo",
-                                                        "Treatment" )
+                                                         "Treatment" )
                         )
   )
   return(svs_gene_input_df)
