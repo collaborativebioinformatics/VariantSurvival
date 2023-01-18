@@ -141,6 +141,12 @@ VariantSurvival <- function(vcffile, metadatafile){
                    }
     )
     # Update genes drop-down after disease input is given
+    reactive_gene_list <- reactive(
+    {
+      if (input$disease_n != "N/A"){
+        get_disease_gene_list(disease_gene, input$disease_n)}
+    })
+
 
     reactive_no_NAs_metadata <- reactive({
       if(checkInput(input)){
@@ -169,7 +175,7 @@ VariantSurvival <- function(vcffile, metadatafile){
         new_df <- (subset(count_df, ids %in% new_md$ids)
                    %>% rename(SV_count_per_gene = input$target_gene)
         )
-        no_na_df <- merge(new_df, new_md, on = "ids")
+        no_na_df <- merge(new_df, new_md, by = "ids")
         no_na_df <- transform(no_na_df,
                               time = as.numeric(time),
                               event = as.numeric(event),
