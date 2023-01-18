@@ -18,6 +18,7 @@ The following sections provide recommendations on how to prepare the input data 
 ### TL;DR:
 Use a tool of your choice to merge SV callsets across all individuals of your study groups. Some recommendations listed below:
 - [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR)
+- [Truvari](https://github.com/ACEnglish/truvari) (lastest & recommended by now)
 - [Jasmine](https://github.com/mkirsche/Jasmine)
 - [svimmer](https://github.com/DecodeGenetics/svimmer)
 
