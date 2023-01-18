@@ -8,7 +8,7 @@
 #'
 
 VariantSurvival <- function(vcffile, metadatafile){
-  days_year = 365.25
+  days_year <- 365.25
   install_load_requirements()
   # parse inputs
   vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
@@ -131,7 +131,7 @@ VariantSurvival <- function(vcffile, metadatafile){
     observeEvent(input$disease_n,
                  {
                    if(input$disease_n!= "N/A"){
-                     genes_list = c(get_disease_gene_list(disease_gene,
+                     genes_list <- c(get_disease_gene_list(disease_gene,
                                                           input$disease_n))
                      updateSelectizeInput(session,
                                           input = "target_gene",
@@ -141,16 +141,11 @@ VariantSurvival <- function(vcffile, metadatafile){
                    }
     )
     # Update genes drop-down after disease input is given
-    reactive_gene_list <- reactive(
-      {
-      if (input$disease_n != "N/A"){
-        get_disease_gene_list(disease_gene, input$disease_n)}
-      })
 
     reactive_no_NAs_metadata <- reactive({
       if(checkInput(input)){
-        disease_genes_names = gene_ids_table$GeneName
-        sample_names = colnames(vcf@gt)[-1] # ignore VCF genotype information
+        disease_genes_names <- gene_ids_table$GeneName
+        sample_names <- colnames(vcf@gt)[-1] # ignore VCF genotype information
 
         # genes are repeated since a single gene can have more than one SV.
         genes_with_svs_in_sample <- apply(vcf@fix,
@@ -165,11 +160,10 @@ VariantSurvival <- function(vcffile, metadatafile){
                                genes_with_svs_in_sample,
                                vcf,
                                input$ids)
-        new_md <- (RemoveNAs(metadata, input$time)
-                   %>% rename(ids = input$ids,
-                              trial_group_bin = input$group,
-                              time = input$time,
-                              event = input$event)
+        new_md <- (RemoveNAs(metadata, input$time) %>% rename(ids = input$ids,
+                                                        trial_group_bin = input$group,
+                                                        time = input$time,
+                                                        event = input$event)
         )
         # what happen if the input$target_gene is not in the vcf file?
         new_df <- (subset(count_df, ids %in% new_md$ids)
@@ -321,8 +315,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                        "trial_group_bin")}
         svs_gene_input_df <- reactive_no_NAs_metadata()
         formulaString <- paste("Surv(time, event) ~", paste(input_cov_cox, collapse="+"))
-        x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df)
-               %>% tbl_regression(exp = TRUE))
+        x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df) %>% tbl_regression(exp = TRUE))
         t3 <-as_tibble(x3)
         t3
       }
@@ -430,17 +423,17 @@ CountSVsDf <- function(ncol, nrow,
            nrow = nrow
     )
   )
-  colnames(sample_disease_gene_df) = disease_genes_names
-  rownames(sample_disease_gene_df) = sample_names
+  colnames(sample_disease_gene_df) <- disease_genes_names
+  rownames(sample_disease_gene_df) <- sample_names
 
   for (sv_idx in 1:length(genes_with_svs_in_sample)) {
     # if the sv is in a gene of interest
-    sv_gene_name = genes_with_svs_in_sample[sv_idx]
+    sv_gene_name <- genes_with_svs_in_sample[sv_idx]
     if(is.na(sv_gene_name))
-      next;
+      next
     for(individual_idx in 1:length(sample_names)){
-      indiv_id = sample_names[individual_idx]
-      gt=vcf@gt[sv_idx, indiv_id]
+      indiv_id <- sample_names[individual_idx]
+      gt <- vcf@gt[sv_idx, indiv_id]
       if(!is.na(gt))
       {
         sample_disease_gene_df[indiv_id, sv_gene_name] %+=% 1
@@ -473,6 +466,6 @@ RemoveNAs <- function(df, time_col) {
 
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
-`%+=%` = function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
+`%+=%` <- function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
 
 
