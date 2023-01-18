@@ -109,7 +109,8 @@ VariantSurvival <- function(vcffile, metadatafile){
                         style="color:#045a8d"),
                    selectizeInput(inputId = "sel_cov",
                                label = "Select binary covariates",
-                               choices = colnames(metadata),
+                               # SV_bin is added by us, 0/1 without/with SV
+                               choices = c(colnames(metadata), "SV_bin"),
                                multiple = TRUE,
                                options = list(create = TRUE)
                                ),
@@ -306,20 +307,22 @@ VariantSurvival <- function(vcffile, metadatafile){
         }
       })
     #regression table
-
     output$table3 <- DT::renderDataTable({
-      if (input$ids != "N/A"
-          & input$time != "N/A"
-          & input$group != "N/A"
-          & input$event != "N/A"
-          & input$target_gene != "N/A"){
+      if(checkInput(input) & any(!is.na(input$sel_cov))){
+        input_cov_cox <- input$sel_cov
+        # mapping original column names to the new ones
+        if(input$event %in% input_cov_cox){
+          input_cov_cox <- str_replace(input_cov_cox,
+                                       input$event,
+                                       "event")}
+        if(input$group %in% input_cov_cox){
+          input_cov_cox <- str_replace(input_cov_cox,
+                                       input$group,
+                                       "trial_group_bin")}
         svs_gene_input_df <- reactive_no_NAs_metadata()
-        # formulaString <- paste("Surv(time, status) ~", paste(covariates, collapse="+"))
-        # coxph(as.formula(formulaString), data=df)
-        #covariates have to be a categorical variable taking numerical values?
-        x3 <- coxph(Surv(time, event)~trial_group_bin + SV_bin,
-                    data = svs_gene_input_df ) %>%
-          tbl_regression(exp = TRUE)
+        formulaString <- paste("Surv(time, event) ~", paste(input_cov_cox, collapse="+"))
+        x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df)
+               %>% tbl_regression(exp = TRUE))
         t3 <-as_tibble(x3)
         t3
       }
