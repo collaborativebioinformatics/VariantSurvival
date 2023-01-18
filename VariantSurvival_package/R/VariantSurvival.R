@@ -31,11 +31,13 @@ VariantSurvival <- function(vcffile, metadatafile){
                  sidebarPanel(
                    pickerInput(inputId ="disease_n",
                                label = "Diseases",
-                               choices = colnames(disease_gene)
+                               choices = c(colnames(disease_gene), "N/A"),
+                               selected = "N/A"
                                ),
                    selectInput(inputId = "ids",
                                label = "Select the identifier factor:",
-                               choices = colnames(metadata)
+                               choices = c(colnames(metadata), "N/A"),
+                               selected = "N/A"
                                ),
                    span(shiny::tags$i(
                      h6("Based on literature the following genes are
@@ -49,7 +51,8 @@ VariantSurvival <- function(vcffile, metadatafile){
                                ),
                    selectInput(inputId = "time",
                                label = "Select the time factor:",
-                               choices = colnames(metadata)
+                               choices = c(colnames(metadata), "N/A"),
+                               selected = "N/A"
                                ),
                    radioButtons(inputId = "time_unit",
                                 label = "Time factor unit:",
@@ -61,17 +64,28 @@ VariantSurvival <- function(vcffile, metadatafile){
                      style="color:#045a8d"),
                    selectInput(inputId = "group",
                                label = "Select the clinical trial groups factor:",
-                               choices = colnames(metadata)
+                               choices =c(colnames(metadata), "N/A"),
+                               selected = "N/A"
                                ),
                    selectInput(inputId = "event",
                                label = "Select the alive/dead factor:",
-                               choices = colnames(metadata)
+                               choices = c(colnames(metadata), "N/A"),
+                               selected = "N/A"
                                )
                    ),
                  mainPanel(
                    span(shiny::tags$i(h2("Structural Variants Distribution")),
                         shinycssloaders::withSpinner(plotOutput(outputId = "histogram",
                                                                 width = "100%"))),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   span(shiny::tags$i(h2(" ")),
+                        DT::dataTableOutput("table")),
+                   br(),
+                   br(),
                    br()
                    )
                  )
@@ -86,11 +100,6 @@ VariantSurvival <- function(vcffile, metadatafile){
                windowTitle ="SurvivalAnalysis",
                sidebarLayout(
                  sidebarPanel(
-                   span(shiny::tags$i(h3("1-year survival time")),
-                        style="color:#045a8d"),
-                   DT::dataTableOutput("table1"),
-                   br(),
-                   br(),
                    span(shiny::tags$i(h3("Median survival time")),
                         style="color:#045a8d"),
                    DT::dataTableOutput("table2"),
@@ -98,8 +107,13 @@ VariantSurvival <- function(vcffile, metadatafile){
                    br(),
                    span(shiny::tags$i(h3("Cox regression table")),
                         style="color:#045a8d"),
-                   DT::dataTableOutput("table3")
-                 ),
+                   selectizeInput(inputId = "sel_cov",
+                               label = "Select binary covariates",
+                               choices = colnames(metadata),
+                               multiple = TRUE,
+                               options = list(create = TRUE)
+                               ),
+                   DT::dataTableOutput("table3")),
                  mainPanel(
                    span(shiny::tags$i(h2("Kaplan–Meier")),
                         shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
@@ -115,185 +129,201 @@ VariantSurvival <- function(vcffile, metadatafile){
     # get disease_n input and update the genes list accordingly
     observeEvent(input$disease_n,
                  {
-                   genes_list = c(get_disease_gene_list(disease_gene,
-                                                        input$disease_n))
-                   updateSelectizeInput(session,
-                                        input = "target_gene",
-                                        choices = genes_list,
-                                        selected = NULL)
-                 }
+                   if(input$disease_n!= "N/A"){
+                     genes_list = c(get_disease_gene_list(disease_gene,
+                                                          input$disease_n))
+                     updateSelectizeInput(session,
+                                          input = "target_gene",
+                                          choices = genes_list,
+                                          selected = NULL)
+                   }
+                   }
     )
     # Update genes drop-down after disease input is given
-    reactive_gene_list <- reactive({get_disease_gene_list(disease_gene,
-                                                          input$disease_n)})
+    reactive_gene_list <- reactive(
+      {
+      if (input$disease_n != "N/A"){
+        get_disease_gene_list(disease_gene, input$disease_n)}
+      })
 
     reactive_no_NAs_metadata <- reactive({
-      disease_genes_names = gene_ids_table$GeneName
-      sample_names = colnames(vcf@gt)[-1] # ignore VCF genotype information
+      if(checkInput(input)){
+        disease_genes_names = gene_ids_table$GeneName
+        sample_names = colnames(vcf@gt)[-1] # ignore VCF genotype information
 
-      # genes are repeated since a single gene can have more than one SV.
-      genes_with_svs_in_sample <- apply(vcf@fix,
-                                        1,
-                                        getGeneName,
-                                        gene_ids_table)
-      # count dataframe with patient_ids in rows and gene_ids in columns
-      count_df <- CountSVsDf(length(disease_genes_names),
-                             length(sample_names),
-                             disease_genes_names,
-                             sample_names,
-                             genes_with_svs_in_sample,
-                             vcf,
-                             input$ids)
-      new_md <- (RemoveNAs(metadata, input$time)
-                 %>% rename(ids = input$ids,
-                            trial_group_bin = input$group,
-                            time = input$time,
-                            event = input$event)
-                 )
-      new_df <- (subset(count_df, ids %in% new_md$ids)
-                 %>% rename(SV_count_per_gene = input$target_gene)
-                 )
-      no_na_df <- merge(new_df, new_md[c("ids",
-                                         "trial_group_bin",
-                                         "event",
-                                         "time")],
-                        on = "ids")
-      no_na_df <- transform(no_na_df,
-                            time = as.numeric(time),
-                            event = as.numeric(event),
-                            SV_count_per_gene = as.numeric(SV_count_per_gene)
-      )
-      no_na_df <- (no_na_df
-                   %>% mutate(SV_binary = ifelse(new_df$SV_count_per_gene>0, 1, 0))
-                   )
-      no_na_df <- (no_na_df
-                   %>% mutate(trial_group = ifelse(trial_group_bin=="0",
-                                                   "Placebo",
-                                                   "Treatment" )
-                              )
-                   )
-      if(input$time_unit == 'years'){
-        no_na_df$time_days <- floor(no_na_df[["time"]] * days_year)
+        # genes are repeated since a single gene can have more than one SV.
+        genes_with_svs_in_sample <- apply(vcf@fix,
+                                          1,
+                                          getGeneName,
+                                          gene_ids_table)
+        # count dataframe with patient_ids in rows and gene_ids in columns
+        count_df <- CountSVsDf(length(disease_genes_names),
+                               length(sample_names),
+                               disease_genes_names,
+                               sample_names,
+                               genes_with_svs_in_sample,
+                               vcf,
+                               input$ids)
+        new_md <- (RemoveNAs(metadata, input$time)
+                   %>% rename(ids = input$ids,
+                              trial_group_bin = input$group,
+                              time = input$time,
+                              event = input$event)
+        )
+        # what happen if the input$target_gene is not in the vcf file?
+        new_df <- (subset(count_df, ids %in% new_md$ids)
+                   %>% rename(SV_count_per_gene = input$target_gene)
+        )
+        no_na_df <- merge(new_df, new_md, on = "ids")
+        no_na_df <- transform(no_na_df,
+                              time = as.numeric(time),
+                              event = as.numeric(event),
+                              SV_count_per_gene = as.numeric(SV_count_per_gene)
+        )
+        no_na_df <- (no_na_df
+                     %>% mutate(SV_bin = ifelse(new_df$SV_count_per_gene>0, 1, 0)
+                     )
+                     %>% mutate(trial_group = ifelse(trial_group_bin=="0",
+                                                     "Placebo",
+                                                     "Treatment")
+                     )
+                     %>% mutate(SV = ifelse(SV_bin=="0", "with", "without")
+                     )
+        )
+        if(input$time_unit == 'years'){
+          no_na_df$time_days <- floor(no_na_df[["time"]] * days_year)
         } else{
           no_na_df$time_years <- no_na_df[["time"]] / days_year
         }
-      no_na_df
-      })
+        no_na_df
+        }
+      }
+      )
 
     ## output - histogram ##
     output$histogram <- renderPlot(
       {
-        new_df <- reactive_no_NAs_metadata()
-        # get a df with counts
-        svs_gene_input_df <-  new_df[c("ids", "trial_group", "SV_count_per_gene")]
-        legend_title <- "Group"
-        ggplot(svs_gene_input_df, aes(SV_count_per_gene, fill=trial_group)) +
-          geom_histogram(binwidth=1) +
-          stat_bin(binwidth=1,
-                   geom='text',
-                   color='white',
-                   aes(label=after_stat(count)),
-                   position=position_stack(vjust = 0.5)) +
-          xlab("Number of SVs in target gene") + ylab("Frequency") +
-          theme(text = element_text(size = 20),
-                panel.background = element_rect(fill = "white",colour = "white"),
-                axis.line = element_line(colour = "black"),
-                #panel.border = element_blank(),
-                panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank() #change font size of legend title
-                ) +
-
-          scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
+        if(checkInput(input)){
+          new_df <- reactive_no_NAs_metadata()
+          # get a dataframe with counts
+          svs_gene_input_df <-  new_df[c("ids", "trial_group", "SV_count_per_gene")]
+          legend_title <- "Group"
+          ggplot(svs_gene_input_df, aes(SV_count_per_gene, fill=trial_group)) +
+            geom_histogram(binwidth=1) +
+            stat_bin(binwidth=1,
+                     geom='text',
+                     color='white',
+                     aes(label=after_stat(count)),
+                     position=position_stack(vjust = 0.5)) +
+            xlab("Number of SVs in target gene") + ylab("Frequency") +
+            theme(text = element_text(size = 20),
+                  panel.background = element_rect(fill = "white",
+                                                  colour = "white"),
+                  axis.line = element_line(colour = "black"),
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank() #change font size of legend title
+            ) +
+            scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
+          }
         },
       height = 500,
       width = 700
       )
 
+
+    output$table <- DT::renderDataTable(
+      {
+        if(checkInput(input)){
+          svs_gene_input_df <- reactive_no_NAs_metadata()
+          svs_gene_input_df <- as_tibble(svs_gene_input_df[c("ids", "SV_count_per_gene")])
+          colnames(svs_gene_input_df) <- c("ID", "SV count per gene")
+          svs_gene_input_df
+        }
+        }
+      )
+
     output$plot_km <- renderPlot(
       {
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        # subset those patients with and without the SV
-        without_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 0,]
-        with_sv <- svs_gene_input_df[svs_gene_input_df$SV_binary == 1,]
-        # generate survival curve objects for each group
-        sc_without <- survfit2(Surv(time, event)~trial_group_bin, data = with_sv)
-        sv_with <- survfit2(Surv(time, event)~trial_group_bin, data = without_sv)
-        # create a list and plot
-        surv_fit_list <- list("with SV"=sv_with,
-                              "without SV"=sc_without)
-        ggsurvplot_combine(surv_fit_list,
-                           data=svs_gene_input_df,
-                           risk.table=FALSE,
-                           conf.int = FALSE,
-                           conf.int.style = "step",
-                           risk.table.y.text = FALSE,
-                           xlab = toTitleCase(input$time_unit),
-                           ggtheme = theme(
-                             text = element_text(size = 20),
-                             panel.background = element_rect(fill = "white",
-                                                             colour = "white"),
-                             axis.line = element_line(colour = "black"),
-                             panel.grid.major.y = element_line(colour="grey"),
-                             panel.grid.minor.y = element_line(colour="grey")
-                           ),
-                           legend.title = "Group",
-                           legend = "right",
-                           legend.labs =
-                             c(paste("with variant - placebo"),
-                               paste("with variant - treatment"),
-                               paste("without variant - placebo"),
-                               paste("without variant - treatment")
+        if(checkInput(input)){
+          svs_gene_input_df <- reactive_no_NAs_metadata()
+          # subset those patients with and without the SV
+          without_sv <- svs_gene_input_df[svs_gene_input_df$SV_bin == 0,]
+          with_sv <- svs_gene_input_df[svs_gene_input_df$SV_bin == 1,]
+          # generate survival curve objects for each group
+          sc_without <- survfit2(Surv(time, event)~trial_group_bin, data = with_sv)
+          sv_with <- survfit2(Surv(time, event)~trial_group_bin, data = without_sv)
+          # create a list and plot
+          surv_fit_list <- list("with SV"=sv_with,
+                                "without SV"=sc_without)
+          ggsurvplot_combine(surv_fit_list,
+                             data=svs_gene_input_df,
+                             risk.table=FALSE,
+                             conf.int = FALSE,
+                             conf.int.style = "step",
+                             risk.table.y.text = FALSE,
+                             xlab = toTitleCase(input$time_unit),
+                             ggtheme = theme(
+                               text = element_text(size = 20),
+                               panel.background = element_rect(fill = "white",
+                                                               colour = "white"),
+                               axis.line = element_line(colour = "black"),
+                               panel.grid.major.y = element_line(colour="grey"),
+                               panel.grid.minor.y = element_line(colour="grey")
+                             ),
+                             legend.title = "Group",
+                             legend = "right",
+                             legend.labs =
+                               c(paste("with variant - placebo"),
+                                 paste("with variant - treatment"),
+                                 paste("without variant - placebo"),
+                                 paste("without variant - treatment")
                                ),
-                           legend.position="top" ,
-                           legend.justification="right",
-                           #legend.position = c(0.7, 0.5),
-                           palette = c("Violetred4",
-                                       "steelblue",
-                                       "Violetred2",
-                                       "turquoise3")
-                                       )
+                             legend.position="top" ,
+                             legend.justification="right",
+                             #legend.position = c(0.7, 0.5),
+                             palette = c("Violetred4",
+                                         "steelblue",
+                                         "Violetred2",
+                                         "turquoise3")
+          )
+          }
         },
       height = 600,
       width = 1000)
 
-    output$table1 <- DT::renderDataTable({
-      svs_gene_input_df <- reactive_no_NAs_metadata()
-      if (input$time_unit == "years"){
-        surv_fit_years <- survfit(Surv(time, event)~trial_group,
-                                  data=svs_gene_input_df)
-      }else{ #input is in days
-        surv_fit_years <- survfit(Surv(time_years, event)~trial_group,
-                                  data=svs_gene_input_df)
-      }
-
-      surv_fit_years <- surv_fit_years %>% tbl_survfit(
-        times = 1, # since our time is in years
-        label_header = "**1-year survival (95% CI)**"
-        )
-      t <-as_tibble(surv_fit_years)
-      t
-      })
     # Median survival time
     output$table2 <- DT::renderDataTable({
-      svs_gene_input_df <- reactive_no_NAs_metadata()
-      x2 <-  survfit(Surv(time, event)~trial_group, data = svs_gene_input_df ) %>%
-        gtsummary::tbl_survfit(
-          probs = 0.5,
-          label_header = "**Median survival (95% CI)**"
-        )
-      t2 <- as_tibble(x2)
-      t2
-    })
+      if(checkInput(input)){
+        svs_gene_input_df <- reactive_no_NAs_metadata()
+        x2 <-  survfit(Surv(time, event)~trial_group + SV,
+                       data = svs_gene_input_df ) %>%
+          gtsummary::tbl_survfit(
+            probs = 0.5,
+            label_header = "**Median survival (95% CI)**"
+          )
+        t2 <- as_tibble(x2)
+        t2
+        }
+      })
     #regression table
 
     output$table3 <- DT::renderDataTable({
-      svs_gene_input_df <- reactive_no_NAs_metadata()
-      x3 <- coxph(Surv(time, event)~trial_group_bin, data = svs_gene_input_df ) %>%
-        tbl_regression(exp = TRUE)
-      t3 <-as_tibble(x3)
-      t3
+      if (input$ids != "N/A"
+          & input$time != "N/A"
+          & input$group != "N/A"
+          & input$event != "N/A"
+          & input$target_gene != "N/A"){
+        svs_gene_input_df <- reactive_no_NAs_metadata()
+        # formulaString <- paste("Surv(time, status) ~", paste(covariates, collapse="+"))
+        # coxph(as.formula(formulaString), data=df)
+        #covariates have to be a categorical variable taking numerical values?
+        x3 <- coxph(Surv(time, event)~trial_group_bin + SV_bin,
+                    data = svs_gene_input_df ) %>%
+          tbl_regression(exp = TRUE)
+        t3 <-as_tibble(x3)
+        t3
+      }
     })
-
   }
 
   # Run the application
@@ -351,6 +381,21 @@ get_disease_gene_list <- function(disease_gene, input_disease) {
   return(genes_list$genes)
 }
 
+
+#' `getGeneName`
+#' @param info
+#' @return
+checkInput <- function(input) {
+  if (input$ids != "N/A"
+      & input$time != "N/A"
+      & input$group != "N/A"
+      & input$event != "N/A"
+      & input$target_gene != "N/A"){
+    return(TRUE)
+  }else{
+    return(FALSE)
+  }
+}
 
 
 #' `getGeneName`
