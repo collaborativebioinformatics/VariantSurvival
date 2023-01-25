@@ -3,15 +3,13 @@
 #' @param vcffile path to the vcf file containing the Structural variant data
 #' @param metadatafile path to the txt file containing the samples metadata
 #' @param demo true or false
-#' @param dir wording directory
 #'
 #' @return
 #' @export
 #'
 
-VariantSurvival <- function(dir,vcffile, metadatafile,demo){
-  #wd
-  setwd(dir)
+VariantSurvival <- function(vcffile, metadatafile,demo){
+
   #
   install_load_requirements()
   #demo or input files
@@ -73,7 +71,7 @@ VariantSurvival <- function(dir,vcffile, metadatafile,demo){
                                 inline = TRUE
                                 ),
                    span(shiny::tags$i(
-                     h6("The following selections must refer to binary columns")),
+                     h6("The following selections must refer to binary factor")),
                      style="color:#045a8d"),
                    selectInput(inputId = "group",
                                label = "Select the clinical trial groups factor:",
@@ -102,26 +100,25 @@ VariantSurvival <- function(dir,vcffile, metadatafile,demo){
                  sidebarPanel(
                    span(shiny::tags$i(h3("Median survival time")),
                         style="color:#045a8d"),
-                   DT::dataTableOutput("table2"),
-                   br(),
-                   br(),
-                   span(shiny::tags$i(h3("Cox regression table")),
-                        style="color:#045a8d"),
-                   selectizeInput(inputId = "sel_cov",
-                               label = "Select binary covariates",
-                               # SV_bin is added by us, 0/1 without/with SV
-                               choices = c(colnames(metadata), "SV_bin"),
-                               multiple = TRUE,
-                               options = list(create = TRUE)
-                               ),
-                   DT::dataTableOutput("table3")),
+                   DT::dataTableOutput("table2")
+                   ),
                  mainPanel(
                    span(shiny::tags$i(h2("Kaplan–Meier")),
                         shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
                                                                 width = "100%")))
-                   )
-                 )
-               )
+                   ) )),
+         tabPanel("Cox regression",
+
+                  span(shiny::tags$i(h3("Cox regression table")),
+                       style="color:#045a8d"),
+                  selectizeInput(inputId = "sel_cov",
+                                 label = "Select binary covariates",
+                                 # SV_bin is added by us, 0/1 without/with SV
+                                 choices = c(colnames(metadata), "SV_bin"),
+                                 multiple = TRUE,
+                                 options = list(create = TRUE)
+                  ),
+                  DT::dataTableOutput("table3"))
     ))
 
   server <- function(input, output, session) {
