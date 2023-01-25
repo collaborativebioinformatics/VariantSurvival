@@ -75,19 +75,12 @@ VariantSurvival <- function(vcffile, metadatafile){
                                )
                    ),
                  mainPanel(
-                   span(shiny::tags$i(h2("Structural Variants Distribution")),
-                        shinycssloaders::withSpinner(plotOutput(outputId = "histogram",
-                                                                width = "100%"))),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   span(shiny::tags$i(h2(" ")),
-                        DT::dataTableOutput("table")),
-                   br(),
-                   br(),
-                   br()
+                   box(span(shiny::tags$i(h2("Structural Variants Distribution")),
+                            shinycssloaders::withSpinner(plotOutput(outputId = "histogram"))), width =6),
+                   box(width =1),
+                   box(span(shiny::tags$i(h2(" ")),
+                            DT::dataTableOutput("table")), width =5)
+
                    )
                  )
                ),
