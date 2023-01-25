@@ -27,6 +27,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                     " class="active" href="#">VariantSurvival</a>'),
                id="nav",
                windowTitle ="VariantSurvival",
+               tabPanel("Select Target Gene",
                sidebarLayout(
                  sidebarPanel(
                    pickerInput(inputId ="disease_n",
@@ -90,14 +91,9 @@ VariantSurvival <- function(vcffile, metadatafile){
                    )
                  )
                ),
-    navbarPage(theme = shinytheme("flatly"),
-               collapsible = TRUE,
-               HTML('<a style="text-decoration:none;
-               cursor:default;
-                    color:#FFFFFF;
-                    " class="active" href="#">SurvivalAnalysis</a>'),
-               id="nev",
-               windowTitle ="SurvivalAnalysis",
+
+    tabPanel("Survival Analysis",
+
                sidebarLayout(
                  sidebarPanel(
                    span(shiny::tags$i(h3("Median survival time")),
@@ -122,7 +118,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                    )
                  )
                )
-    )
+    ))
 
   server <- function(input, output, session) {
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
