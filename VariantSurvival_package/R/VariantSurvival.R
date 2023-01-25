@@ -2,12 +2,18 @@
 #'
 #' @param vcffile path to the vcf file containing the Structural variant data
 #' @param metadatafile path to the txt file containing the samples metadata
+#' @param demo true or false
 #'
 #' @return
 #' @export
 #'
 
-VariantSurvival <- function(vcffile, metadatafile){
+VariantSurvival <- function(vcffile, metadatafile,demo){
+
+  if (demo=="TRUE"){
+    vcffile <- "merged.filtered.vcf"
+    metadatafile <-"metadata.xlsx"
+  }
   days_year <- 365.25
   install_load_requirements()
   # parse inputs
