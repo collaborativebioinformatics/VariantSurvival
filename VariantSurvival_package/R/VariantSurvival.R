@@ -78,8 +78,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                    box(span(shiny::tags$i(h2("Structural Variants Distribution")),
                             shinycssloaders::withSpinner(plotOutput(outputId = "histogram"))), width =6),
                    box(width =1),
-                   box(span(shiny::tags$i(h2(" ")),
-                            DT::dataTableOutput("table")), width =5)
+                   box(span(DT::dataTableOutput("table")), width =5)
 
                    )
                  )
@@ -211,7 +210,8 @@ VariantSurvival <- function(vcffile, metadatafile){
                                                   colour = "white"),
                   axis.line = element_line(colour = "black"),
                   panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank() #change font size of legend title
+                  panel.grid.minor = element_blank(),
+                  legend.position="top"
             ) +
             scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
           }
@@ -462,5 +462,3 @@ RemoveNAs <- function(df, time_col) {
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
 `%+=%` <- function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
-
-
