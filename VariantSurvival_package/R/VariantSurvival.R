@@ -3,26 +3,32 @@
 #' @param vcffile path to the vcf file containing the Structural variant data
 #' @param metadatafile path to the txt file containing the samples metadata
 #' @param demo true or false
+#' @param dir wording directory
 #'
 #' @return
 #' @export
 #'
 
-VariantSurvival <- function(vcffile, metadatafile,demo){
-
-  if (demo=="TRUE"){
-    vcffile <- "merged.filtered.vcf"
-    metadatafile <-"metadata.xlsx"
-  }
-  days_year <- 365.25
+VariantSurvival <- function(dir,vcffile, metadatafile,demo){
+  #wd
+  setwd(dir)
+  #
   install_load_requirements()
-  # parse inputs
-  vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
-  metadata <- readxl::read_excel(metadatafile)
-  # remove empty extra lines
-  metadata <- na.omit(metadata)
+  #demo or input files
+  if (demo=="TRUE"){
+    vcffile_demo <- "merged.filtered.vcf"
+    vcf <- vcfR::read.vcfR(vcffile_demo, verbose = FALSE)
+    metadata_demo <-"metadata.xlsx"
+    metadata <- readxl::read_excel(metadata_demo)
+    metadata <- na.omit(metadata)
+  } else if (demo=="FALSE"){
+    vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
+    metadata <- readxl::read_excel(metadatafile)
+    metadata <- na.omit(metadata)
+
+  }
   disease_gene <- read_excel("disease_gene.xlsx")
-  # create user interface layout
+  days_year <- 365.25
 
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
