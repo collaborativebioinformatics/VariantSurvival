@@ -9,8 +9,6 @@
 #'
 
 VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
-
-  #
   install_load_requirements()
   #demo or input files
   if (demo==TRUE){
@@ -146,13 +144,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                      }
                    }
                  )
-    # Update genes drop-down after disease input is given
-    reactive_gene_list <- reactive(
-    {
-      if (input$disease_n != "N/A"){
-        get_disease_gene_list(disease_gene, input$disease_n)}
-    })
-
 
     reactive_no_NAs_metadata <- reactive({
       if(checkInput(input)){
