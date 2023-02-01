@@ -106,6 +106,11 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                     mainPanel(
                       span(shiny::tags$i(
                         h2("Kaplan–Meier")),
+                        checkboxGroupInput("km_feat",
+                                           "Modify plot",
+                                           choices = c("confidence interval" = "conf_itv",
+                                                       "risk table" = "risk_table",
+                                                       "y grid line" = "grid_line")),
                         shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
                                                                 width = "100%"))
                         )
@@ -119,10 +124,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                   selectizeInput(inputId = "sel_cov",
                                  label = "Select binary covariates",
                                  # SV_bin is added by us, 0/1 without/with SV
-                                 choices = c(colnames(metadata), "SV_bin"),
-                                 multiple = TRUE,
-                                 options = list(create = TRUE)
-                                 ),
+                                 choices = NULL,
+                                 selected = FALSE,
+                                 multiple = TRUE
+                  ),
+                  selectInput(inputId = "sel_strata",
+                              label = "Select strata covariate*",
+                              choices = NULL),
                   DT::dataTableOutput("table3")
                   )
          )
@@ -290,20 +298,25 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       height = 600,
       width = 1000)
 
-    # Median survival time
-    output$table2 <- DT::renderDataTable({
-      if(checkInput(input)){
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        x2 <-  survfit(Surv(time, event)~trial_group + SV,
-                       data = svs_gene_input_df ) %>%
-          gtsummary::tbl_survfit(
-            probs = 0.5,
-            label_header = "**Median survival (95% CI)**"
-          )
-        t2 <- as_tibble(x2)
-        t2
-        }
-      })
+    inputs_react <- reactive({list(input$event, input$time, input$ids, input$target_gene)})
+    # hide the event, time and ids covatiates from  the covariates  and strata
+    # drop-down
+    observeEvent(inputs_react(),
+                 {if(checkInput(input)){
+                   cov_list <- c(get_cov_list(metadata, input), "SV_bin")
+                   # update the covariate drop down
+                   updateSelectizeInput(session,
+                                        input = "sel_cov",
+                                        choices = cov_list,
+                                        options = list(create = TRUE))
+                   # update the strata drop down, this field is optional
+                   updateSelectizeInput(session,
+                                        input = "sel_strata",
+                                        choices = c(cov_list, c("SV_bin","N/A")),
+                                        selected = "N/A")
+                   }
+                }
+              )
     #regression table
     output$table3 <- DT::renderDataTable({
       if(checkInput(input) & any(!is.na(input$sel_cov))){
@@ -370,6 +383,7 @@ install_load_requirements<- function() {
 }
 
 
+
 #' `get_disease_gene_list` parses an existing .txt
 #' file containing all known target genes associated
 #' with the selected disease.
@@ -382,7 +396,7 @@ get_disease_gene_list <- function(disease_gene, input_disease) {
 }
 
 
-#' `getGeneName`
+#' `checkInput`
 #' @param info
 #' @return
 checkInput <- function(input) {
@@ -404,6 +418,14 @@ checkInput <- function(input) {
 getGeneName <- function(info, geneIDS) {
   x <- str_extract(info['INFO'], "(?<=ensembl_gene_id=)[^;]+")
   return(geneIDS[x,]$GeneName)
+}
+
+
+get_cov_list <- function(metadata, input) {
+  inputs_list <- c(input$event, input$time, input$ids)
+  cov_list <- colnames(metadata)
+  cov_list <- cov_list[!(cov_list %in% inputs_list)]
+  return(cov_list)
 }
 
 
