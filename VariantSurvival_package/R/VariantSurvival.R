@@ -44,7 +44,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                selected = "N/A"
                                ),
                    selectInput(inputId = "ids",
-                               label = "Select the identifier factor:",
+                               label = "Select the participant ID:",
                                choices = c(colnames(metadata), "N/A"),
                                selected = "N/A"
                                ),
@@ -111,6 +111,11 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                          choices = c("confidence interval" = "conf_itv",
                                                      "risk table" = "risk_table",
                                                      "y grid line" = "grid_line")),
+                      selectInput(inputId = "n_svs",
+                                  label = "Number of structural variants:",
+                                  choices = NULL,
+                                  selected = FALSE
+                                  ),
                       shinycssloaders::withSpinner(
                         plotOutput(outputId = "plot_km",width = "100%")
                         )
@@ -283,7 +288,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         
 
     observe({
-      if(checkInput(input)){
+      if(checkInput(input) & input$n_svs!=""){
         risk_table = FALSE
         conf_itv = FALSE
         grid_line = "white"
@@ -293,16 +298,61 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
             if("risk_table" %in% input$km_feat){
               risk_table = TRUE}
             if("grid_line" %in% input$km_feat){
-              grid_line = "grey"}}
-        output$plot_km <- renderPlot({
-          svs_gene_input_df <- reactive_no_NAs_metadata()
+              grid_line = "grey"}
+          }
+        svs_gene_input_df <- reactive_no_NAs_metadata()
+        if (input$n_svs != "all"){
+          n_svs = as.numeric(input$n_svs)
+          svs_gene_input_df <- svs_gene_input_df[svs_gene_input_df$SV_count_per_gene == n_svs,]
+        }
+        n_sv_groups <- unique(svs_gene_input_df[["SV_bin"]])
+        n_groups <- unique(svs_gene_input_df[["trial_group_bin"]])
+        # can it happen that there are more than 1 patient groups?
+        if(length(n_sv_groups) == 2){
           # generate survival curve objects for each group
           sc_without <- survfit2(Surv(time, event)~trial_group_bin,
-                                 data = svs_gene_input_df, subset =(SV_bin==0))
+                                 data = svs_gene_input_df, subset=(SV_bin==0))
           sv_with <- survfit2(Surv(time, event)~trial_group_bin,
-                              data = svs_gene_input_df, subset =(SV_bin==1))
+                              data = svs_gene_input_df, subset=(SV_bin==1))
           # create a list and plot
           surv_fit_list <- list("with SV"=sv_with, "without SV"=sc_without)
+          lables <- c("with variant - placebo",
+                     "with variant - treatment",
+                     "without variant - placebo",
+                     "without variant - treatment")
+          cols <- c("Violetred4", "steelblue",
+                   "Violetred2", "turquoise3")
+        } 
+        else if (length(n_sv_groups) == 1){
+          if (n_sv_groups == 0){
+            type <- "without"
+            cols <- c("Violetred4", "steelblue")
+          }
+          else if (n_sv_groups == 1){
+            type <- "with"
+            cols <- c("Violetred2", "turquoise3")
+          }
+          sc <- survfit2(Surv(time, event)~trial_group_bin, 
+                         data = svs_gene_input_df)
+          # create a list and plot
+          temp <- paste(type , " SV") 
+          surv_fit_list <- list(temp = sc)
+          if (length(n_groups) == 2){
+            lables = c(paste(type, " variant - placebo"),
+                       paste(type, " variant - treatment"))
+          }
+          else if (length(n_groups) < 2){
+            if (n_groups == 0){
+              lables = c(paste(type, " variant - placebo"))
+              cols <- cols[1]
+            }
+            else if (n_groups == 1){
+              lables = c(paste(type, " variant - treatment"))
+              cols <- cols[2]
+            }
+          }
+        }
+        output$plot_km <- renderPlot({
           ggsurvplot_combine(surv_fit_list,
                              data=svs_gene_input_df,
                              risk.table = risk_table,
@@ -320,26 +370,17 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                legend.position = c(0.2, 0.5)
                              ),
                              legend.title = "Group",
-                             # legend = "right",
-                             legend.labs =
-                               c(paste("with variant - placebo"),
-                                 paste("with variant - treatment"),
-                                 paste("without variant - placebo"),
-                                 paste("without variant - treatment")),
-                             # legend.position="top" ,
-                             # legend.justification="right",
-                             
-                             palette = c("Violetred4",
-                                         "steelblue",
-                                         "Violetred2",
-                                         "turquoise3")
-          )
-        },
-        height = 600,
-        width = 1000)
-      }
-    })
-
+                             legend.labs =lables,
+                             palette = cols
+                             )},
+          height = 600,
+          width = 1000)
+        }
+        else{
+          output$plot_km <- renderText({ "Missing input data"})
+        }
+      })
+    
     inputs_react <- reactive({list(input$event,
                                    input$time,
                                    input$ids,
@@ -348,6 +389,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     # drop-down
     observeEvent(inputs_react(),
                  {if(checkInput(input)){
+                   svs_gene_input_df <- reactive_no_NAs_metadata()
+                   svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])
                    cov_list <- c(get_cov_list(metadata, input), "SV_bin")
                    # update the covariate drop down
                    updateSelectizeInput(session,
@@ -359,6 +402,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                         input = "sel_strata",
                                         choices = c(cov_list, c("SV_bin","N/A")),
                                         selected = "N/A")
+                   updateSelectizeInput(session,
+                                        input = "n_svs",
+                                        choices = c(svs_levels, "all"),
+                                        selected = "all")
                    }
                 }
               )
