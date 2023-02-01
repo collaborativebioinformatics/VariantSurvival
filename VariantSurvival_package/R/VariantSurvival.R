@@ -96,26 +96,18 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                  )
                ),
          tabPanel("Survival Analysis",
-                  sidebarLayout(
-                    sidebarPanel(
-                      span(shiny::tags$i(
-                        h3("Median survival time")),
-                        style="color:#045a8d"),
-                      DT::dataTableOutput("table2")
-                      ),
-                    mainPanel(
-                      span(shiny::tags$i(
-                        h2("Kaplan–Meier")),
-                        checkboxGroupInput("km_feat",
-                                           "Modify plot",
-                                           choices = c("confidence interval" = "conf_itv",
-                                                       "risk table" = "risk_table",
-                                                       "y grid line" = "grid_line")),
-                        shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
-                                                                width = "100%"))
-                        )
-                      ) 
+                  mainPanel(
+                    span(shiny::tags$i(
+                      h2("Kaplan–Meier")),
+                      checkboxGroupInput("km_feat",
+                                         "Modify plot",
+                                         choices = c("confidence interval" = "conf_itv",
+                                                     "risk table" = "risk_table",
+                                                     "y grid line" = "grid_line")),
+                      shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
+                                                              width = "100%"))
                     )
+                  ) 
                   ),
          tabPanel("Cox regression",
                   span(shiny::tags$i(
@@ -249,23 +241,31 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         }
       )
 
-    output$plot_km <- renderPlot(
-      {
-        if(checkInput(input)){
+    observe({
+      if(checkInput(input)){
+        risk_table = FALSE
+        conf_itv = FALSE
+        grid_line = "white"
+          if(!is.null(input$km_feat)){
+            if("conf_itv" %in% input$km_feat){
+              conf_itv = TRUE}
+            if("risk_table" %in% input$km_feat){
+              risk_table = TRUE}
+            if("grid_line" %in% input$km_feat){
+              grid_line = "grey"}}
+        output$plot_km <- renderPlot({
           svs_gene_input_df <- reactive_no_NAs_metadata()
-          # subset those patients with and without the SV
-          without_sv <- svs_gene_input_df[svs_gene_input_df$SV_bin == 0,]
-          with_sv <- svs_gene_input_df[svs_gene_input_df$SV_bin == 1,]
           # generate survival curve objects for each group
-          sc_without <- survfit2(Surv(time, event)~trial_group_bin, data = with_sv)
-          sv_with <- survfit2(Surv(time, event)~trial_group_bin, data = without_sv)
+          sc_without <- survfit2(Surv(time, event)~trial_group_bin,
+                                 data = svs_gene_input_df, subset =(SV_bin==0))
+          sv_with <- survfit2(Surv(time, event)~trial_group_bin,
+                              data = svs_gene_input_df, subset =(SV_bin==1))
           # create a list and plot
-          surv_fit_list <- list("with SV"=sv_with,
-                                "without SV"=sc_without)
+          surv_fit_list <- list("with SV"=sv_with, "without SV"=sc_without)
           ggsurvplot_combine(surv_fit_list,
                              data=svs_gene_input_df,
-                             risk.table=FALSE,
-                             conf.int = FALSE,
+                             risk.table = risk_table,
+                             conf.int = conf_itv,
                              conf.int.style = "step",
                              risk.table.y.text = FALSE,
                              xlab = toTitleCase(input$time_unit),
@@ -274,32 +274,33 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                panel.background = element_rect(fill = "white",
                                                                colour = "white"),
                                axis.line = element_line(colour = "black"),
-                               panel.grid.major.y = element_line(colour="grey"),
-                               panel.grid.minor.y = element_line(colour="grey")
+                               panel.grid.major.y = element_line(colour=grid_line),
+                               panel.grid.minor.y = element_line(colour=grid_line),
+                               legend.position = c(0.2, 0.5)
                              ),
                              legend.title = "Group",
-                             legend = "right",
+                             # legend = "right",
                              legend.labs =
                                c(paste("with variant - placebo"),
                                  paste("with variant - treatment"),
                                  paste("without variant - placebo"),
-                                 paste("without variant - treatment")
-                               ),
-                             legend.position="top" ,
-                             legend.justification="right",
-                             #legend.position = c(0.7, 0.5),
+                                 paste("without variant - treatment")),
+                             # legend.position="top" ,
+                             # legend.justification="right",
+                             
                              palette = c("Violetred4",
                                          "steelblue",
                                          "Violetred2",
                                          "turquoise3")
           )
-          }
         },
-      height = 600,
-      width = 1000)
+        height = 600,
+        width = 1000)
+      }
+    })
 
     inputs_react <- reactive({list(input$event, input$time, input$ids, input$target_gene)})
-    # hide the event, time and ids covatiates from  the covariates  and strata
+    # hide the event, time and ids covariates from the covariates  and strata
     # drop-down
     observeEvent(inputs_react(),
                  {if(checkInput(input)){
