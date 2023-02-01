@@ -8,18 +8,18 @@
 #' @export
 #'
 
-VariantSurvival <- function(vcffile, metadatafile,demo){
+VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 
   #
   install_load_requirements()
   #demo or input files
-  if (demo=="TRUE"){
+  if (demo==TRUE){
     vcffile_demo <- "merged.filtered.vcf"
     vcf <- vcfR::read.vcfR(vcffile_demo, verbose = FALSE)
     metadata_demo <-"metadata.xlsx"
     metadata <- readxl::read_excel(metadata_demo)
     metadata <- na.omit(metadata)
-  } else if (demo=="FALSE"){
+  } else if (demo==FALSE){
     vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
     metadata <- readxl::read_excel(metadatafile)
     metadata <- na.omit(metadata)
@@ -85,45 +85,52 @@ VariantSurvival <- function(vcffile, metadatafile,demo){
                                )
                    ),
                  mainPanel(
-                   tabBox(span(shiny::tags$i(h2("Structural Variants Distribution"))),
-                               selected = "Histogram",
-                               tabPanel("Histogram",
-                                        shinycssloaders::withSpinner(plotOutput(outputId = "histogram"))
-                                        ),
-                               tabPanel("Table",
-                                        span(DT::dataTableOutput("table"))
-                               )
+                   tabBox(span(shiny::tags$i(
+                     h2("Structural Variants Distribution"))),
+                     selected = "Histogram",
+                     tabPanel("Histogram",
+                              shinycssloaders::withSpinner(plotOutput(outputId = "histogram"))
+                              ),
+                     tabPanel("Table",span(DT::dataTableOutput("table"))
+                              )
+                     )
                    )
-                   )
-                 )),
-
+                 )
+               ),
          tabPanel("Survival Analysis",
-
-               sidebarLayout(
-                 sidebarPanel(
-                   span(shiny::tags$i(h3("Median survival time")),
+                  sidebarLayout(
+                    sidebarPanel(
+                      span(shiny::tags$i(
+                        h3("Median survival time")),
                         style="color:#045a8d"),
-                   DT::dataTableOutput("table2")
-                   ),
-                 mainPanel(
-                   span(shiny::tags$i(h2("Kaplan–Meier")),
+                      DT::dataTableOutput("table2")
+                      ),
+                    mainPanel(
+                      span(shiny::tags$i(
+                        h2("Kaplan–Meier")),
                         shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
-                                                                width = "100%")))
-                   ) )),
+                                                                width = "100%"))
+                        )
+                      ) 
+                    )
+                  ),
          tabPanel("Cox regression",
-
-                  span(shiny::tags$i(h3("Cox regression table")),
-                       style="color:#045a8d"),
+                  span(shiny::tags$i(
+                    h3("Cox regression table")),
+                    style="color:#045a8d"),
                   selectizeInput(inputId = "sel_cov",
                                  label = "Select binary covariates",
                                  # SV_bin is added by us, 0/1 without/with SV
                                  choices = c(colnames(metadata), "SV_bin"),
                                  multiple = TRUE,
                                  options = list(create = TRUE)
-                  ),
-                  DT::dataTableOutput("table3"))
-    ))
-
+                                 ),
+                  DT::dataTableOutput("table3")
+                  )
+         )
+    )
+  
+  
   server <- function(input, output, session) {
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
@@ -131,15 +138,14 @@ VariantSurvival <- function(vcffile, metadatafile,demo){
     observeEvent(input$disease_n,
                  {
                    if(input$disease_n!= "N/A"){
-                     genes_list <- c(get_disease_gene_list(disease_gene,
-                                                          input$disease_n))
+                     genes_list <- c(get_disease_gene_list(disease_gene,input$disease_n))
                      updateSelectizeInput(session,
                                           input = "target_gene",
                                           choices = genes_list,
                                           selected = NULL)
+                     }
                    }
-                   }
-    )
+                 )
     # Update genes drop-down after disease input is given
     reactive_gene_list <- reactive(
     {
