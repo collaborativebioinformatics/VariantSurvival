@@ -83,14 +83,21 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                )
                    ),
                  mainPanel(
-                   tabBox(span(shiny::tags$i(
+                   tabBox(
+                     span(shiny::tags$i(
                      h2("Structural Variants Distribution"))),
                      selected = "Histogram",
                      tabPanel("Histogram",
-                              shinycssloaders::withSpinner(plotOutput(outputId = "histogram"))
+                              shinycssloaders::withSpinner(
+                                plotOutput(outputId = "histogram"))
                               ),
-                     tabPanel("Table",span(DT::dataTableOutput("table"))
-                              )
+                     tabPanel("Table",
+                              selectInput(inputId = "table_cols",
+                                          label = "Include columns (optional)",
+                                          choices = NULL,
+                                          selected = FALSE,
+                                          multiple = TRUE),
+                              span(DT::dataTableOutput("table")))
                      )
                    )
                  )
@@ -104,8 +111,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                          choices = c("confidence interval" = "conf_itv",
                                                      "risk table" = "risk_table",
                                                      "y grid line" = "grid_line")),
-                      shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
-                                                              width = "100%"))
+                      shinycssloaders::withSpinner(
+                        plotOutput(outputId = "plot_km",width = "100%")
+                        )
                     )
                   ) 
                   ),
@@ -121,7 +129,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                  multiple = TRUE
                   ),
                   selectInput(inputId = "sel_strata",
-                              label = "Select strata covariate*",
+                              label = "Select strata covariate (optional)",
                               choices = NULL),
                   DT::dataTableOutput("table3")
                   )
@@ -163,10 +171,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                genes_with_svs_in_sample,
                                vcf,
                                input$ids)
-        new_md <- (RemoveNAs(metadata, input$time) %>% rename(ids = input$ids,
-                                                        trial_group_bin = input$group,
-                                                        time = input$time,
-                                                        event = input$event)
+        
+        
+        new_md <- (RemoveNAs(metadata, input$time)
+                   %>% rename(ids = input$ids,
+                              trial_group_bin = input$group,
+                              time = input$time,
+                              event = input$event)
         )
         # what happen if the input$target_gene is not in the vcf file?
         new_df <- (subset(count_df, ids %in% new_md$ids)
@@ -228,18 +239,48 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       height = 500,
       width = 700
       )
-
-
-    output$table <- DT::renderDataTable(
-      {
-        if(checkInput(input)){
-          svs_gene_input_df <- reactive_no_NAs_metadata()
-          svs_gene_input_df <- as_tibble(svs_gene_input_df[c("ids", "SV_count_per_gene")])
+    
+    observe({
+             if(checkInput(input) & !is.null(input$target_gene)){
+               svs_gene_input_df <- reactive_no_NAs_metadata()
+               # renaming back to original column names, so it's not confusing for the user.
+               # maybe not the best approach
+               rename_cols <- c("ids", "trial_group_bin", "time", "event")
+               rename_cols_with <- c(input$ids, input$group, input$time, input$event)
+               names(svs_gene_input_df)[names(svs_gene_input_df) %in% rename_cols]<- rename_cols_with
+               coln_list <- colnames(svs_gene_input_df)
+               coln_list <- coln_list[!(coln_list %in% c(input$ids,"SV_count_per_gene"))]
+               updateSelectizeInput(session,
+                                    input = "table_cols",
+                                    choices = coln_list,
+                                    selected = NULL)
+             }
+      })
+    
+    observe({
+      if(checkInput(input)){
+        svs_gene_input_df <- reactive_no_NAs_metadata()
+        rename_cols <- c("ids", "trial_group_bin", "time", "event")
+        rename_cols_with <- c(input$ids, input$group, input$time, input$event)
+        names(svs_gene_input_df)[names(svs_gene_input_df) %in% rename_cols]<- rename_cols_with
+        if(any(!is.na(input$table_cols))){
+          output$table <- DT::renderDataTable({
+            col_names_list <- c(c(input$ids, "SV_count_per_gene"),
+                                input$table_cols)
+            svs_gene_input_df <- as_tibble(svs_gene_input_df[col_names_list])
+            svs_gene_input_df
+            })
+          }
+        else{
+          output$table <- DT::renderDataTable({
+          svs_gene_input_df <- as_tibble(svs_gene_input_df[c(input$ids, "SV_count_per_gene")])
           colnames(svs_gene_input_df) <- c("ID", "SV count per gene")
           svs_gene_input_df
+          })
+          }
         }
-        }
-      )
+      })
+        
 
     observe({
       if(checkInput(input)){
@@ -299,7 +340,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
     })
 
-    inputs_react <- reactive({list(input$event, input$time, input$ids, input$target_gene)})
+    inputs_react <- reactive({list(input$event,
+                                   input$time,
+                                   input$ids,
+                                   input$target_gene)})
     # hide the event, time and ids covariates from the covariates  and strata
     # drop-down
     observeEvent(inputs_react(),
@@ -382,7 +426,6 @@ install_load_requirements<- function() {
   library(lubridate)
   library(gtsummary)
 }
-
 
 
 #' `get_disease_gene_list` parses an existing .txt
