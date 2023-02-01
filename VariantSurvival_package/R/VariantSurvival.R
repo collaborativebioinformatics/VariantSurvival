@@ -2,21 +2,31 @@
 #'
 #' @param vcffile path to the vcf file containing the Structural variant data
 #' @param metadatafile path to the txt file containing the samples metadata
+#' @param demo true or false
 #'
 #' @return
 #' @export
 #'
 
-VariantSurvival <- function(vcffile, metadatafile){
-  days_year <- 365.25
+VariantSurvival <- function(vcffile, metadatafile,demo){
+
+  #
   install_load_requirements()
-  # parse inputs
-  vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
-  metadata <- readxl::read_excel(metadatafile)
-  # remove empty extra lines
-  metadata <- na.omit(metadata)
+  #demo or input files
+  if (demo=="TRUE"){
+    vcffile_demo <- "merged.filtered.vcf"
+    vcf <- vcfR::read.vcfR(vcffile_demo, verbose = FALSE)
+    metadata_demo <-"metadata.xlsx"
+    metadata <- readxl::read_excel(metadata_demo)
+    metadata <- na.omit(metadata)
+  } else if (demo=="FALSE"){
+    vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
+    metadata <- readxl::read_excel(metadatafile)
+    metadata <- na.omit(metadata)
+
+  }
   disease_gene <- read_excel("disease_gene.xlsx")
-  # create user interface layout
+  days_year <- 365.25
 
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
@@ -27,6 +37,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                     " class="active" href="#">VariantSurvival</a>'),
                id="nav",
                windowTitle ="VariantSurvival",
+               tabPanel("Select Target Gene",
                sidebarLayout(
                  sidebarPanel(
                    pickerInput(inputId ="disease_n",
@@ -60,7 +71,7 @@ VariantSurvival <- function(vcffile, metadatafile){
                                 inline = TRUE
                                 ),
                    span(shiny::tags$i(
-                     h6("The following selections must refer to binary columns")),
+                     h6("The following selections must refer to binary factor")),
                      style="color:#045a8d"),
                    selectInput(inputId = "group",
                                label = "Select the clinical trial groups factor:",
@@ -74,55 +85,44 @@ VariantSurvival <- function(vcffile, metadatafile){
                                )
                    ),
                  mainPanel(
-                   span(shiny::tags$i(h2("Structural Variants Distribution")),
-                        shinycssloaders::withSpinner(plotOutput(outputId = "histogram",
-                                                                width = "100%"))),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   span(shiny::tags$i(h2(" ")),
-                        DT::dataTableOutput("table")),
-                   br(),
-                   br(),
-                   br()
+                   tabBox(span(shiny::tags$i(h2("Structural Variants Distribution"))),
+                               selected = "Histogram",
+                               tabPanel("Histogram",
+                                        shinycssloaders::withSpinner(plotOutput(outputId = "histogram"))
+                                        ),
+                               tabPanel("Table",
+                                        span(DT::dataTableOutput("table"))
+                               )
                    )
-                 )
-               ),
-    navbarPage(theme = shinytheme("flatly"),
-               collapsible = TRUE,
-               HTML('<a style="text-decoration:none;
-               cursor:default;
-                    color:#FFFFFF;
-                    " class="active" href="#">SurvivalAnalysis</a>'),
-               id="nev",
-               windowTitle ="SurvivalAnalysis",
+                   )
+                 )),
+
+         tabPanel("Survival Analysis",
+
                sidebarLayout(
                  sidebarPanel(
                    span(shiny::tags$i(h3("Median survival time")),
                         style="color:#045a8d"),
-                   DT::dataTableOutput("table2"),
-                   br(),
-                   br(),
-                   span(shiny::tags$i(h3("Cox regression table")),
-                        style="color:#045a8d"),
-                   selectizeInput(inputId = "sel_cov",
-                               label = "Select binary covariates",
-                               # SV_bin is added by us, 0/1 without/with SV
-                               choices = c(colnames(metadata), "SV_bin"),
-                               multiple = TRUE,
-                               options = list(create = TRUE)
-                               ),
-                   DT::dataTableOutput("table3")),
+                   DT::dataTableOutput("table2")
+                   ),
                  mainPanel(
                    span(shiny::tags$i(h2("Kaplan–Meier")),
                         shinycssloaders::withSpinner(plotOutput(outputId = "plot_km",
                                                                 width = "100%")))
-                   )
-                 )
-               )
-    )
+                   ) )),
+         tabPanel("Cox regression",
+
+                  span(shiny::tags$i(h3("Cox regression table")),
+                       style="color:#045a8d"),
+                  selectizeInput(inputId = "sel_cov",
+                                 label = "Select binary covariates",
+                                 # SV_bin is added by us, 0/1 without/with SV
+                                 choices = c(colnames(metadata), "SV_bin"),
+                                 multiple = TRUE,
+                                 options = list(create = TRUE)
+                  ),
+                  DT::dataTableOutput("table3"))
+    ))
 
   server <- function(input, output, session) {
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
@@ -222,7 +222,8 @@ VariantSurvival <- function(vcffile, metadatafile){
                                                   colour = "white"),
                   axis.line = element_line(colour = "black"),
                   panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank() #change font size of legend title
+                  panel.grid.minor = element_blank(),
+                  legend.position="top"
             ) +
             scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
           }
@@ -473,5 +474,3 @@ RemoveNAs <- function(df, time_col) {
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
 `%+=%` <- function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
-
-
