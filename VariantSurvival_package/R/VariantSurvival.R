@@ -86,18 +86,19 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                    tabBox(
                      span(shiny::tags$i(
                      h2("Structural Variants Distribution"))),
-                     selected = "Histogram",
-                     tabPanel("Histogram",
-                              shinycssloaders::withSpinner(
-                                plotOutput(outputId = "histogram"))
-                              ),
+                     selected = "Table",
                      tabPanel("Table",
                               selectInput(inputId = "table_cols",
                                           label = "Include columns (optional)",
                                           choices = NULL,
                                           selected = FALSE,
                                           multiple = TRUE),
-                              span(DT::dataTableOutput("table")))
+                              span(DT::dataTableOutput("table"))
+                              ),
+                     tabPanel("Histogram",
+                              shinycssloaders::withSpinner(
+                                plotOutput(outputId = "histogram"))
+                              )
                      )
                    )
                  )
@@ -265,6 +266,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     observe({
       if(checkInput(input)){
         svs_gene_input_df <- reactive_no_NAs_metadata()
+        # renaming back to original column names, so it's not confusing for the user.
+        # maybe not the best approach
         rename_cols <- c("ids", "trial_group_bin", "time", "event")
         rename_cols_with <- c(input$ids, input$group, input$time, input$event)
         names(svs_gene_input_df)[names(svs_gene_input_df) %in% rename_cols]<- rename_cols_with
@@ -344,11 +347,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           else if (length(n_groups) < 2){
             if (n_groups == 0){
               lables = c(paste(type, " variant - placebo"))
-              cols <- cols[1]
+              # for consistency with the coloring of placebo group
+              cols <- cols[1] 
             }
             else if (n_groups == 1){
               lables = c(paste(type, " variant - treatment"))
-              cols <- cols[2]
+              # for consistency with the coloring of treatment group
+              cols <- cols[2] 
             }
           }
         }
@@ -421,10 +426,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         if(input$group %in% input_cov_cox){
           input_cov_cox <- str_replace(input_cov_cox,
                                        input$group,
-                                       "trial_group_bin")}
+                                       "trial_group_bin")
+          }
         svs_gene_input_df <- reactive_no_NAs_metadata()
-        formulaString <- paste("Surv(time, event) ~", paste(input_cov_cox, collapse="+"))
-        x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df) %>% tbl_regression(exp = TRUE))
+        formulaString <- paste("Surv(time, event) ~", 
+                               paste(input_cov_cox, collapse="+"))
+        x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df) 
+               %>% tbl_regression(exp = TRUE))
         t3 <-as_tibble(x3)
         t3
       }
