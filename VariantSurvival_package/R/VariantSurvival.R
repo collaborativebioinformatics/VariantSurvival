@@ -107,16 +107,25 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                   mainPanel(
                     span(shiny::tags$i(
                       h2("Kaplan–Meier")),
+                      shinyjs::useShinyjs(),
                       checkboxGroupInput("km_feat",
                                          "Modify plot",
                                          choices = c("confidence interval" = "conf_itv",
                                                      "risk table" = "risk_table",
                                                      "y grid line" = "grid_line")),
-                      selectInput(inputId = "n_svs",
-                                  label = "Number of structural variants:",
+                      checkboxInput("all_n_svs",
+                                    "Include all counts",
+                                    value = TRUE),
+                      selectInput(inputId = "n_svs_min",
+                                  label = "min",
                                   choices = NULL,
                                   selected = FALSE
                                   ),
+                      selectInput(inputId = "n_svs_max",
+                                  label = "max",
+                                  choices = NULL,
+                                  selected = FALSE
+                      ),
                       shinycssloaders::withSpinner(
                         plotOutput(outputId = "plot_km",width = "100%")
                         )
@@ -291,7 +300,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         
 
     observe({
-      if(checkInput(input) & input$n_svs!=""){
+      if(checkInput(input)){
         risk_table = FALSE
         conf_itv = FALSE
         grid_line = "white"
@@ -304,9 +313,15 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
               grid_line = "grey"}
           }
         svs_gene_input_df <- reactive_no_NAs_metadata()
-        if (input$n_svs != "all"){
-          n_svs = as.numeric(input$n_svs)
-          svs_gene_input_df <- svs_gene_input_df[svs_gene_input_df$SV_count_per_gene == n_svs,]
+        if (input$all_n_svs == FALSE 
+            & input$n_svs_min!= "" 
+            & input$n_svs_max!= ""){
+          n_svs_min = as.numeric(input$n_svs_min)
+          n_svs_max = as.numeric(input$n_svs_max)
+          svs_gene_input_df$SV_count_per_gene
+          sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min 
+                  & svs_gene_input_df$SV_count_per_gene <= n_svs_max)
+          svs_gene_input_df <- svs_gene_input_df[sub,]
         }
         n_sv_groups <- unique(svs_gene_input_df[["SV_bin"]])
         n_groups <- unique(svs_gene_input_df[["trial_group_bin"]])
@@ -389,13 +404,14 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     inputs_react <- reactive({list(input$event,
                                    input$time,
                                    input$ids,
-                                   input$target_gene)})
+                                   input$target_gene
+                                   )})
     # hide the event, time and ids covariates from the covariates  and strata
     # drop-down
     observeEvent(inputs_react(),
                  {if(checkInput(input)){
                    svs_gene_input_df <- reactive_no_NAs_metadata()
-                   svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])
+                   svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
                    cov_list <- c(get_cov_list(metadata, input), "SV_bin")
                    # update the covariate drop down
                    updateSelectizeInput(session,
@@ -407,13 +423,44 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                         input = "sel_strata",
                                         choices = c(cov_list, c("SV_bin","N/A")),
                                         selected = "N/A")
-                   updateSelectizeInput(session,
-                                        input = "n_svs",
-                                        choices = c(svs_levels, "all"),
-                                        selected = "all")
                    }
                 }
               )
+    
+    observeEvent(input$all_n_svs, {
+      if (checkInput(input)){
+        if (input$all_n_svs == FALSE){
+          shinyjs::enable("n_svs_min")
+          shinyjs::enable("n_svs_max")
+          svs_gene_input_df <- reactive_no_NAs_metadata()
+          svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
+          updateSelectizeInput(session,
+                               input = "n_svs_min",
+                               choices = sort(svs_levels))
+        }
+        else {
+          shinyjs::disable("n_svs_min")
+          shinyjs::disable("n_svs_max")
+        }
+      }
+      }
+      )
+    
+    observeEvent(input$n_svs_min, {
+      if (checkInput(input)){
+        if (input$all_n_svs == FALSE & !is.null(input$n_svs_min) & input$n_svs_min!=""){
+          svs_gene_input_df <- reactive_no_NAs_metadata()
+          svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
+          svs_levels <- svs_levels[svs_levels >= input$n_svs_min]
+          updateSelectizeInput(session,
+                               input = "n_svs_max",
+                               choices = sort(svs_levels))
+        }
+      }
+      }
+      )
+    
+    
     #regression table
     output$table3 <- DT::renderDataTable({
       if(checkInput(input) & any(!is.na(input$sel_cov))){
@@ -447,6 +494,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 ############# Helper functions ###################
 install_load_requirements<- function() {
   if (!require("shiny")) install.packages("shiny")
+  if (!require("shiny")) install.packages("shinyjs")
   if (!require("shinyWidgets")) install.packages("shinyWidgets")
   if (!require("shinythemes")) install.packages("shinythemes")
   if (!require("shinycssloaders")) install.packages("shinycssloaders")
@@ -464,6 +512,7 @@ install_load_requirements<- function() {
   if (!require("gtsummary")) install.packages("gtsummary")
   if (!require("tools")) install.packages("tools")
   library(shiny)
+  library(shinyjs)
   library(shinydashboard)
   library(shinythemes)
   library(shinyWidgets)
