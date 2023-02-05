@@ -262,7 +262,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
             stat_bin(binwidth=1,
                      geom='text',
                      color='white',
-                     aes(label=after_stat(count)),
+                     aes(label=after_stat(if_else (condition = count>0,
+                                                   as.character(count), ""))),
                      position=position_stack(vjust = 0.5)) +
             xlab("Number of SVs in target gene") + ylab("Frequency") +
             theme(text = element_text(size = 20),
