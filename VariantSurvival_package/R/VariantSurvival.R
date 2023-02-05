@@ -39,7 +39,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                sidebarLayout(
                  sidebarPanel(
                    pickerInput(inputId ="disease_n",
-                               label = "Diseases",
+                               label = "Select the disease of interest:",
                                choices = c(colnames(disease_gene), "N/A"),
                                selected = "N/A"
                                ),
@@ -47,16 +47,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                label = "Select the participant ID:",
                                choices = c(colnames(metadata), "N/A"),
                                selected = "N/A"
-                               ),
-                   span(shiny::tags$i(
-                     h6("Based on literature the following genes are
-                      associated with the disease mechanism")
-                     ),
-                     style="color:#045a8d"),
-                   selectInput(inputId = "target_gene",
-                               label = "Gene of interest:",
-                               choices = NULL,
-                               selected = FALSE
                                ),
                    selectInput(inputId = "time",
                                label = "Select the time factor:",
@@ -69,7 +59,17 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                 inline = TRUE
                                 ),
                    span(shiny::tags$i(
-                     h6("The following selections must refer to binary factor")),
+                     h6("Based on literature the following genes are
+                      associated with the disease mechanism")
+                   ),
+                   style="color:#045a8d"),
+                   selectInput(inputId = "target_gene",
+                               label = "Gene of interest:",
+                               choices = NULL,
+                               selected = FALSE
+                   ),
+                   span(shiny::tags$i(
+                     h6("The following selections must refer to binary factors")),
                      style="color:#045a8d"),
                    selectInput(inputId = "group",
                                label = "Select the clinical trial groups factor:",
@@ -84,9 +84,16 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                    ),
                  mainPanel(
                    tabBox(
-                     span(shiny::tags$i(
-                     h2("Structural Variants Distribution"))),
-                     selected = "Table",
+                     selected = "Summary",
+                     tabPanel("Summary",
+                              span(DT::dataTableOutput("summ_table"))
+                              ),
+                     tabPanel("Histogram",
+                              span(shiny::tags$i(
+                                h2("Structural Variants Distribution"))),
+                              shinycssloaders::withSpinner(
+                                plotOutput(outputId = "histogram"))
+                     ),
                      tabPanel("Table",
                               selectInput(inputId = "table_cols",
                                           label = "Include columns (optional)",
@@ -94,10 +101,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                           selected = FALSE,
                                           multiple = TRUE),
                               span(DT::dataTableOutput("table"))
-                              ),
-                     tabPanel("Histogram",
-                              shinycssloaders::withSpinner(
-                                plotOutput(outputId = "histogram"))
                               )
                      )
                    )
@@ -156,23 +159,47 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
     # get disease_n input and update the genes list accordingly
-    observeEvent(input$disease_n,
-                 {
+    observeEvent(input$disease_n, {
                    if(input$disease_n!= "N/A"){
                      genes_list <- c(get_disease_gene_list(disease_gene,input$disease_n))
+                     disease_genes_names <- gene_ids_table$GeneName
                      updateSelectizeInput(session,
                                           input = "target_gene",
                                           choices = genes_list,
                                           selected = NULL)
                      }
-                   }
-                 )
-
+      })
+  
+    observe({ if(input$disease_n != "N/A" 
+                 & input$ids != "N/A" 
+                 &input$time != "N/A"){
+      genes_with_svs_in_sample <- apply(vcf@fix, 1, getGeneName,gene_ids_table)
+      sample_names <- colnames(vcf@gt)[-1]
+      disease_genes_names <- gene_ids_table$GeneName
+      output$summ_table <- DT::renderDataTable({
+        # count dataframe with patient_ids in rows and gene_ids in columns
+        count_df <- CountSVsDf(length(disease_genes_names),
+                               length(sample_names),
+                               disease_genes_names,
+                               sample_names,
+                               genes_with_svs_in_sample,
+                               vcf,
+                               input$ids)
+        new_md <- RemoveNAs(metadata, input$time) %>% rename(ids = input$ids)
+        # what happen if the input$target_gene is not in the vcf file?
+        new_df <- subset(count_df, ids %in% new_md$ids)
+        count <- as.data.frame(apply(new_df[,-1], 2, function(c)sum(c!=0)))
+        colnames(count) <- "Count of patients with SVs"
+        count <- count %>% arrange(desc(count))
+        count
+        })
+      }
+    })
+    
     reactive_no_NAs_metadata <- reactive({
       if(checkInput(input)){
         disease_genes_names <- gene_ids_table$GeneName
         sample_names <- colnames(vcf@gt)[-1] # ignore VCF genotype information
-
         # genes are repeated since a single gene can have more than one SV.
         genes_with_svs_in_sample <- apply(vcf@fix,
                                           1,
@@ -186,8 +213,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                genes_with_svs_in_sample,
                                vcf,
                                input$ids)
-        
-        
         new_md <- (RemoveNAs(metadata, input$time)
                    %>% rename(ids = input$ids,
                               trial_group_bin = input$group,
@@ -591,12 +616,7 @@ CountSVsDf <- function(ncol, nrow,
                        genes_with_svs_in_sample,
                        vcf,
                        ids_col){
-  sample_disease_gene_df <- data.frame(
-    matrix(0,
-           ncol = ncol,
-           nrow = nrow
-    )
-  )
+  sample_disease_gene_df <- data.frame(matrix(0, ncol = ncol, nrow = nrow))
   colnames(sample_disease_gene_df) <- disease_genes_names
   rownames(sample_disease_gene_df) <- sample_names
 
