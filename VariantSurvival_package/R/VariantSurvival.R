@@ -317,7 +317,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         else{
           output$table <- DT::renderDataTable({
           svs_gene_input_df <- as_tibble(svs_gene_input_df[c(input$ids, "SV_count_per_gene")])
-          colnames(svs_gene_input_df) <- c("ID", "SV count per gene")
+          colnames(svs_gene_input_df) <- c("ID", "SV count in gene of interest")
           svs_gene_input_df
           })
           }
@@ -520,7 +520,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 ############# Helper functions ###################
 install_load_requirements<- function() {
   if (!require("shiny")) install.packages("shiny")
-  if (!require("shiny")) install.packages("shinyjs")
+  if (!require("shinyjs")) install.packages("shinyjs")
   if (!require("shinyWidgets")) install.packages("shinyWidgets")
   if (!require("shinythemes")) install.packages("shinythemes")
   if (!require("shinycssloaders")) install.packages("shinycssloaders")
