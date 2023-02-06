@@ -262,7 +262,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
             stat_bin(binwidth=1,
                      geom='text',
                      color='white',
-                     aes(label=after_stat(if_else (condition = count>0,
+                     aes(label=after_stat(if_else(condition = count>0,
                                                    as.character(count), ""))),
                      position=position_stack(vjust = 0.5)) +
             xlab("Number of SVs in target gene") + ylab("Frequency") +
@@ -349,8 +349,35 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                   & svs_gene_input_df$SV_count_per_gene <= n_svs_max)
           svs_gene_input_df <- svs_gene_input_df[sub,]
         }
+        groups_df <- (unique(svs_gene_input_df[c("SV_bin", "trial_group_bin")])
+                   %>% arrange(SV_bin, trial_group_bin))
+        lables <- c()
+        cols <- c()
+        for (row in 1:nrow(groups_df)){
+          sv_bin <- groups_df[row, "SV_bin"]
+          trial_g <- groups_df[row, "trial_group_bin"]
+          if (sv_bin == 0){
+            if (trial_g == 0){
+              lables <- c(lables, "without sv - placebo")
+              cols <- c(cols, "Violetred2")
+            }
+            else if (trial_g == 1){
+              lables <- c(lables, "without sv - treatment")
+              cols <- c(cols, "turquoise3")
+            }
+          }
+          if (sv_bin == 1){
+            if (trial_g == 0){
+              lables <- c(lables, "with sv - placebo")
+              cols <- c(cols, "Violetred4")
+            }
+            else if (trial_g == 1){
+              lables <- c(lables, "with sv - treatment")
+              cols <- c(cols, "steelblue")
+            }
+          }
+        }
         n_sv_groups <- unique(svs_gene_input_df[["SV_bin"]])
-        n_groups <- unique(svs_gene_input_df[["trial_group_bin"]])
         # can it happen that there are more than 1 patient groups?
         if(length(n_sv_groups) == 2){
           # generate survival curve objects for each group
@@ -358,50 +385,23 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                  data = svs_gene_input_df, subset=(SV_bin==0))
           sv_with <- survfit2(Surv(time, event)~trial_group_bin,
                               data = svs_gene_input_df, subset=(SV_bin==1))
-          # create a list and plot
-          surv_fit_list <- list("with SV"=sv_with, "without SV"=sc_without)
-          lables <- c("with variant - placebo",
-                     "with variant - treatment",
-                     "without variant - placebo",
-                     "without variant - treatment")
-          cols <- c("Violetred4", "steelblue",
-                   "Violetred2", "turquoise3")
-        } 
-        else if (length(n_sv_groups) == 1){
-          if (n_sv_groups == 0){
-            type <- "without"
-            cols <- c("Violetred4", "steelblue")
-          }
-          else if (n_sv_groups == 1){
-            type <- "with"
-            cols <- c("Violetred2", "turquoise3")
-          }
-          sc <- survfit2(Surv(time, event)~trial_group_bin, 
-                         data = svs_gene_input_df)
-          # create a list and plot
-          temp <- paste(type , " SV") 
-          surv_fit_list <- list(temp = sc)
-          if (length(n_groups) == 2){
-            lables = c(paste(type, " variant - placebo"),
-                       paste(type, " variant - treatment"))
-          }
-          else if (length(n_groups) < 2){
-            if (n_groups == 0){
-              lables = c(paste(type, " variant - placebo"))
-              # for consistency with the coloring of placebo group
-              cols <- cols[1] 
-            }
-            else if (n_groups == 1){
-              lables = c(paste(type, " variant - treatment"))
-              # for consistency with the coloring of treatment group
-              cols <- cols[2] 
-            }
-          }
+          surv_fit_list <- list("with SV" = sv_with, "without SV" = sc_without)
         }
+        else if(length(n_sv_groups) ==1){
+          if (n_sv_groups == 0){
+            type = "without"}
+          else if (n_sv_groups == 1){
+            type = "with"}
+          temp <- paste(type , " SV") 
+          sc <- survfit2(Surv(time, event)~trial_group_bin, data = svs_gene_input_df)
+          surv_fit_list <- list(temp = sc)
+          }
+        
         output$plot_km <- renderPlot({
           ggsurvplot_combine(surv_fit_list,
                              data=svs_gene_input_df,
                              risk.table = risk_table,
+                             ncensor.plot = TRUE,
                              conf.int = conf_itv,
                              conf.int.style = "step",
                              risk.table.y.text = FALSE,
