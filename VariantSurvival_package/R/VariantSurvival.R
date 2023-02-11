@@ -8,7 +8,8 @@
 #' @export
 #'
 
-VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
+VariantSurvivalv2 <- function(vcffile, metadatafile,demo=FALSE){
+
   install_load_requirements()
   #demo or input files
   if (demo==TRUE){
@@ -99,23 +100,34 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                         #if (demo==TRUE){
                                         #  selected = "survival.status_bin"
                                         #} else{
-                                          selected = "N/A"
-                                       # }
+                                        selected = "N/A"
+                                        # }
                             )
                           ),
                           mainPanel(
-                            tabBox(
-                              selected = "Summary",
-                              tabPanel("Summary",
-                                       span(DT::dataTableOutput("summ_table"))
-                              ),
+                            box(
+                              h1("Summary"),  width = 5,
+                              br(),
+                              br(),
+                              br(),
+                              br(),
+                              br(),
+                              br(),
+                              span(DT::dataTableOutput("summ_table"))
+                            ),
+                            br(),
+                            br(),
+                            tabBox( span(shiny::tags$i(
+                              h2("Structural Variants Distribution"))),
+                              selected = "Histogram", width = 5,
+
                               tabPanel("Histogram",
-                                       span(shiny::tags$i(
-                                         h2("Structural Variants Distribution"))),
+                                       #icon = icon("chart"),
                                        shinycssloaders::withSpinner(
                                          plotOutput(outputId = "histogram"))
                               ),
                               tabPanel("Table",
+                                       icon = icon("table"),
                                        selectInput(inputId = "table_cols",
                                                    label = "Include columns (optional)",
                                                    choices = NULL,
@@ -129,52 +141,78 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                ),
                tabPanel("Survival Analysis",
                         mainPanel(
-                          span(shiny::tags$i(
-                            h2("Kaplan–Meier")),
-                            shinyjs::useShinyjs(),
-                            checkboxGroupInput("km_feat",
-                                               "Modify plot",
-                                               choices = c("confidence interval" = "conf_itv",
-                                                           "risk table" = "risk_table",
-                                                           "y grid line" = "grid_line")),
-                            checkboxInput("all_n_svs",
-                                          "Include all counts",
-                                          value = TRUE),
-                            selectInput(inputId = "n_svs_min",
-                                        label = "min",
-                                        choices = NULL,
-                                        selected = FALSE
+                          tabBox(
+                            tabPanel("Kaplan_Meier",
+                               width= 12, height = 500,
+                                   span(shiny::tags$i(h2("Kaplan–Meier")),
+                                        #button
+                                        dropdownButton(
+                                          tags$h3("List of Input"),
+                                          checkboxGroupInput("km_feat",
+                                                             "Modify plot",
+                                                             choices = c("confidence interval" = "conf_itv",
+                                                                         "risk table" = "risk_table",
+                                                                         "y grid line" = "grid_line")),
+                                          checkboxInput("all_n_svs",
+                                                        "Include all counts",
+                                                        value = TRUE),
+                                          selectInput(inputId = "n_svs_min",
+                                                      label = "min",
+                                                      choices = NULL,
+                                                      selected = FALSE
+                                          ),
+                                          selectInput(inputId = "n_svs_max",
+                                                      label = "max",
+                                                      choices = NULL,
+                                                      selected = FALSE
+                                          ),
+                                          circle = TRUE,
+                                          status = "danger",
+                                          icon = icon("gear"), width = "300px",
+                                          tooltip = tooltipOptions(title = "Click to see inputs !")
+                                        ),
+                                        shinyjs::useShinyjs(),#why ?
+                                        shinycssloaders::withSpinner(
+                                          plotOutput(outputId = "plot_km",width = "100%")
+                                        )
+                                   )
+
                             ),
-                            selectInput(inputId = "n_svs_max",
-                                        label = "max",
-                                        choices = NULL,
-                                        selected = FALSE
-                            ),
-                            shinycssloaders::withSpinner(
-                              plotOutput(outputId = "plot_km",width = "100%")
+                            tabPanel("new_tab",width= 12, height = 500,
+                              " add module", #plotOutput(outputId = "plot_km",width = "100%")
                             )
                           )
+                         ,
+                          br(),
+                          br(),
+                          br(),
+                          box(width= 12,height = 200, ""),
+                          box(width= 12,
+                            span(shiny::tags$i(h3("Cox regression table")),
+                                                           style="color:#045a8d"),
+                            dropdownButton(
+                              tags$h3("List of Input"),
+                              selectizeInput(inputId = "sel_cov",
+                                             label = "Select binary covariates",
+                                             # SV_bin is added by us, 0/1 without/with SV
+                                             choices = NULL,
+                                             selected = FALSE,
+                                             multiple = TRUE
+                              ),
+                              selectInput(inputId = "sel_strata",
+                                          label = "Select strata covariate (optional)",
+                                          choices = NULL),
+                              circle = TRUE,
+                              status = "danger",
+                              icon = icon("gear"), width = "300px",
+                              tooltip = tooltipOptions(title = "Click to see inputs !")
+                            ),
+                            DT::dataTableOutput("table3")
+                          )
                         )
-               ),
-               tabPanel("Cox regression",
-                        span(shiny::tags$i(
-                          h3("Cox regression table")),
-                          style="color:#045a8d"),
-                        selectizeInput(inputId = "sel_cov",
-                                       label = "Select binary covariates",
-                                       # SV_bin is added by us, 0/1 without/with SV
-                                       choices = NULL,
-                                       selected = FALSE,
-                                       multiple = TRUE
-                        ),
-                        selectInput(inputId = "sel_strata",
-                                    label = "Select strata covariate (optional)",
-                                    choices = NULL),
-                        DT::dataTableOutput("table3")
                )
     )
   )
-
 
   server <- function(input, output, session) {
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
@@ -345,7 +383,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
     })
 
-
+    ######### tab 2
     observe({
       if(checkInput(input)){
         risk_table = FALSE
@@ -509,28 +547,28 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 
 
     #regression table
-    output$table3 <- DT::renderDataTable({
-      if(checkInput(input) & any(!is.na(input$sel_cov))){
-        input_cov_cox <- input$sel_cov
-        # mapping original column names to the new ones
-        if(input$event %in% input_cov_cox){
-          input_cov_cox <- str_replace(input_cov_cox,
-                                       input$event,
-                                       "event")}
-        if(input$group %in% input_cov_cox){
-          input_cov_cox <- str_replace(input_cov_cox,
-                                       input$group,
-                                       "trial_group_bin")
-        }
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        formulaString <- paste("Surv(time, event) ~",
-                               paste(input_cov_cox, collapse="+"))
-        x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df)
-               %>% tbl_regression(exp = TRUE))
-        t3 <-as_tibble(x3)
-        t3
-      }
-    })
+            output$table3 <- DT::renderDataTable({
+          if(checkInput(input) & any(!is.na(input$sel_cov))){
+            input_cov_cox <- input$sel_cov
+    # mapping original column names to the new ones
+           if(input$event %in% input_cov_cox){
+              input_cov_cox <- str_replace(input_cov_cox,
+                                           input$event,
+                                           "event")}
+           if(input$group %in% input_cov_cox){
+              input_cov_cox <- str_replace(input_cov_cox,
+                                           input$group,
+                                  "trial_group_bin")
+             }
+             svs_gene_input_df <- reactive_no_NAs_metadata()
+             formulaString <- paste("Surv(time, event) ~",
+                                   paste(input_cov_cox, collapse="+"))
+            x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df)
+                   %>% tbl_regression(exp = TRUE))
+            t3 <-as_tibble(x3)
+            t3
+          }
+        })
   }
 
   # Run the application
