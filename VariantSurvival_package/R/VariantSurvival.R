@@ -8,7 +8,7 @@
 #' @export
 #'
 
-VariantSurvivalv2 <- function(vcffile, metadatafile,demo=FALSE){
+VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 
   install_load_requirements()
   #demo or input files
