@@ -342,13 +342,14 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         if (input$all_n_svs == FALSE 
             & input$n_svs_min!= "" 
             & input$n_svs_max!= ""){
-          n_svs_min = as.numeric(input$n_svs_min)
-          n_svs_max = as.numeric(input$n_svs_max)
-          svs_gene_input_df$SV_count_per_gene
-          sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min 
-                  & svs_gene_input_df$SV_count_per_gene <= n_svs_max)
-          svs_gene_input_df <- svs_gene_input_df[sub,]
-        }
+          if (input$n_svs_max > input$n_svs_min){
+            n_svs_min = as.numeric(input$n_svs_min)
+            n_svs_max = as.numeric(input$n_svs_max)
+            sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min 
+                    & svs_gene_input_df$SV_count_per_gene <= n_svs_max)
+            svs_gene_input_df <- svs_gene_input_df[sub,]
+          }
+          }
         groups_df <- (unique(svs_gene_input_df[c("SV_bin", "trial_group_bin")])
                    %>% arrange(SV_bin, trial_group_bin))
         lables <- c()
@@ -474,13 +475,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     
     observeEvent(input$n_svs_min, {
       if (checkInput(input)){
-        if (input$all_n_svs == FALSE & !is.null(input$n_svs_min) & input$n_svs_min!=""){
+        if (input$all_n_svs == FALSE & input$n_svs_min!=""){
           svs_gene_input_df <- reactive_no_NAs_metadata()
           svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
-          svs_levels <- svs_levels[svs_levels >= input$n_svs_min]
+          max_levels <- sort(svs_levels[svs_levels >= as.numeric(input$n_svs_min)])
           updateSelectizeInput(session,
                                input = "n_svs_max",
-                               choices = sort(svs_levels))
+                               choices = max_levels)
         }
       }
       }
