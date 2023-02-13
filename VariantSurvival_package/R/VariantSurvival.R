@@ -115,11 +115,21 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                       shinyjs::useShinyjs(), 
                       tabBox(
                         tabPanel("Null model",
-                                 shinycssloaders::withSpinner(
-                                   plotOutput(outputId = "null_model_km", width = "100%")
-                                 )
-                        ),
-                        tabPanel("Kaplan Meier plot",
+                                 fluidRow(column(12, 
+                                                 div(style = "height:100px; Topleft"),
+                                                 shinycssloaders::withSpinner(
+                                                   plotOutput(outputId = "null_model_km")))),
+                                 fluidRow(column(12, div(style = "height:200px; Bottomleft"),
+                                                 checkboxInput("life_table_null_model",
+                                                               "Display life table",
+                                                               value = FALSE), 
+                                                 box(id = "myBox", title = "", width = '200px',
+                                                     span(DT::dataTableOutput("null_model_life_table"))
+                                                     )
+                                                 )
+                                          )
+                                 ),
+                        tabPanel("Multiple model",
                                  dropdownButton(
                                    tags$h3("List of Input"),
                                    checkboxGroupInput("km_feat",
@@ -187,6 +197,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                           selected = NULL)
                      }
       })
+    
   
     observe({ if(input$disease_n != "N/A" 
                  & input$ids != "N/A" 
@@ -345,10 +356,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     observe({
       if(checkInput(input)){
         svs_gene_input_df <- reactive_no_NAs_metadata()
+        null_model <- survfit(Surv(time, event)~1,
+                              data = svs_gene_input_df,
+                              type = "kaplan-meier")
         output$null_model_km <- renderPlot({
-          null_model <- survfit(Surv(time, event)~1,
-                                data = svs_gene_input_df,
-                                type = "kaplan-meier")
           null_model %>%
             ggsurvfit() +
             labs(
@@ -360,8 +371,33 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         },
         height = 600,
         width = 1000)
-      }})   
-
+        
+        observeEvent(input$life_table_null_model, {
+          if(input$life_table_null_model == FALSE){
+            shinyjs::hide(id = "myBox")
+          }
+          else if(input$life_table_null_model==TRUE){
+            shinyjs::show(id = "myBox")
+            output$null_model_life_table <- DT::renderDataTable({
+              as_tibble(round_df(as.data.frame(surv_summary(null_model)), 3))
+            }) 
+          }
+        })
+      }
+      })
+    
+    # observeEvent(input$life_table_null_model, {
+    #   if(checkInput(input) & input$life_table_null_model==TRUE){
+    #     svs_gene_input_df <- reactive_no_NAs_metadata()
+    #     null_model <- survfit(Surv(time, event)~1,
+    #                           data = svs_gene_input_df,
+    #                           type = "kaplan-meier")
+    #     output$null_model_life_table <- DT::renderDataTable({
+    #       as_tibble(round_df(as.data.frame(surv_summary(null_model)), 3))
+    #     }) 
+    #   }
+    # })
+    
     observe({
       if(checkInput(input)){
         risk_table = FALSE
@@ -701,6 +737,15 @@ RemoveNAs <- function(df, time_col) {
   } else {
     return(df)
   }
+}
+
+round_df <- function(x, digits) {
+  # round all numeric variables
+  # x: data frame 
+  # digits: number of digits to round
+  numeric_columns <- sapply(x, mode) == 'numeric'
+  x[numeric_columns] <-  round(x[numeric_columns], digits)
+  x
 }
 
 #' implementation of += operator
