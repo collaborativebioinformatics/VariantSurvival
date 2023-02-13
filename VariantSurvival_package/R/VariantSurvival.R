@@ -111,27 +111,43 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                     span(shiny::tags$i(
                       h2("Kaplan–Meier")),
                       shinyjs::useShinyjs(),
-                      checkboxGroupInput("km_feat",
-                                         "Modify plot",
-                                         choices = c("confidence interval" = "conf_itv",
-                                                     "risk table" = "risk_table",
-                                                     "y grid line" = "grid_line")),
-                      checkboxInput("all_n_svs",
-                                    "Include all counts",
-                                    value = TRUE),
-                      selectInput(inputId = "n_svs_min",
-                                  label = "min",
-                                  choices = NULL,
-                                  selected = FALSE
-                                  ),
-                      selectInput(inputId = "n_svs_max",
-                                  label = "max",
-                                  choices = NULL,
-                                  selected = FALSE
-                      ),
-                      shinycssloaders::withSpinner(
-                        plotOutput(outputId = "plot_km",width = "100%")
+                      tabBox(
+                        tabPanel("Kaplan_Meier",
+                                 #button
+                                 dropdownButton(
+                                   tags$h3("List of Input"),
+                                   checkboxGroupInput("km_feat",
+                                                      "Modify plot",
+                                                      choices = c("confidence interval" = "conf_itv",
+                                                                  "risk table" = "risk_table",
+                                                                  "y grid line" = "grid_line")),
+                                   checkboxInput("all_n_svs",
+                                                 "Include all counts",
+                                                 value = TRUE),
+                                   selectInput(inputId = "n_svs_min",
+                                               label = "min",
+                                               choices = NULL,
+                                               selected = FALSE
+                                   ),
+                                   selectInput(inputId = "n_svs_max",
+                                               label = "max",
+                                               choices = NULL,
+                                               selected = FALSE
+                                   ),
+                                   circle = TRUE,
+                                   status = "danger",
+                                   icon = icon("gear"), width = "300px",
+                                   tooltip = tooltipOptions(title = "Click to see inputs !")
+                                 ),
+                                 shinyjs::useShinyjs(),#why ?
+                                 shinycssloaders::withSpinner(
+                                   plotOutput(outputId = "plot_km",width = "100%")
+                                 )
+                        ),
+                        tabPanel("new_tab",
+                                 " add module", #plotOutput(outputId = "plot_km",width = "100%")
                         )
+                      )
                     )
                   ) 
                   ),
