@@ -110,10 +110,16 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                   mainPanel(
                     span(shiny::tags$i(
                       h2("Kaplan–Meier")),
-                      shinyjs::useShinyjs(),
+                      # to enable/disable the n_svs_min & n_svs_max fields, 
+                      #this should be added at the panel level
+                      shinyjs::useShinyjs(), 
                       tabBox(
-                        tabPanel("Kaplan_Meier",
-                                 #button
+                        tabPanel("Null model",
+                                 shinycssloaders::withSpinner(
+                                   plotOutput(outputId = "null_model_km", width = "100%")
+                                 )
+                        ),
+                        tabPanel("Kaplan Meier plot",
                                  dropdownButton(
                                    tags$h3("List of Input"),
                                    checkboxGroupInput("km_feat",
@@ -139,17 +145,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                    icon = icon("gear"), width = "300px",
                                    tooltip = tooltipOptions(title = "Click to see inputs !")
                                  ),
-                                 shinyjs::useShinyjs(),#why ?
                                  shinycssloaders::withSpinner(
                                    plotOutput(outputId = "plot_km",width = "100%")
+                                   )
                                  )
-                        ),
-                        tabPanel("new_tab",
-                                 " add module", #plotOutput(outputId = "plot_km",width = "100%")
                         )
                       )
-                    )
-                  ) 
+                    ) 
                   ),
          tabPanel("Cox regression",
                   span(shiny::tags$i(
@@ -339,7 +341,26 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           }
         }
       })
-        
+     
+    observe({
+      if(checkInput(input)){
+        svs_gene_input_df <- reactive_no_NAs_metadata()
+        output$null_model_km <- renderPlot({
+          null_model <- survfit(Surv(time, event)~1,
+                                data = svs_gene_input_df,
+                                type = "kaplan-meier")
+          null_model %>%
+            ggsurvfit() +
+            labs(
+              x = "Days",
+              y = "Overall survival probability"
+            ) +
+            add_confidence_interval() +
+            add_risktable()
+        },
+        height = 600,
+        width = 1000)
+      }})   
 
     observe({
       if(checkInput(input)){
@@ -399,9 +420,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         if(length(n_sv_groups) == 2){
           # generate survival curve objects for each group
           sc_without <- survfit2(Surv(time, event)~trial_group_bin,
-                                 data = svs_gene_input_df, subset=(SV_bin==0))
+                                 data = svs_gene_input_df,
+                                 subset=(SV_bin==0),
+                                 type = "kaplan-meier")
           sv_with <- survfit2(Surv(time, event)~trial_group_bin,
-                              data = svs_gene_input_df, subset=(SV_bin==1))
+                              data = svs_gene_input_df,
+                              subset=(SV_bin==1),
+                              type = "kaplan-meier")
           surv_fit_list <- list("with SV" = sv_with, "without SV" = sc_without)
         }
         else if(length(n_sv_groups) ==1){
@@ -410,7 +435,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           else if (n_sv_groups == 1){
             type = "with"}
           temp <- paste(type , " SV") 
-          sc <- survfit2(Surv(time, event)~trial_group_bin, data = svs_gene_input_df)
+          sc <- survfit2(Surv(time, event)~trial_group_bin,
+                         data = svs_gene_input_df,
+                         type = "kaplan-meier")
           surv_fit_list <- list(temp = sc)
           }
         
@@ -418,7 +445,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           ggsurvplot_combine(surv_fit_list,
                              data=svs_gene_input_df,
                              risk.table = risk_table,
-                             ncensor.plot = TRUE,
                              conf.int = conf_itv,
                              conf.int.style = "step",
                              risk.table.y.text = FALSE,
@@ -430,8 +456,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                axis.line = element_line(colour = "black"),
                                panel.grid.major.y = element_line(colour=grid_line),
                                panel.grid.minor.y = element_line(colour=grid_line),
-                               legend.position = c(0.2, 0.5)
+                               # legend.position = c(0.2, 0.5)
                              ),
+                             legend = "right",
                              legend.title = "Group",
                              legend.labs =lables,
                              palette = cols
