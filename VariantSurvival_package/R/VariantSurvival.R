@@ -116,48 +116,58 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                       tabBox(
                         tabPanel("Null model",
                                  fluidRow(column(12, 
-                                                 div(style = "height:100px; Topleft"),
+                                                 div(style = "height:70px; Topleft"),
                                                  shinycssloaders::withSpinner(
-                                                   plotOutput(outputId = "null_model_km")))),
+                                                   plotOutput(outputId = "null_model_km")))
+                                          ),
                                  fluidRow(column(12, div(style = "height:200px; Bottomleft"),
                                                  checkboxInput("life_table_null_model",
                                                                "Display life table",
                                                                value = FALSE), 
                                                  box(id = "myBox", title = "", width = '200px',
-                                                     span(DT::dataTableOutput("null_model_life_table"))
-                                                     )
-                                                 )
+                                                     span(DT::dataTableOutput("null_model_life_table"))))
                                           )
                                  ),
                         tabPanel("Multiple model",
-                                 dropdownButton(
-                                   tags$h3("List of Input"),
-                                   checkboxGroupInput("km_feat",
-                                                      "Modify plot",
-                                                      choices = c("confidence interval" = "conf_itv",
-                                                                  "risk table" = "risk_table",
-                                                                  "y grid line" = "grid_line")),
-                                   checkboxInput("all_n_svs",
-                                                 "Include all counts",
-                                                 value = TRUE),
-                                   selectInput(inputId = "n_svs_min",
-                                               label = "min",
-                                               choices = NULL,
-                                               selected = FALSE
-                                   ),
-                                   selectInput(inputId = "n_svs_max",
-                                               label = "max",
-                                               choices = NULL,
-                                               selected = FALSE
-                                   ),
-                                   circle = TRUE,
-                                   status = "danger",
-                                   icon = icon("gear"), width = "300px",
-                                   tooltip = tooltipOptions(title = "Click to see inputs !")
-                                 ),
-                                 shinycssloaders::withSpinner(
-                                   plotOutput(outputId = "plot_km",width = "100%")
-                                   )
+                                 fluidRow(column(12, 
+                                                 div(style = "height:70px; Topleft"),
+                                                 dropdownButton(
+                                                   tags$h3("List of Input"),
+                                                   checkboxGroupInput("km_feat",
+                                                                      "Modify plot",
+                                                                      choices = c("confidence interval" = "conf_itv",
+                                                                                  "risk table" = "risk_table",
+                                                                                  "y grid line" = "grid_line")),
+                                                   checkboxInput("all_n_svs",
+                                                                 "Include all counts",
+                                                                 value = TRUE
+                                                                 ),
+                                                   selectInput(inputId = "n_svs_min",
+                                                               label = "min",
+                                                               choices = NULL,
+                                                               selected = FALSE
+                                                               ),
+                                                   selectInput(inputId = "n_svs_max",
+                                                               label = "max",
+                                                               choices = NULL,
+                                                               selected = FALSE
+                                                               ),
+                                                   circle = TRUE,
+                                                   status = "danger",
+                                                   icon = icon("gear"), width = "300px",
+                                                   tooltip = tooltipOptions(title = "Click to see inputs !")
+                                                   ),
+                                                 shinycssloaders::withSpinner(
+                                                   plotOutput(outputId = "plot_km",width = "100%"))
+                                                 )
+                                          ),
+                                 fluidRow(column(12, div(style = "height:200px; Bottomleft"),
+                                                 checkboxInput("life_table_multiple_model",
+                                                               "Display life table",
+                                                               value = FALSE), 
+                                                 box(id = "myBox_mm", title = "", width = '200px',
+                                                     span(DT::dataTableOutput("multiple_model_life_table"))))
+                                          )
                                  )
                         )
                       )
@@ -177,6 +187,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                   selectInput(inputId = "sel_strata",
                               label = "Select strata covariate (optional)",
                               choices = NULL),
+                  checkboxInput("cox_reg_td",
+                                "With time-dependent covariates",
+                                value = TRUE),
                   DT::dataTableOutput("table3")
                   )
          )
@@ -360,17 +373,27 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                               data = svs_gene_input_df,
                               type = "kaplan-meier")
         output$null_model_km <- renderPlot({
-          null_model %>%
-            ggsurvfit() +
-            labs(
-              x = "Days",
-              y = "Overall survival probability"
-            ) +
-            add_confidence_interval() +
-            add_risktable()
+          ggsurvplot_combine(list(null_model),
+                             data=no_na_df,
+                             risk.table = FALSE,
+                             conf.int = FALSE,
+                             conf.int.style = "step",
+                             risk.table.y.text = FALSE,
+                             xlab = "Years",
+                             ylab = "Overall survival probability",
+                             legend = "none",
+                             ggtheme = theme(
+                               text = element_text(size = 20),
+                               panel.background = element_rect(fill = "white",
+                                                               colour = "white"),
+                               axis.line = element_line(colour = "black"),
+                               panel.grid.major.y = element_line(colour='white'),
+                               panel.grid.minor.y = element_line(colour='white'),
+                               # legend.position = c(0.2, 0.5)
+                             ))
         },
         height = 600,
-        width = 1000)
+        width = 900)
         
         observeEvent(input$life_table_null_model, {
           if(input$life_table_null_model == FALSE){
@@ -385,18 +408,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         })
       }
       })
-    
-    # observeEvent(input$life_table_null_model, {
-    #   if(checkInput(input) & input$life_table_null_model==TRUE){
-    #     svs_gene_input_df <- reactive_no_NAs_metadata()
-    #     null_model <- survfit(Surv(time, event)~1,
-    #                           data = svs_gene_input_df,
-    #                           type = "kaplan-meier")
-    #     output$null_model_life_table <- DT::renderDataTable({
-    #       as_tibble(round_df(as.data.frame(surv_summary(null_model)), 3))
-    #     }) 
-    #   }
-    # })
     
     observe({
       if(checkInput(input)){
