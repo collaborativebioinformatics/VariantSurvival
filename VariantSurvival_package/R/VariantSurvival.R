@@ -132,26 +132,25 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                  fluidRow(column(12, 
                                                  div(style = "height:70px; Topleft"),
                                                  dropdownButton(
-                                                   tags$h3("List of Input"),
-                                                   checkboxGroupInput("km_feat",
-                                                                      "Modify plot",
-                                                                      choices = c("confidence interval" = "conf_itv",
-                                                                                  "risk table" = "risk_table",
-                                                                                  "y grid line" = "grid_line")),
                                                    checkboxInput("all_n_svs",
                                                                  "Include all counts",
                                                                  value = TRUE
-                                                                 ),
+                                                   ),
                                                    selectInput(inputId = "n_svs_min",
                                                                label = "min",
                                                                choices = NULL,
                                                                selected = FALSE
-                                                               ),
+                                                   ),
                                                    selectInput(inputId = "n_svs_max",
                                                                label = "max",
                                                                choices = NULL,
                                                                selected = FALSE
-                                                               ),
+                                                   ),
+                                                   checkboxGroupInput("km_feat",
+                                                                      "Plot layout options:",
+                                                                      choices = c("confidence interval" = "conf_itv",
+                                                                                  "risk table" = "risk_table",
+                                                                                  "y grid line" = "grid_line")),
                                                    circle = TRUE,
                                                    status = "danger",
                                                    icon = icon("gear"), width = "300px",
@@ -176,21 +175,53 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
          tabPanel("Cox regression",
                   span(shiny::tags$i(
                     h3("Cox regression table")),
-                    style="color:#045a8d"),
-                  selectizeInput(inputId = "sel_cov",
-                                 label = "Select binary covariates",
-                                 # SV_bin is added by us, 0/1 without/with SV
-                                 choices = NULL,
-                                 selected = FALSE,
-                                 multiple = TRUE
-                  ),
-                  selectInput(inputId = "sel_strata",
-                              label = "Select strata covariate (optional)",
-                              choices = NULL),
-                  checkboxInput("cox_reg_td",
-                                "With time-dependent covariates",
-                                value = TRUE),
-                  DT::dataTableOutput("table3")
+                    style="color:#045a8d",
+                    shinyjs::useShinyjs(),
+                    tabBox(
+                      tabPanel("Standard model",
+                               checkboxInput("cox_reg_td",
+                                             "With time-dependent covariates",
+                                             value = TRUE),
+                               selectizeInput(inputId = "sel_cov",
+                                              label = "Select categorical covariates",
+                                              # SV_bin is added by us, 0/1 without/with SV
+                                              choices = NULL,
+                                              selected = FALSE,
+                                              multiple = TRUE
+                               ),
+                               selectizeInput(inputId = "sel_cov_cont",
+                                              label = "Select continuous covariates",
+                                              choices = NULL,
+                                              selected = FALSE,
+                                              multiple = TRUE
+                               ),
+                               selectInput(inputId = "sel_strata",
+                                           label = "Select strata covariate (optional)",
+                                           choices = NULL)
+                               ),
+                      tabPanel("Multiple model",
+                               checkboxInput("cox_reg_td",
+                                             "With time-dependent covariates",
+                                             value = TRUE),
+                               selectizeInput(inputId = "sel_cov",
+                                              label = "Select categorical covariates",
+                                              # SV_bin is added by us, 0/1 without/with SV
+                                              choices = NULL,
+                                              selected = FALSE,
+                                              multiple = TRUE
+                               ),
+                               selectizeInput(inputId = "sel_cov_cont",
+                                              label = "Select continuous covariates",
+                                              choices = NULL,
+                                              selected = FALSE,
+                                              multiple = TRUE
+                               ),
+                               selectInput(inputId = "sel_strata",
+                                           label = "Select strata covariate (optional)",
+                                           choices = NULL)
+                               )
+                      )
+                    )
                   )
          )
     )
@@ -536,6 +567,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                         choices = cov_list,
                                         options = list(create = TRUE))
                    # update the strata drop down, this field is optional
+                   updateSelectizeInput(session,
+                                        input = "sel_cov_cont",
+                                        choices = cov_list,
+                                        options = list(create = TRUE))
                    updateSelectizeInput(session,
                                         input = "sel_strata",
                                         choices = c(cov_list, c("SV_bin","N/A")),
