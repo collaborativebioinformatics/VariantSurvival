@@ -116,15 +116,15 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                       tabBox(
                         tabPanel("Null model",
                                  fluidRow(column(12, 
-                                                 div(style = "height:70px; Topleft"),
+                                                 #div(style = "height:70px; Topleft"),
                                                  shinycssloaders::withSpinner(
-                                                   plotOutput(outputId = "null_model_km")))
-                                          ),
-                                 fluidRow(column(12, div(style = "height:200px; Bottomleft"),
+                                                   plotOutput(outputId = "null_model_km"))),
+                                          column(6, 
+                                                 #div(style = "height:200px; Bottomleft"),
                                                  checkboxInput("life_table_null_model",
                                                                "Display life table",
                                                                value = FALSE), 
-                                                 box(id = "myBox", title = "", width = '200px',
+                                                 box(id = "myBox", title = "", #width = '200px',
                                                      span(DT::dataTableOutput("null_model_life_table"))))
                                           )
                                  ),
@@ -153,7 +153,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                                                   "y grid line" = "grid_line")),
                                                    circle = TRUE,
                                                    status = "danger",
-                                                   icon = icon("gear"), width = "300px",
+                                                   icon = icon("gear"), width = "200",
                                                    tooltip = tooltipOptions(title = "Click to see inputs !")
                                                    ),
                                                  shinycssloaders::withSpinner(
@@ -179,6 +179,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                     shinyjs::useShinyjs(),
                     tabBox(
                       tabPanel("Standard model",
+                               dropdownButton(
                                checkboxInput("cox_reg_td",
                                              "With time-dependent covariates",
                                              value = TRUE),
@@ -197,7 +198,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                ),
                                selectInput(inputId = "sel_strata",
                                            label = "Select strata covariate (optional)",
-                                           choices = NULL)
+                                           choices = NULL),
+                               circle = TRUE,
+                               status = "danger",
+                               icon = icon("gear"), width = "300",
+                               tooltip = tooltipOptions(title = "Click to see inputs !")),
+                               span(DT::dataTableOutput("table3"))
+                               
                                ),
                       tabPanel("Multiple model",
                                checkboxInput("cox_reg_td",
@@ -423,8 +430,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                # legend.position = c(0.2, 0.5)
                              ))
         },
-        height = 600,
-        width = 900)
+        height = 500,
+        width = 700)
         
         observeEvent(input$life_table_null_model, {
           if(input$life_table_null_model == FALSE){
@@ -611,27 +618,26 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
       }
       )
+  
     
-    
-    #regression table
     output$table3 <- DT::renderDataTable({
-      if(checkInput(input) & any(!is.na(input$sel_cov))){
-        input_cov_cox <- input$sel_cov
-        # mapping original column names to the new ones
-        if(input$event %in% input_cov_cox){
-          input_cov_cox <- str_replace(input_cov_cox,
-                                       input$event,
-                                       "event")}
-        if(input$group %in% input_cov_cox){
-          input_cov_cox <- str_replace(input_cov_cox,
-                                       input$group,
-                                       "trial_group_bin")
-          }
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        formulaString <- paste("Surv(time, event) ~", 
-                               paste(input_cov_cox, collapse="+"))
-        x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df) 
+      if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
+        covariates <- c()
+        input_df <- reactive_no_NAs_metadata()
+        if (any(!is.na(input$sel_cov_cont))){
+          input_cov_cont <- map_col_names(input, input$sel_cov_cont)
+          input_df[input_cov_cont] <- sapply(input_df[input_cov_cont],as.numeric)
+          covariates <- c(covariates, input_cov_cont)
+        }
+        if(any(!is.na(input$sel_cov))){
+          input_cov_cat <- map_col_names(input, input$sel_cov)
+          input_df[input_cov_cat] <- sapply(input_df[input_cov_cat],as.character)
+          covariates <- c(covariates, input_cov_cat)
+        }
+        formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
+        x3 <- (coxph(as.formula(formulaString), data=input_df)
                %>% tbl_regression(exp = TRUE))
+        proport_hazard_assump <- cox.zph(cox_reg.std)
         t3 <-as_tibble(x3)
         t3
       }
@@ -793,6 +799,21 @@ round_df <- function(x, digits) {
   x[numeric_columns] <-  round(x[numeric_columns], digits)
   x
 }
+
+
+map_col_names <- function(input, cov_list){
+  if(input$event %in% cov_list){
+    cov_list <- str_replace(cov_list,
+                            input$event,
+                            "event")}
+  if(input$group %in% cov_list){
+    cov_list <- str_replace(cov_list,
+                            input$group,
+                            "trial_group_bin")
+  }
+  return(cov_list)
+}
+
 
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
