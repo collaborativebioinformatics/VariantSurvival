@@ -177,8 +177,12 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                         shinyjs::useShinyjs(),
                         tabBox(
                           tabPanel("Standard model",
-                                   fixedPanel(title = "",  draggable = TRUE, left  = 50,
-                                              dropdownButton(
+
+                                   fluidRow(
+
+                                   fixedPanel(title = "",  draggable = FALSE,  width="50%",height = 400, left = 0,
+
+                                              div(box( dropdownButton(
                                                 checkboxInput("cox_reg_td",
                                                               "With time-dependent covariates",
                                                               value = TRUE),
@@ -203,84 +207,109 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                 icon = icon("gear"), width = "300",
                                                 tooltip = tooltipOptions(title = "Click to see inputs !")
                                               ),#button
-                                              span(DT::dataTableOutput("table3")),
-                                   ),
-                                   #info boxes  #  change content
-                                   fixedPanel(title = "",  draggable = TRUE,  width=300,height = 200, right = 0,bottom = 630,
+                                              span(DT::dataTableOutput("table3")))
+                                                  #,style="color:white;"
+                                              )
+                                              ,style="background-color:olive;")#change background color
+                                     ,
+                                   fixedPanel(title = "",  draggable = FALSE, width="50%",height = 400,right  = 0,
+                                              div(box(
+                                                ### add in hee value
+                                                "information 2 here"
+                                              ),
+                                                  style="color:white;") ,style="background-color:aqua;"),#change background color
+                                   ),#fixed row
+                                   br(),
+                                   br(),
+                                   fluidRow(
 
-                                              div(valueBoxOutput("Info1"),style="color:white;")
-                                              ,style="background-color:olive;"),#change background color
+                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = 400, right = 0,bottom = 0,
 
-                                   fixedPanel(title = "",  draggable = TRUE, width=300,height = 200,right = 0,bottom = 420,
-                                              div(valueBoxOutput("Info2"),
-                                                  style="color:white;")
-                                              ,style="background-color:aqua;"),#change background color
-                                   fixedPanel(title = "",  draggable = TRUE, width=300, height = 200,right = 0,bottom =210,
+                                                div(box(
+                                                  ### add in hee value
+                                                  "information 3 here"
+                                                )
+                                                    ,style="color:white;"
+                                                    )
+                                                ,style="background-color:green;")#change background color
+                                     ,
+                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = 400,left  = 0,bottom = 0,
+                                                div(box(
+                                                  ### add in hee value
+                                                  "information 4 here"
+                                                ),
 
-                                              div(valueBoxOutput("Info3"),
-                                                  style="color:white;")
-                                              ,style="background-color:green;"),#change background color
-                                   fixedPanel(title = "",  draggable = TRUE, width=300,height = 200,right = 0,bottom = 0,
-
-                                              div(valueBoxOutput("Info4"),
-                                                  style="color:white;")
-                                              ,style="background-color:teal;")#change background color
+                                                    style="color:white;") ,style="background-color:yellow;"),#change background color
+                                   )
 
 
 
                           ),
                           tabPanel("Multiple model",
-                                   fixedPanel(title = "",  draggable = TRUE, left  = 50,
-                                              #change ids
-                                              dropdownButton(
-                                                checkboxInput("cox_reg_td",
-                                                              "With time-dependent covariates",
-                                                              value = TRUE),
-                                                selectizeInput(inputId = "sel_cov",
-                                                               label = "Select categorical covariates",
-                                                               # SV_bin is added by us, 0/1 without/with SV
-                                                               choices = NULL,
-                                                               selected = FALSE,
-                                                               multiple = TRUE
+
+                                   fluidRow(
+
+                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = 400, left = 0,
+
+                                                div(box( dropdownButton(
+                                                  checkboxInput("cox_reg_td",
+                                                                "With time-dependent covariates",
+                                                                value = TRUE),
+                                                  selectizeInput(inputId = "sel_cov",
+                                                                 label = "Select categorical covariates",
+                                                                 # SV_bin is added by us, 0/1 without/with SV
+                                                                 choices = NULL,
+                                                                 selected = FALSE,
+                                                                 multiple = TRUE
+                                                  ),
+                                                  selectizeInput(inputId = "sel_cov_cont",
+                                                                 label = "Select continuous covariates",
+                                                                 choices = NULL,
+                                                                 selected = FALSE,
+                                                                 multiple = TRUE
+                                                  ),
+                                                  selectInput(inputId = "sel_strata",
+                                                              label = "Select strata covariate (optional)",
+                                                              choices = NULL),
+                                                  circle = TRUE,
+                                                  status = "danger",
+                                                  icon = icon("gear"), width = "300",
+                                                  tooltip = tooltipOptions(title = "Click to see inputs !")
+                                                ),#button
+                                                span(DT::dataTableOutput("table4")))  ###☻ change id
+                                                #,style="color:white;"
+                                                )
+                                                ,style="background-color:olive;")#change background color
+                                     ,
+                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = 400,right  = 0,
+                                                div(box(
+                                                  ### add in hee value
+                                                  "information 2 here"
                                                 ),
-                                                selectizeInput(inputId = "sel_cov_cont",
-                                                               label = "Select continuous covariates",
-                                                               choices = NULL,
-                                                               selected = FALSE,
-                                                               multiple = TRUE
+                                                style="color:white;") ,style="background-color:aqua;"),#change background color
+                                   ),#fixed row
+                                   br(),
+                                   br(),
+                                   fluidRow(
+
+                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = 400, right = 0,bottom = 0,
+
+                                                div(box(
+                                                  ### add in hee value
+                                                  "information 3 here"
+                                                )
+                                                ,style="color:white;"
+                                                )
+                                                ,style="background-color:green;")#change background color
+                                     ,
+                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = 400,left  = 0,bottom = 0,
+                                                div(box(
+                                                  ### add in hee value
+                                                  "information 4 here"
                                                 ),
-                                                selectInput(inputId = "sel_strata",
-                                                            label = "Select strata covariate (optional)",
-                                                            choices = NULL),
-                                                circle = TRUE,
-                                                status = "danger",
-                                                icon = icon("gear"), width = "300",
-                                                tooltip = tooltipOptions(title = "Click to see inputs !")
-                                              ),#button
-                                              span(DT::dataTableOutput("table4"))######### change table id
-                                   ),
-                                   #info boxes  #b to change content
-                                   fixedPanel(title = "",  draggable = TRUE,  width=300,height = 200, right = 0,bottom = 630,
 
-                                              div(valueBoxOutput("Info5"),
-                                                  style="color:white;")
-                                              ,style="background-color:olive;"),#change background color
-                                   fixedPanel(title = "",  draggable = TRUE, width=300,height = 200,right = 0,bottom = 420,
-
-
-                                              div(valueBoxOutput("Info6"),
-                                                  style="color:white;")
-                                              ,style="background-color:aqua;"),#change background color
-                                   fixedPanel(title = "",  draggable = TRUE, width=300, height = 200,right = 0,bottom =210,
-
-                                              div(valueBoxOutput("Info7"),
-                                                  style="color:white;")
-                                              ,style="background-color:green;"),#change background color
-                                   fixedPanel(title = "",  draggable = TRUE, width=300,height = 200,right = 0,bottom = 0,
-
-                                              div(valueBoxOutput("Info8"),
-                                                  style="color:white;")
-                                              ,style="background-color:teal;")#change background color
+                                                style="color:white;") ,style="background-color:yellow;"),#change background color
+                                   )#fixed row
                           )
                         )
                )#cox panel
@@ -698,63 +727,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
     })
 
-    #value box
-    output$Info1 <- renderValueBox({
-      valueBox(value = "10",#change the value
-               subtitle = "information about fitting"
 
-      )
-
-    })
-    output$Info2 <- renderValueBox({
-      valueBox(value = "10",#change the value
-               subtitle = "information about survival curve here"
-
-      )
-
-    })
-    output$Info3 <- renderValueBox({
-      valueBox(value = "10",#change the value
-               subtitle = "information about proportional hazard here"
-      )
-
-    })
-    output$Info4 <- renderValueBox({
-      #shiny::req(input$....)
-
-      valueBox(value = "10",#change the value
-               subtitle = "information about residues analysis here"
-      )
-
-    })
-    output$Info5 <- renderValueBox({
-      valueBox(value = "10",#change the value
-               subtitle = "information about residues analysis here"
-
-      )
-
-    })
-    output$Info6 <- renderValueBox({
-      valueBox(value = "10",#change the value
-               subtitle = "information about residues analysis here"
-
-      )
-
-    })
-    output$Info7 <- renderValueBox({
-      valueBox(value = "10",#change the value
-               subtitle = "information about residues analysis here"
-
-      )
-
-    })
-    output$Info8 <- renderValueBox({
-
-      valueBox(value = "10",#change the value
-               subtitle = "information about residues analysis here"
-      )
-
-    })
 
 
   }
