@@ -205,12 +205,16 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                      
                             ),
                             tabPanel("Multiple model",
-                                     tabBox(
-                                       tabPanel("with",
+                                     tabBox(width = 12,
+                                       tabPanel("with SV",
                                                 span(DT::dataTableOutput("summ_mm_1")),
+                                                br(),
+                                                br(),
                                                 tabPanel("with",span(DT::dataTableOutput("prop_h_mm0")))), 
-                                       tabPanel("without",
+                                       tabPanel("without SV",
                                                 span(DT::dataTableOutput("summ_mm_0")),
+                                                br(),
+                                                br(),
                                                 tabPanel("without",span(DT::dataTableOutput("prop_h_mm1"))))
                                        )
                                      )
@@ -417,8 +421,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                # legend.position = c(0.2, 0.5)
                              ))
         },
-        height = 600,
-        width = 900)
+        height = 500,
+        width = 700)
         
         observeEvent(input$life_table_null_model, {
           if(input$life_table_null_model == FALSE){
@@ -550,28 +554,28 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     )})
     # hide the event, time and ids covariates from the covariates  and strata
     # drop-down
-    observeEvent(inputs_react(),
-                 {if(checkInput(input)){
-                   svs_gene_input_df <- reactive_no_NAs_metadata()
-                   svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
-                   cov_list <- c(get_cov_list(metadata, input), "SV_bin")
-                   # update the covariate drop down
-                   updateSelectizeInput(session,
-                                        input = "sel_cov",
-                                        choices = cov_list,
-                                        options = list(create = TRUE))
-                   # update the strata drop down, this field is optional
-                   updateSelectizeInput(session,
-                                        input = "sel_cov_cont",
-                                        choices = cov_list,
-                                        options = list(create = TRUE))
-                   updateSelectizeInput(session,
-                                        input = "sel_strata",
-                                        choices = c(cov_list, c("SV_bin","N/A")),
-                                        selected = "N/A")
-                 }
-                 }
-    )
+    observeEvent(inputs_react(),{
+      if(checkInput(input)){
+        svs_gene_input_df <- reactive_no_NAs_metadata()
+        svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
+        cov_list <- c(get_cov_list(metadata, input), "SV_bin")
+        # update the covariate drop down
+        updateSelectizeInput(session,
+                            input = "sel_cov",
+                            choices = cov_list,
+                            options = list(create = TRUE))
+        # update the strata drop down, this field is optional
+        updateSelectizeInput(session,
+                            input = "sel_cov_cont",
+                            choices = cov_list,
+                            options = list(create = TRUE))
+        updateSelectizeInput(session,
+                            input = "sel_strata",
+                            choices = c(cov_list, c("SV_bin","N/A")),
+                            selected = "N/A")
+      }
+      }
+      )
     
     observeEvent(input$all_n_svs, {
       if (checkInput(input)){
@@ -583,7 +587,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           updateSelectizeInput(session,
                                input = "n_svs_min",
                                choices = sort(svs_levels))
-        }
+          }
         else {
           shinyjs::disable("n_svs_min")
           shinyjs::disable("n_svs_max")
@@ -598,14 +602,12 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           svs_gene_input_df <- reactive_no_NAs_metadata()
           svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
           max_levels <- sort(svs_levels[svs_levels >= as.numeric(input$n_svs_min)])
-          updateSelectizeInput(session,
-                               input = "n_svs_max",
-                               choices = max_levels)
+          updateSelectizeInput(session, input = "n_svs_max", choices = max_levels)
         }
       }
-    }
-    )
-    #regression table
+      }
+      )
+    
     observe({
       if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
         covariates <- c()
@@ -620,6 +622,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           input_df[input_cov_cat] <- sapply(input_df[input_cov_cat],as.character)
           covariates <- c(covariates, input_cov_cat)
         }
+        if(input$sel_strata != "N/A"){
+          covariates <- c(covariates[covariates != input$sel_strata], sprintf("strata(%s)", input$sel_strata))
+        }
         # Standard model
         formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
         cox_reg.std <- coxph(as.formula(formulaString), data=input_df)
@@ -627,7 +632,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         # Multiple model
         input_df_mm <- data.frame(input_df)
         input_df_mm["SV_bin"] <- sapply(input_df_mm["SV_bin"],as.numeric)
-        formulaString_mm <- paste("Surv(time, event) ~", paste(covariates[covariates != "SV_bin"], collapse="+"))
+        formulaString_mm <- paste("Surv(time, event) ~", 
+                                  paste(covariates[!(covariates %in% c("SV_bin", "strata(SV_bin)"))], collapse="+"))
         cox_reg.mul0 <- coxph(as.formula(formulaString_mm), data=input_df_mm, subset=(SV_bin==0))
         cox_reg.mul1 <- coxph(as.formula(formulaString_mm), data=input_df_mm, subset=(SV_bin==1))
         res.std_mul0 <- cox.zph(cox_reg.mul0)
@@ -831,6 +837,7 @@ RemoveNAs <- function(df, time_col) {
   }
 }
 
+
 round_df <- function(x, digits) {
   # round all numeric variables
   # x: data frame 
@@ -858,3 +865,4 @@ map_col_names <- function(input, cov_list){
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
 `%+=%` <- function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
+
