@@ -21,11 +21,11 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
     metadata <- readxl::read_excel(metadatafile)
     metadata <- na.omit(metadata)
-
+    
   }
   disease_gene <- read_excel("disease_gene.xlsx")
   days_year <- 365.25
-
+  
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
                collapsible = TRUE,
@@ -36,201 +36,188 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                id="nav",
                windowTitle ="VariantSurvival",
                tabPanel("Select Target Gene",
-               sidebarLayout(
-                 sidebarPanel(
-                   pickerInput(inputId ="disease_n",
-                               label = "Select the disease of interest:",
-                               choices = c(colnames(disease_gene), "N/A"),
-                               selected = "N/A"
-                               ),
-                   selectInput(inputId = "ids",
-                               label = "Select the participant ID:",
-                               choices = c(colnames(metadata), "N/A"),
-                               selected = "N/A"
-                               ),
-                   selectInput(inputId = "time",
-                               label = "Select the time factor:",
-                               choices = c(colnames(metadata), "N/A"),
-                               selected = "N/A"
-                               ),
-                   radioButtons(inputId = "time_unit",
-                                label = "Time factor unit:",
-                                choices =  c("years", "days"),
-                                inline = TRUE
-                                ),
-                   span(shiny::tags$i(
-                     h6("Based on literature the following genes are
+                        sidebarLayout(
+                          sidebarPanel(
+                            pickerInput(inputId ="disease_n",
+                                        label = "Select the disease of interest:",
+                                        choices = c(colnames(disease_gene), "N/A"),
+                                        selected = "N/A"
+                            ),
+                            selectInput(inputId = "ids",
+                                        label = "Select the participant ID:",
+                                        choices = c(colnames(metadata), "N/A"),
+                                        selected = "N/A"
+                            ),
+                            selectInput(inputId = "time",
+                                        label = "Select the time factor:",
+                                        choices = c(colnames(metadata), "N/A"),
+                                        selected = "N/A"
+                            ),
+                            radioButtons(inputId = "time_unit",
+                                         label = "Time factor unit:",
+                                         choices =  c("years", "days"),
+                                         inline = TRUE
+                            ),
+                            span(shiny::tags$i(
+                              h6("Based on literature the following genes are
                       associated with the disease mechanism")
-                   ),
-                   style="color:#045a8d"),
-                   selectInput(inputId = "target_gene",
-                               label = "Gene of interest:",
-                               choices = NULL,
-                               selected = FALSE
-                   ),
-                   span(shiny::tags$i(
-                     h6("The following selections must refer to binary factors")),
-                     style="color:#045a8d"),
-                   selectInput(inputId = "group",
-                               label = "Select the clinical trial groups factor:",
-                               choices =c(colnames(metadata), "N/A"),
-                               selected = "N/A"
-                               ),
-                   selectInput(inputId = "event",
-                               label = "Select the alive/dead factor:",
-                               choices = c(colnames(metadata), "N/A"),
-                               selected = "N/A"
-                               )
-                   ),
-                 mainPanel(
-                   tabBox(
-                     selected = "Summary",
-                     tabPanel("Summary",
-                              span(DT::dataTableOutput("summ_table"))
+                            ),
+                            style="color:#045a8d"),
+                            selectInput(inputId = "target_gene",
+                                        label = "Gene of interest:",
+                                        choices = NULL,
+                                        selected = FALSE
+                            ),
+                            span(shiny::tags$i(
+                              h6("The following selections must refer to binary factors")),
+                              style="color:#045a8d"),
+                            selectInput(inputId = "group",
+                                        label = "Select the clinical trial groups factor:",
+                                        choices =c(colnames(metadata), "N/A"),
+                                        selected = "N/A"
+                            ),
+                            selectInput(inputId = "event",
+                                        label = "Select the alive/dead factor:",
+                                        choices = c(colnames(metadata), "N/A"),
+                                        selected = "N/A"
+                            )
+                          ),
+                          mainPanel(
+                            tabBox(
+                              selected = "Summary",
+                              tabPanel("Summary",
+                                       span(DT::dataTableOutput("summ_table"))
                               ),
-                     tabPanel("Histogram",
-                              span(shiny::tags$i(
-                                h2("Structural Variants Distribution"))),
-                              shinycssloaders::withSpinner(
-                                plotOutput(outputId = "histogram"))
-                     ),
-                     tabPanel("Table",
-                              selectInput(inputId = "table_cols",
-                                          label = "Include columns (optional)",
-                                          choices = NULL,
-                                          selected = FALSE,
-                                          multiple = TRUE),
-                              span(DT::dataTableOutput("table"))
+                              tabPanel("Histogram",
+                                       span(shiny::tags$i(
+                                         h2("Structural Variants Distribution"))),
+                                       shinycssloaders::withSpinner(
+                                         plotOutput(outputId = "histogram"))
+                              ),
+                              tabPanel("Table",
+                                       selectInput(inputId = "table_cols",
+                                                   label = "Include columns (optional)",
+                                                   choices = NULL,
+                                                   selected = FALSE,
+                                                   multiple = TRUE),
+                                       span(DT::dataTableOutput("table"))
                               )
-                     )
-                   )
-                 )
-               ),
-         tabPanel("Survival Analysis",
-                  mainPanel(
-                    span(shiny::tags$i(
-                      h2("Kaplan–Meier")),
-                      # to enable/disable the n_svs_min & n_svs_max fields, 
-                      #this should be added at the panel level
-                      shinyjs::useShinyjs(), 
-                      tabBox(
-                        tabPanel("Null model",
-                                 fluidRow(column(12, 
-                                                 #div(style = "height:70px; Topleft"),
-                                                 shinycssloaders::withSpinner(
-                                                   plotOutput(outputId = "null_model_km"))),
-                                          column(6, 
-                                                 #div(style = "height:200px; Bottomleft"),
-                                                 checkboxInput("life_table_null_model",
-                                                               "Display life table",
-                                                               value = FALSE), 
-                                                 box(id = "myBox", title = "", #width = '200px',
-                                                     span(DT::dataTableOutput("null_model_life_table"))))
-                                          )
-                                 ),
-                        tabPanel("Multiple model",
-                                 fluidRow(column(12, 
-                                                 div(style = "height:70px; Topleft"),
-                                                 dropdownButton(
-                                                   checkboxInput("all_n_svs",
-                                                                 "Include all counts",
-                                                                 value = TRUE
-                                                   ),
-                                                   selectInput(inputId = "n_svs_min",
-                                                               label = "min",
-                                                               choices = NULL,
-                                                               selected = FALSE
-                                                   ),
-                                                   selectInput(inputId = "n_svs_max",
-                                                               label = "max",
-                                                               choices = NULL,
-                                                               selected = FALSE
-                                                   ),
-                                                   checkboxGroupInput("km_feat",
-                                                                      "Plot layout options:",
-                                                                      choices = c("confidence interval" = "conf_itv",
-                                                                                  "risk table" = "risk_table",
-                                                                                  "y grid line" = "grid_line")),
-                                                   circle = TRUE,
-                                                   status = "danger",
-                                                   icon = icon("gear"), width = "200",
-                                                   tooltip = tooltipOptions(title = "Click to see inputs !")
-                                                   ),
-                                                 shinycssloaders::withSpinner(
-                                                   plotOutput(outputId = "plot_km",width = "100%"))
-                                                 )
-                                          ),
-                                 fluidRow(column(12, div(style = "height:200px; Bottomleft"),
-                                                 checkboxInput("life_table_multiple_model",
-                                                               "Display life table",
-                                                               value = FALSE), 
-                                                 box(id = "myBox_mm", title = "", width = '200px',
-                                                     span(DT::dataTableOutput("multiple_model_life_table"))))
-                                          )
-                                 )
+                            )
+                          )
                         )
-                      )
-                    ) 
-                  ),
-         tabPanel("Cox regression",
-                  span(shiny::tags$i(
-                    h3("Cox regression table")),
-                    style="color:#045a8d",
-                    shinyjs::useShinyjs(),
-                    tabBox(
-                      tabPanel("Standard model",
-                               dropdownButton(
-                               checkboxInput("cox_reg_td",
-                                             "With time-dependent covariates",
-                                             value = TRUE),
-                               selectizeInput(inputId = "sel_cov",
-                                              label = "Select categorical covariates",
-                                              # SV_bin is added by us, 0/1 without/with SV
-                                              choices = NULL,
-                                              selected = FALSE,
-                                              multiple = TRUE
-                               ),
-                               selectizeInput(inputId = "sel_cov_cont",
-                                              label = "Select continuous covariates",
-                                              choices = NULL,
-                                              selected = FALSE,
-                                              multiple = TRUE
-                               ),
-                               selectInput(inputId = "sel_strata",
-                                           label = "Select strata covariate (optional)",
-                                           choices = NULL),
-                               circle = TRUE,
-                               status = "danger",
-                               icon = icon("gear"), width = "300",
-                               tooltip = tooltipOptions(title = "Click to see inputs !")),
-                               span(DT::dataTableOutput("table3"))
-                               
-                               ),
-                      tabPanel("Multiple model",
-                               checkboxInput("cox_reg_td",
-                                             "With time-dependent covariates",
-                                             value = TRUE),
-                               selectizeInput(inputId = "sel_cov",
-                                              label = "Select categorical covariates",
-                                              # SV_bin is added by us, 0/1 without/with SV
-                                              choices = NULL,
-                                              selected = FALSE,
-                                              multiple = TRUE
-                               ),
-                               selectizeInput(inputId = "sel_cov_cont",
-                                              label = "Select continuous covariates",
-                                              choices = NULL,
-                                              selected = FALSE,
-                                              multiple = TRUE
-                               ),
-                               selectInput(inputId = "sel_strata",
-                                           label = "Select strata covariate (optional)",
-                                           choices = NULL)
-                               )
-                      )
-                    )
-                  )
-         )
+               ),
+               tabPanel("Survival Analysis",
+                        mainPanel(
+                          span(shiny::tags$i(
+                            h2("Kaplan–Meier")),
+                            # to enable/disable the n_svs_min & n_svs_max fields, 
+                            #this should be added at the panel level
+                            shinyjs::useShinyjs(), 
+                            tabBox(
+                              tabPanel("Null model",
+                                       fluidRow(column(12, 
+                                                       div(style = "height:70px; Topleft"),
+                                                       shinycssloaders::withSpinner(
+                                                         plotOutput(outputId = "null_model_km")))
+                                       ),
+                                       fluidRow(column(12, div(style = "height:200px; Bottomleft"),
+                                                       checkboxInput("life_table_null_model",
+                                                                     "Display life table",
+                                                                     value = FALSE), 
+                                                       box(id = "myBox", title = "", width = '200px',
+                                                           span(DT::dataTableOutput("null_model_life_table"))))
+                                       )
+                              ),
+                              tabPanel("Multiple model",
+                                       fluidRow(column(12, 
+                                                       div(style = "height:70px; Topleft"),
+                                                       dropdownButton(
+                                                         checkboxInput("all_n_svs",
+                                                                       "Include all counts",
+                                                                       value = TRUE
+                                                         ),
+                                                         selectInput(inputId = "n_svs_min",
+                                                                     label = "min",
+                                                                     choices = NULL,
+                                                                     selected = FALSE
+                                                         ),
+                                                         selectInput(inputId = "n_svs_max",
+                                                                     label = "max",
+                                                                     choices = NULL,
+                                                                     selected = FALSE
+                                                         ),
+                                                         checkboxGroupInput("km_feat",
+                                                                            "Plot layout options:",
+                                                                            choices = c("confidence interval" = "conf_itv",
+                                                                                        "risk table" = "risk_table",
+                                                                                        "y grid line" = "grid_line")),
+                                                         circle = TRUE,
+                                                         status = "danger",
+                                                         icon = icon("gear"), width = "300px",
+                                                         tooltip = tooltipOptions(title = "Click to see inputs !")
+                                                       ),
+                                                       shinycssloaders::withSpinner(
+                                                         plotOutput(outputId = "plot_km",width = "100%"))
+                                       )
+                                       ),
+                                       fluidRow(column(12, div(style = "height:200px; Bottomleft"),
+                                                       checkboxInput("life_table_multiple_model",
+                                                                     "Display life table",
+                                                                     value = FALSE), 
+                                                       box(id = "myBox_mm", title = "", width = '200px',
+                                                           span(DT::dataTableOutput("multiple_model_life_table"))))
+                                       )
+                              )
+                            )
+                          )
+                        ) 
+               ),
+               tabPanel("Cox regression",
+                        span(shiny::tags$i(
+                          h3("Cox regression table")),
+                          style="color:#045a8d",
+                          shinyjs::useShinyjs(),
+                          checkboxInput("cox_reg_td",
+                                        "With time-dependent covariates",
+                                        value = TRUE),
+                          selectizeInput(inputId = "sel_cov",
+                                         label = "Select categorical covariates",
+                                         # SV_bin is added by us, 0/1 without/with SV
+                                         choices = NULL,
+                                         selected = FALSE,
+                                         multiple = TRUE
+                          ),
+                          selectizeInput(inputId = "sel_cov_cont",
+                                         label = "Select continuous covariates",
+                                         choices = NULL,
+                                         selected = FALSE,
+                                         multiple = TRUE
+                          ),
+                          selectInput(inputId = "sel_strata",
+                                      label = "Select strata covariate (optional)",
+                                      choices = NULL),
+                          tabBox(
+                            tabPanel("Standard model",
+                                     span(DT::dataTableOutput("summ_std")),
+                                     br(),
+                                     br(),
+                                     span(DT::dataTableOutput("prop_h_std"))
+                                     
+                            ),
+                            tabPanel("Multiple model",
+                                     tabBox(
+                                       tabPanel("with",
+                                                span(DT::dataTableOutput("summ_mm_1")),
+                                                tabPanel("with",span(DT::dataTableOutput("prop_h_mm0")))), 
+                                       tabPanel("without",
+                                                span(DT::dataTableOutput("summ_mm_0")),
+                                                tabPanel("without",span(DT::dataTableOutput("prop_h_mm1"))))
+                                       )
+                                     )
+                            )
+                          )
+                        )
+               )
     )
   
   
@@ -239,17 +226,17 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
     # get disease_n input and update the genes list accordingly
     observeEvent(input$disease_n, {
-                   if(input$disease_n!= "N/A"){
-                     genes_list <- c(get_disease_gene_list(disease_gene,input$disease_n))
-                     disease_genes_names <- gene_ids_table$GeneName
-                     updateSelectizeInput(session,
-                                          input = "target_gene",
-                                          choices = genes_list,
-                                          selected = NULL)
-                     }
-      })
+      if(input$disease_n!= "N/A"){
+        genes_list <- c(get_disease_gene_list(disease_gene,input$disease_n))
+        disease_genes_names <- gene_ids_table$GeneName
+        updateSelectizeInput(session,
+                             input = "target_gene",
+                             choices = genes_list,
+                             selected = NULL)
+      }
+    })
     
-  
+    
     observe({ if(input$disease_n != "N/A" 
                  & input$ids != "N/A" 
                  &input$time != "N/A"){
@@ -272,8 +259,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         colnames(count) <- "Count of patients with SVs"
         count <- count %>% arrange(desc(count))
         count
-        })
-      }
+      })
+    }
     })
     
     reactive_no_NAs_metadata <- reactive({
@@ -325,10 +312,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           no_na_df$time_years <- no_na_df[["time"]] / days_year
         }
         no_na_df
-        }
       }
-      )
-
+    }
+    )
+    
     ## output - histogram ##
     output$histogram <- renderPlot(
       {
@@ -343,7 +330,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                      geom='text',
                      color='white',
                      aes(label=after_stat(if_else(condition = count>0,
-                                                   as.character(count), ""))),
+                                                  as.character(count), ""))),
                      position=position_stack(vjust = 0.5)) +
             xlab("Number of SVs in target gene") + ylab("Frequency") +
             theme(text = element_text(size = 20),
@@ -355,28 +342,28 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                   legend.position="top"
             ) +
             scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
-          }
-        },
+        }
+      },
       height = 500,
       width = 700
-      )
+    )
     
     observe({
-             if(checkInput(input) & !is.null(input$target_gene)){
-               svs_gene_input_df <- reactive_no_NAs_metadata()
-               # renaming back to original column names, so it's not confusing for the user.
-               # maybe not the best approach
-               rename_cols <- c("ids", "trial_group_bin", "time", "event")
-               rename_cols_with <- c(input$ids, input$group, input$time, input$event)
-               names(svs_gene_input_df)[names(svs_gene_input_df) %in% rename_cols]<- rename_cols_with
-               coln_list <- colnames(svs_gene_input_df)
-               coln_list <- coln_list[!(coln_list %in% c(input$ids,"SV_count_per_gene"))]
-               updateSelectizeInput(session,
-                                    input = "table_cols",
-                                    choices = coln_list,
-                                    selected = NULL)
-             }
-      })
+      if(checkInput(input) & !is.null(input$target_gene)){
+        svs_gene_input_df <- reactive_no_NAs_metadata()
+        # renaming back to original column names, so it's not confusing for the user.
+        # maybe not the best approach
+        rename_cols <- c("ids", "trial_group_bin", "time", "event")
+        rename_cols_with <- c(input$ids, input$group, input$time, input$event)
+        names(svs_gene_input_df)[names(svs_gene_input_df) %in% rename_cols]<- rename_cols_with
+        coln_list <- colnames(svs_gene_input_df)
+        coln_list <- coln_list[!(coln_list %in% c(input$ids,"SV_count_per_gene"))]
+        updateSelectizeInput(session,
+                             input = "table_cols",
+                             choices = coln_list,
+                             selected = NULL)
+      }
+    })
     
     observe({
       if(checkInput(input)){
@@ -392,18 +379,18 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                 input$table_cols)
             svs_gene_input_df <- as_tibble(svs_gene_input_df[col_names_list])
             svs_gene_input_df
-            })
-          }
+          })
+        }
         else{
           output$table <- DT::renderDataTable({
-          svs_gene_input_df <- as_tibble(svs_gene_input_df[c(input$ids, "SV_count_per_gene")])
-          colnames(svs_gene_input_df) <- c("ID", "SV count in gene of interest")
-          svs_gene_input_df
+            svs_gene_input_df <- as_tibble(svs_gene_input_df[c(input$ids, "SV_count_per_gene")])
+            colnames(svs_gene_input_df) <- c("ID", "SV count in gene of interest")
+            svs_gene_input_df
           })
-          }
         }
-      })
-     
+      }
+    })
+    
     observe({
       if(checkInput(input)){
         svs_gene_input_df <- reactive_no_NAs_metadata()
@@ -430,8 +417,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                # legend.position = c(0.2, 0.5)
                              ))
         },
-        height = 500,
-        width = 700)
+        height = 600,
+        width = 900)
         
         observeEvent(input$life_table_null_model, {
           if(input$life_table_null_model == FALSE){
@@ -445,7 +432,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           }
         })
       }
-      })
+    })
     
     observe({
       if(checkInput(input)){
@@ -471,9 +458,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                     & svs_gene_input_df$SV_count_per_gene <= n_svs_max)
             svs_gene_input_df <- svs_gene_input_df[sub,]
           }
-          }
+        }
         groups_df <- (unique(svs_gene_input_df[c("SV_bin", "trial_group_bin")])
-                   %>% arrange(SV_bin, trial_group_bin))
+                      %>% arrange(SV_bin, trial_group_bin))
         lables <- c()
         cols <- c()
         for (row in 1:nrow(groups_df)){
@@ -524,7 +511,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                          data = svs_gene_input_df,
                          type = "kaplan-meier")
           surv_fit_list <- list(temp = sc)
-          }
+        }
         
         output$plot_km <- renderPlot({
           ggsurvplot_combine(surv_fit_list,
@@ -547,20 +534,20 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                              legend.title = "Group",
                              legend.labs =lables,
                              palette = cols
-                             )},
+          )},
           height = 600,
           width = 1000)
-        }
-        else{
-          output$plot_km <- renderText({ "Missing input data"})
-        }
-      })
+      }
+      else{
+        output$plot_km <- renderText({ "Missing input data"})
+      }
+    })
     
     inputs_react <- reactive({list(input$event,
                                    input$time,
                                    input$ids,
                                    input$target_gene
-                                   )})
+    )})
     # hide the event, time and ids covariates from the covariates  and strata
     # drop-down
     observeEvent(inputs_react(),
@@ -582,9 +569,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                         input = "sel_strata",
                                         choices = c(cov_list, c("SV_bin","N/A")),
                                         selected = "N/A")
-                   }
-                }
-              )
+                 }
+                 }
+    )
     
     observeEvent(input$all_n_svs, {
       if (checkInput(input)){
@@ -602,8 +589,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           shinyjs::disable("n_svs_max")
         }
       }
-      }
-      )
+    }
+    )
     
     observeEvent(input$n_svs_min, {
       if (checkInput(input)){
@@ -616,11 +603,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                choices = max_levels)
         }
       }
-      }
-      )
-  
-    
-    output$table3 <- DT::renderDataTable({
+    }
+    )
+    #regression table
+    observe({
       if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
         covariates <- c()
         input_df <- reactive_no_NAs_metadata()
@@ -634,16 +620,70 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           input_df[input_cov_cat] <- sapply(input_df[input_cov_cat],as.character)
           covariates <- c(covariates, input_cov_cat)
         }
+        # Standard model
         formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
-        x3 <- (coxph(as.formula(formulaString), data=input_df)
-               %>% tbl_regression(exp = TRUE))
-        proport_hazard_assump <- cox.zph(cox_reg.std)
-        t3 <-as_tibble(x3)
-        t3
-      }
-    })
-  }
+        cox_reg.std <- coxph(as.formula(formulaString), data=input_df)
+        res.std <- cox.zph(cox_reg.std)
+        # Multiple model
+        input_df_mm <- data.frame(input_df)
+        input_df_mm["SV_bin"] <- sapply(input_df_mm["SV_bin"],as.numeric)
+        formulaString_mm <- paste("Surv(time, event) ~", paste(covariates[covariates != "SV_bin"], collapse="+"))
+        cox_reg.mul0 <- coxph(as.formula(formulaString_mm), data=input_df_mm, subset=(SV_bin==0))
+        cox_reg.mul1 <- coxph(as.formula(formulaString_mm), data=input_df_mm, subset=(SV_bin==1))
+        res.std_mul0 <- cox.zph(cox_reg.mul0)
+        res.std_mul1 <- cox.zph(cox_reg.mul1)
+        
+        output$summ_std <- DT::renderDataTable({
+          as_tibble(cox_reg.std %>% tbl_regression(exp = TRUE))
+        })
+        output$prop_h_std <- DT::renderDataTable({
+          as_tibble(rownames_to_column(round_df(as.data.frame(res.std$table),3), " "))
+        })
+        # MM
+        output$summ_mm_0 <- DT::renderDataTable({
+          as_tibble(cox_reg.mul0 %>% tbl_regression(exp = TRUE))
+        })
+        output$summ_mm_1 <- DT::renderDataTable({
+          as_tibble(cox_reg.mul1 %>% tbl_regression(exp = TRUE))
+        })
+        output$prop_h_mm0 <- DT::renderDataTable({
+          as_tibble(rownames_to_column(round_df(as.data.frame(res.std_mul0$table),3), " "))
+        })
+        output$prop_h_mm1 <- DT::renderDataTable({
+          as_tibble(rownames_to_column(round_df(as.data.frame(res.std_mul1$table),3), " "))
+        })
 
+      }
+
+    })
+    
+    
+    
+    #regression table
+    # output$table3 <- DT::renderDataTable({
+    #   if(checkInput(input) & any(!is.na(input$sel_cov))){
+    #     input_cov_cox <- input$sel_cov
+    #     # mapping original column names to the new ones
+    #     if(input$event %in% input_cov_cox){
+    #       input_cov_cox <- str_replace(input_cov_cox,
+    #                                    input$event,
+    #                                    "event")}
+    #     if(input$group %in% input_cov_cox){
+    #       input_cov_cox <- str_replace(input_cov_cox,
+    #                                    input$group,
+    #                                    "trial_group_bin")
+    #     }
+    #     svs_gene_input_df <- reactive_no_NAs_metadata()
+    #     formulaString <- paste("Surv(time, event) ~", 
+    #                            paste(input_cov_cox, collapse="+"))
+    #     x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df) 
+    #            %>% tbl_regression(exp = TRUE))
+    #     t3 <-as_tibble(x3)
+    #     t3
+    #   }
+    # })
+  }
+  
   # Run the application
   shinyApp(ui = ui, server = server)
 }
@@ -752,7 +792,7 @@ CountSVsDf <- function(ncol, nrow,
   sample_disease_gene_df <- data.frame(matrix(0, ncol = ncol, nrow = nrow))
   colnames(sample_disease_gene_df) <- disease_genes_names
   rownames(sample_disease_gene_df) <- sample_names
-
+  
   for (sv_idx in 1:length(genes_with_svs_in_sample)) {
     # if the sv is in a gene of interest
     sv_gene_name <- genes_with_svs_in_sample[sv_idx]
