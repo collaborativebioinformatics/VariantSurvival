@@ -120,7 +120,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                        shinycssloaders::withSpinner(
                                                          plotOutput(outputId = "null_model_km")))
                                        ),
-                                       fluidRow(column(12, div(style = "height:200px; Bottomleft"),
+                                       fluidRow(column(12, 
+                                                       div(style = "height:200px; Bottomleft"),
                                                        checkboxInput("life_table_null_model",
                                                                      "Display life table",
                                                                      value = FALSE), 
@@ -160,18 +161,26 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                          plotOutput(outputId = "plot_km",width = "100%"))
                                        )
                                        ),
-                                       fluidRow(column(12, div(style = "height:200px; Bottomleft"),
+                                       fluidRow(column(12,
+                                                       div(style = "height:200px; Bottomleft"),
                                                        checkboxInput("life_table_multiple_model",
                                                                      "Display life table",
                                                                      value = FALSE), 
-                                                       box(id = "myBox_mm", title = "", width = '200px',
-                                                           span(DT::dataTableOutput("multiple_model_life_table"))))
+                                                       tabBox(id = "myBox_mm", title = "", width = 12,
+                                                            tabPanel("with SV",
+                                                                     span(DT::dataTableOutput("lt_mm_0"))
+                                                                     ), 
+                                                            tabPanel("without SV",
+                                                                     span(DT::dataTableOutput("lt_mm_1"))
+                                                                     )
+                                                           )
+                                                       )
+                                                )
                                        )
                               )
                             )
-                          )
-                        ) 
-               ),
+                          ) 
+                        ),
                tabPanel("Cox regression",
                         span(shiny::tags$i(
                           h3("Cox regression table")),
@@ -239,7 +248,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                              selected = NULL)
       }
     })
-    
     
     observe({ if(input$disease_n != "N/A" 
                  & input$ids != "N/A" 
@@ -541,7 +549,28 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           )},
           height = 600,
           width = 1000)
-      }
+        
+        observeEvent(input$life_table_multiple_model, {
+          if(input$life_table_multiple_model == FALSE){
+            shinyjs::hide(id = "myBox_mm")
+          }
+          else if(input$life_table_multiple_model==TRUE){
+            shinyjs::show(id = "myBox_mm")
+            output$lt_mm_0 <- DT::renderDataTable({
+              tl_sv_without <- data.frame(lapply(surv_summary(sc_without, data = svs_gene_input_df),
+                                              function(x) if(is.numeric(x)) round(x, 3) else x))
+              tl_sv_without <- tl_sv_without[, !names(tl_sv_without) %in% c("strata")]
+              as_tibble(tl_sv_without)
+            })
+            output$lt_mm_1 <- DT::renderDataTable({
+              tl_sv_with <- data.frame(lapply(surv_summary(sv_with, data = svs_gene_input_df),
+                                              function(x) if(is.numeric(x)) round(x, 3) else x))
+              tl_sv_with <- tl_sv_with[, !names(tl_sv_with) %in% c("strata")]
+              as_tibble(tl_sv_with)
+            })
+          }
+        })
+        }
       else{
         output$plot_km <- renderText({ "Missing input data"})
       }
@@ -631,11 +660,14 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         res.std <- cox.zph(cox_reg.std)
         # Multiple model
         input_df_mm <- data.frame(input_df)
-        input_df_mm["SV_bin"] <- sapply(input_df_mm["SV_bin"],as.numeric)
-        formulaString_mm <- paste("Surv(time, event) ~", 
-                                  paste(covariates[!(covariates %in% c("SV_bin", "strata(SV_bin)"))], collapse="+"))
-        cox_reg.mul0 <- coxph(as.formula(formulaString_mm), data=input_df_mm, subset=(SV_bin==0))
-        cox_reg.mul1 <- coxph(as.formula(formulaString_mm), data=input_df_mm, subset=(SV_bin==1))
+        input_df_mm["SV_bin"] <- sapply(input_df_mm["SV_bin"], as.numeric)
+        formulaString_mm <- paste("Surv(time, event) ~", paste(covariates[!(covariates %in% c("SV_bin", "strata(SV_bin)"))], collapse="+"))
+        cox_reg.mul0 <- coxph(as.formula(formulaString_mm),
+                              data=input_df_mm, 
+                              subset=(SV_bin==0))
+        cox_reg.mul1 <- coxph(as.formula(formulaString_mm),
+                              data=input_df_mm,
+                              subset=(SV_bin==1))
         res.std_mul0 <- cox.zph(cox_reg.mul0)
         res.std_mul1 <- cox.zph(cox_reg.mul1)
         
@@ -658,37 +690,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         output$prop_h_mm1 <- DT::renderDataTable({
           as_tibble(rownames_to_column(round_df(as.data.frame(res.std_mul1$table),3), " "))
         })
-
-      }
-
+        }
     })
-    
-    
-    
-    #regression table
-    # output$table3 <- DT::renderDataTable({
-    #   if(checkInput(input) & any(!is.na(input$sel_cov))){
-    #     input_cov_cox <- input$sel_cov
-    #     # mapping original column names to the new ones
-    #     if(input$event %in% input_cov_cox){
-    #       input_cov_cox <- str_replace(input_cov_cox,
-    #                                    input$event,
-    #                                    "event")}
-    #     if(input$group %in% input_cov_cox){
-    #       input_cov_cox <- str_replace(input_cov_cox,
-    #                                    input$group,
-    #                                    "trial_group_bin")
-    #     }
-    #     svs_gene_input_df <- reactive_no_NAs_metadata()
-    #     formulaString <- paste("Surv(time, event) ~", 
-    #                            paste(input_cov_cox, collapse="+"))
-    #     x3 <- (coxph(as.formula(formulaString), data=svs_gene_input_df) 
-    #            %>% tbl_regression(exp = TRUE))
-    #     t3 <-as_tibble(x3)
-    #     t3
-    #   }
-    # })
-  }
+    }
   
   # Run the application
   shinyApp(ui = ui, server = server)
