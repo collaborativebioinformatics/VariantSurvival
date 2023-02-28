@@ -25,6 +25,12 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
   }
   disease_gene <- read_excel("disease_gene.xlsx")
   days_year <- 365.25
+  disease_type_gene <- read_csv("disease_type_gene.csv")
+  #
+  gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
+  gene_ids_table <- unique(gene_ids_table)
+  rownames(gene_ids_table) <- gene_ids_table$ensembleID
+
 
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
@@ -35,6 +41,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                     " class="active" href="#">VariantSurvival</a>'),
                id="nav",
                windowTitle ="VariantSurvival",
+               #########################" tab 1 ################################################
                tabPanel("Select Target Gene",
                         sidebarLayout(
                           sidebarPanel(
@@ -43,32 +50,15 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                         choices = c(colnames(disease_gene), "N/A"),
                                         selected = "N/A"
                             ),
+
+                            #
+                            h2("Annotate metadata :"),
                             selectInput(inputId = "ids",
                                         label = "Select the participant ID:",
                                         choices = c(colnames(metadata), "N/A"),
                                         selected = "N/A"
                             ),
-                            selectInput(inputId = "time",
-                                        label = "Select the time factor:",
-                                        choices = c(colnames(metadata), "N/A"),
-                                        selected = "N/A"
-                            ),
-                            radioButtons(inputId = "time_unit",
-                                         label = "Time factor unit:",
-                                         choices =  c("years", "days"),
-                                         inline = TRUE
-                            ),
-                            span(shiny::tags$i(
-                              h6("Based on literature the following genes are
-                      associated with the disease mechanism")
-                            ),
-                            style="color:#045a8d"),
-                            selectInput(inputId = "target_gene",
-                                        label = "Gene of interest:",
-                                        choices = NULL,
-                                        selected = FALSE
-                            ),
-                            span(shiny::tags$i(
+                           span(shiny::tags$i(
                               h6("The following selections must refer to binary factors")),
                               style="color:#045a8d"),
                             selectInput(inputId = "group",
@@ -80,166 +70,160 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                         label = "Select the alive/dead factor:",
                                         choices = c(colnames(metadata), "N/A"),
                                         selected = "N/A"
-                            )
+                            ),
+                            selectInput(inputId = "time",
+                                        label = "Select the time factor:",
+                                        choices = c(colnames(metadata), "N/A"),
+                                        selected = "N/A"
+                            ),
+                           radioButtons(inputId = "time_unit",
+                                        label = "Time factor unit:",
+                                        choices =  c("years", "days"),
+                                        inline = TRUE
+                           )
                           ),
                           mainPanel(
-                            tabBox(
-                              selected = "Summary",
-                              tabPanel("Summary",
-                                       span(DT::dataTableOutput("summ_table"))
-                              ),
-                              tabPanel("Histogram",
-                                       span(shiny::tags$i(
-                                         h2("Structural Variants Distribution"))),
-                                       shinycssloaders::withSpinner(
-                                         plotOutput(outputId = "histogram"))
-                              ),
-                              tabPanel("Table",
-                                       selectInput(inputId = "table_cols",
-                                                   label = "Include columns (optional)",
-                                                   choices = NULL,
-                                                   selected = FALSE,
-                                                   multiple = TRUE),
-                                       span(DT::dataTableOutput("table"))
-                              )
-                            )
+                            h2("The following table resume the  Biomarkers associated
+                               with the diseases based on the ClinGen database"),
+                            span(DT::dataTableOutput("table")),
+                            #
+                            br(),br(),br(),br(),br(),br(),
+                            h2("Select Target Gene"),
+                           box(width = 6,
+                               selectInput(inputId = "target_gene",
+                                           label = "Gene of interest:",
+                                           choices = NULL,
+                                           selected = FALSE
+                               ),
+                               br(),
+                               DT::dataTableOutput("summ_table") ),
+                            box(width = 6,plotOutput(outputId = "histogram") )
+
+
+
                           )
                         )
                ),
+               #######################""" tab2 ###############################
                tabPanel("Survival Analysis",
-                        mainPanel(
-                          span(shiny::tags$i(
-                            h2("Kaplan–Meier"))),
-                            span(shiny::tags$i(h3("ADD text = Difference between the two models !!"))),
-                            # to enable/disable the n_svs_min & n_svs_max fields,
-                            #this should be added at the panel level
-                            shinyjs::useShinyjs(),
-                            tabBox(
-                              tabPanel("Null model",
-                                       checkboxInput("life_table_null_model","Display life table",value = FALSE),
-                                       fixedPanel(title = "", draggable = TRUE, left=50,
-                                                  # id = "", #width = '200px',
 
-                                                  shinycssloaders::withSpinner(
-                                                    plotOutput(outputId = "null_model_km"))
-                                       ),
+                          span(shiny::tags$i( h2("Kaplan–Meier"))),
+                          span(shiny::tags$i(h3("ADD text = Difference between the two models !!"))),
+                          # to enable/disable the n_svs_min & n_svs_max fields,
+                          #this should be added at the panel level
+                          shinyjs::useShinyjs(),
+                          tabBox(
+                            tabPanel("Null model",
+                                     checkboxInput("life_table_null_model","Display life table",value = FALSE),
+                                     fixedPanel(title = "", draggable = TRUE, left=50,width="50%",
+                                                # id = "",
+                                                shinycssloaders::withSpinner(plotOutput(outputId = "null_model_km"))
+                                     ),
 
-                                       fixedPanel(title = "",  draggable = TRUE, right  = 50,id = "myBox",
-                                                  span(DT::dataTableOutput("null_model_life_table"))
-                                       )
-                              ),
-                              tabPanel("Multiple model",
+                                     fixedPanel(title = "",  draggable = TRUE, right  = 50,id = "myBox", width="50%",
+                                                span(DT::dataTableOutput("null_model_life_table"))
+                                     )
+                            ),
+                            tabPanel("Multiple model",
+                                     checkboxInput("life_table_multiple_model","Display life table",value = FALSE),
+                                     fixedPanel(title = "",  draggable = TRUE, left  = 50, #id = "",width="50%",
+                                                dropdownButton(
+                                                  checkboxInput("all_n_svs",
+                                                                "Include all counts",
+                                                                value = TRUE
+                                                  ),
+                                                  selectInput(inputId = "n_svs_min",
+                                                              label = "min",
+                                                              choices = NULL,
+                                                              selected = FALSE
+                                                  ),
+                                                  selectInput(inputId = "n_svs_max",
+                                                              label = "max",
+                                                              choices = NULL,
+                                                              selected = FALSE
+                                                  ),
+                                                  checkboxGroupInput("km_feat",
+                                                                     "Plot layout options:",
+                                                                     choices = c("confidence interval" = "conf_itv",
+                                                                                 "risk table" = "risk_table",
+                                                                                 "y grid line" = "grid_line")),
+                                                  circle = TRUE,
+                                                  status = "danger",
+                                                  icon = icon("gear"), width = "200",
+                                                  tooltip = tooltipOptions(title = "Click to see inputs !")
+                                                ),#button
+                                                shinycssloaders::withSpinner(plotOutput(outputId = "plot_km"#,width = "100%"
+                                                ))
+                                     ),
+                                     fixedPanel(title = "",  draggable = TRUE, right  = 50,id = "myBox",width="50%",
+                                                span(DT::dataTableOutput("multiple_model_life_table"))
+                                     )
 
-                                       checkboxInput("life_table_multiple_model","Display life table",value = FALSE),
-                                       fixedPanel(title = "",  draggable = TRUE, left  = 50, #id = "",
-                                                  dropdownButton(
-                                                    checkboxInput("all_n_svs",
-                                                                  "Include all counts",
-                                                                  value = TRUE
-                                                    ),
-                                                    selectInput(inputId = "n_svs_min",
-                                                                label = "min",
-                                                                choices = NULL,
-                                                                selected = FALSE
-                                                    ),
-                                                    selectInput(inputId = "n_svs_max",
-                                                                label = "max",
-                                                                choices = NULL,
-                                                                selected = FALSE
-                                                    ),
-                                                    checkboxGroupInput("km_feat",
-                                                                       "Plot layout options:",
-                                                                       choices = c("confidence interval" = "conf_itv",
-                                                                                   "risk table" = "risk_table",
-                                                                                   "y grid line" = "grid_line")),
-                                                    circle = TRUE,
-                                                    status = "danger",
-                                                    icon = icon("gear"), width = "200",
-                                                    tooltip = tooltipOptions(title = "Click to see inputs !")
-                                                  ),#button
-                                                  shinycssloaders::withSpinner(plotOutput(outputId = "plot_km"#,width = "100%"
-                                                  ))
-                                       ),
-                                       fixedPanel(title = "",  draggable = TRUE, right  = 50,id = "myBox",
-                                                  span(DT::dataTableOutput("multiple_model_life_table"))
-                                       )
-
-                              )#tabpanel
-
-
-                          )
-                        )
-
-               ),
+                            )
+                          )),
                tabPanel("Cox regression",
                         span(shiny::tags$i(h3("ADD text = Difference between the two models !!")),style="color:#045a8d"),
-
                         shinyjs::useShinyjs(),
                         tabBox(
                           tabPanel("Standard model",
-
-                                   fluidRow(
-
-                                   fixedPanel(title = "",  draggable = FALSE,  width="50%",height = 400, left = 0,
-
-                                              div(box( dropdownButton(
-                                                checkboxInput("cox_reg_td",
-                                                              "With time-dependent covariates",
-                                                              value = TRUE),
-                                                selectizeInput(inputId = "sel_cov",
-                                                               label = "Select categorical covariates",
-                                                               # SV_bin is added by us, 0/1 without/with SV
-                                                               choices = NULL,
-                                                               selected = FALSE,
-                                                               multiple = TRUE
-                                                ),
-                                                selectizeInput(inputId = "sel_cov_cont",
-                                                               label = "Select continuous covariates",
-                                                               choices = NULL,
-                                                               selected = FALSE,
-                                                               multiple = TRUE
-                                                ),
-                                                selectInput(inputId = "sel_strata",
-                                                            label = "Select strata covariate (optional)",
-                                                            choices = NULL),
-                                                circle = TRUE,
-                                                status = "danger",
-                                                icon = icon("gear"), width = "300",
-                                                tooltip = tooltipOptions(title = "Click to see inputs !")
-                                              ),#button
-                                              span(DT::dataTableOutput("table3")))
-                                                  #,style="color:white;"
-                                              )
-                                              ,style="background-color:olive;")#change background color
+                                   fixedRow(
+                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = "50%", left = 0,
+                                                div(box( dropdownButton(
+                                                  checkboxInput("cox_reg_td",
+                                                                "With time-dependent covariates",
+                                                                value = TRUE),
+                                                  selectizeInput(inputId = "sel_cov",
+                                                                 label = "Select categorical covariates",
+                                                                 # SV_bin is added by us, 0/1 without/with SV
+                                                                 choices = NULL,
+                                                                 selected = FALSE,
+                                                                 multiple = TRUE
+                                                  ),
+                                                  selectizeInput(inputId = "sel_cov_cont",
+                                                                 label = "Select continuous covariates",
+                                                                 choices = NULL,
+                                                                 selected = FALSE,
+                                                                 multiple = TRUE
+                                                  ),
+                                                  selectInput(inputId = "sel_strata",
+                                                              label = "Select strata covariate (optional)",
+                                                              choices = NULL),
+                                                  circle = TRUE,
+                                                  status = "danger",
+                                                  icon = icon("gear"), width = "300",
+                                                  tooltip = tooltipOptions(title = "Click to see inputs !")
+                                                ),#button
+                                                span(DT::dataTableOutput("table3")))
+                                                #,style="color:white;"
+                                                )
+                                                ,style="background-color:olive;")#change background color
                                      ,
-                                   fixedPanel(title = "",  draggable = FALSE, width="50%",height = 400,right  = 0,
-                                              div(box(
-                                                ### add in hee value
-                                                "information 2 here"
-                                              ),
-                                                  style="color:white;") ,style="background-color:aqua;"),#change background color
+                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",right  = 0,
+                                                div(box(
+                                                  ### add in hee value
+                                                  "information 2 here"
+                                                ),
+                                                style="color:white;") ,style="background-color:aqua;"),#change background color
                                    ),#fixed row
                                    br(),
                                    br(),
-                                   fluidRow(
-
-                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = 400, right = 0,bottom = 0,
+                                   fixedRow(
+                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = "50%", right = 0,bottom = 0,
 
                                                 div(box(
                                                   ### add in hee value
                                                   "information 3 here"
                                                 )
-                                                    ,style="color:white;"
-                                                    )
+                                                ,style="color:white;"
+                                                )
                                                 ,style="background-color:green;")#change background color
                                      ,
-                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = 400,left  = 0,bottom = 0,
+                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",left  = 0,bottom = 0,
                                                 div(box(
                                                   ### add in hee value
                                                   "information 4 here"
                                                 ),
-
-                                                    style="color:white;") ,style="background-color:yellow;"),#change background color
+                                                style="color:white;") ,style="background-color:yellow;"),#change background color
                                    )
 
 
@@ -249,7 +233,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 
                                    fluidRow(
 
-                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = 400, left = 0,
+                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = "50%", left = 0,
 
                                                 div(box( dropdownButton(
                                                   checkboxInput("cox_reg_td",
@@ -281,7 +265,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                 )
                                                 ,style="background-color:olive;")#change background color
                                      ,
-                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = 400,right  = 0,
+                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",right  = 0,
                                                 div(box(
                                                   ### add in hee value
                                                   "information 2 here"
@@ -292,7 +276,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                    br(),
                                    fluidRow(
 
-                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = 400, right = 0,bottom = 0,
+                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = "50%", right = 0,bottom = 0,
 
                                                 div(box(
                                                   ### add in hee value
@@ -302,7 +286,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                 )
                                                 ,style="background-color:green;")#change background color
                                      ,
-                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = 400,left  = 0,bottom = 0,
+                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",left  = 0,bottom = 0,
                                                 div(box(
                                                   ### add in hee value
                                                   "information 4 here"
@@ -313,419 +297,444 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                           )
                         )
                )#cox panel
-    )
 
-  )
+                          )
+                        )
+
+
 
 
   server <- function(input, output, session) {
-    gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
-    rownames(gene_ids_table) <- gene_ids_table$ensembleID
-    # get disease_n input and update the genes list accordingly
-    observeEvent(input$disease_n, {
-      if(input$disease_n!= "N/A"){
-        genes_list <- c(get_disease_gene_list(disease_gene,input$disease_n))
-        disease_genes_names <- gene_ids_table$GeneName
-        updateSelectizeInput(session,
-                             input = "target_gene",
-                             choices = genes_list,
-                             selected = NULL)
-      }
+
+# all gens
+output$table <- DT::renderDataTable({
+  disease_type_gene <- disease_type_gene %>% filter(disease_type_gene$GCEP ==input$disease_n )
+  disease_type_gene <-unique( disease_type_gene[,-c(2,4,6,9,10)])
+  disease_type_gene %>% arrange(DISEASE_LABEL)
+})
+##
+# add % to table
+##
+# target gene
+observeEvent(input$disease_n, {
+  if(input$disease_n!= "N/A"){
+    genes_list <- c(get_disease_gene_list(disease_gene,input$disease_n))
+    disease_genes_names <- gene_ids_table$GeneName
+    updateSelectizeInput(session,
+                         input = "target_gene",
+                         choices = genes_list,
+                         selected = NULL)
+  }
+})
+
+################################################################################
+#extract svs from vcf
+observe({ if(input$disease_n != "N/A"
+& input$ids != "N/A"
+&input$time != "N/A"){
+  genes_with_svs_in_sample <- apply(vcf@fix, 1, getGeneName,gene_ids_table)
+  sample_names <- colnames(vcf@gt)[-1]
+  disease_genes_names <- gene_ids_table$GeneName
+  output$summ_table <- DT::renderDataTable({
+    # count dataframe with patient_ids in rows and gene_ids in columns
+    count_df <- CountSVsDf(length(disease_genes_names),
+                           length(sample_names),
+                           disease_genes_names,
+                           sample_names,
+                           genes_with_svs_in_sample,
+                           vcf,
+                           input$ids)
+    new_md <- RemoveNAs(metadata, input$time) %>% rename(ids = input$ids)
+    # what happen if the input$target_gene is not in the vcf file?
+    new_df <- subset(count_df, ids %in% new_md$ids)
+    combine_newdf_metadata <-merge ( metadata,new_df,  by.x = c(1), by.y ='ids')
+    #patients
+    genes_in_patients <- combine_newdf_metadata %>% filter(Phenotype =="1")
+    genes_in_patients <- genes_in_patients[,-c(2,3,4,5,6,7)]
+    #invert rows and columns
+    genes_in_patients2 <- data.frame(t(genes_in_patients[-1]))
+    colnames(genes_in_patients2) <- genes_in_patients[, 1]
+
+    #max sv in each gene in patients
+    genes_in_patients2$max_patient <- apply(genes_in_patients2, 1, max, na.rm=TRUE)
+    #min
+    genes_in_patients2$min_patient <- apply(genes_in_patients2, 1, min, na.rm=TRUE)
+    #control
+    genes_in_controls <- combine_newdf_metadata %>% filter(Phenotype =="0")
+    genes_in_controls <- genes_in_controls[,-c(2,3,4,5,6,7)]
+    #invert rows and columns
+    genes_in_controls2 <- data.frame(t(genes_in_controls[-1]))
+    colnames(genes_in_controls2) <- genes_in_controls[, 1]
+
+    #max sv in each gene in patients
+    genes_in_controls2$max_controls <- apply(genes_in_controls2, 1, max, na.rm=TRUE)
+    #min
+    genes_in_controls2$min_controls <- apply(genes_in_controls2, 1, min, na.rm=TRUE)
+    #combine all in a table
+    genes_in_patients2 <- genes_in_patients2 %>%
+      rownames_to_column("gene")
+
+
+    genes_in_patients2  <- genes_in_patients2[c("gene", "min_patient", "max_patient")]
+    #
+    genes_in_controls2 <- genes_in_controls2 %>%
+      rownames_to_column("gene")
+    genes_in_controls2 <- genes_in_controls2[c("gene", "min_controls", "max_controls")]
+    #% of patients samples with SV
+    genes_in_patients3 <-data.frame(t(genes_in_patients[-1]))
+    colnames(genes_in_patients3) <- genes_in_patients[, 1]
+    genes_in_patients3$percentage_sample_patients_with_sv <- (as.numeric(rowSums(genes_in_patients3!=0))
+                                                              / as.numeric(ncol(genes_in_patients3)))*100
+    genes_in_patients3 <- genes_in_patients3 %>%
+      rownames_to_column("gene")
+    genes_in_patients3 <- genes_in_patients3[c("gene", "percentage_sample_patients_with_sv")]
+
+    #% of control samples with SV
+    genes_in_controls3 <-data.frame(t(genes_in_controls[-1]))
+    colnames(genes_in_controls3) <- genes_in_controls[, 1]
+    genes_in_controls3$percentage_sample_controls_with_sv <- (as.numeric(rowSums(genes_in_controls3!=0))
+                                                              / as.numeric(ncol(genes_in_controls3)))*100
+    genes_in_controls3 <- genes_in_controls3 %>%
+      rownames_to_column("gene")
+    genes_in_controls3 <- genes_in_controls3[c("gene", "percentage_sample_controls_with_sv")]
+    #merge
+    output$summ_table <- DT::renderDataTable({
+      all_tabble = list( genes_in_controls2,genes_in_patients2,genes_in_patients3,genes_in_controls3)
+      statistics_table <- all_tabble %>% reduce(inner_join, by='gene')
+      statistics_table <- statistics_table %>% filter(statistics_table$gene ==input$target_gene)
+      svgene <- data.frame(t(statistics_table[-1]))
+      colnames(svgene) <-statistics_table[, 1]
+      options(digits=3)
+      svgene
     })
-
-
-    observe({ if(input$disease_n != "N/A"
-                 & input$ids != "N/A"
-                 &input$time != "N/A"){
-      genes_with_svs_in_sample <- apply(vcf@fix, 1, getGeneName,gene_ids_table)
-      sample_names <- colnames(vcf@gt)[-1]
-      disease_genes_names <- gene_ids_table$GeneName
-      output$summ_table <- DT::renderDataTable({
-        # count dataframe with patient_ids in rows and gene_ids in columns
-        count_df <- CountSVsDf(length(disease_genes_names),
-                               length(sample_names),
-                               disease_genes_names,
-                               sample_names,
-                               genes_with_svs_in_sample,
-                               vcf,
-                               input$ids)
-        new_md <- RemoveNAs(metadata, input$time) %>% rename(ids = input$ids)
-        # what happen if the input$target_gene is not in the vcf file?
-        new_df <- subset(count_df, ids %in% new_md$ids)
-        count <- as.data.frame(apply(new_df[,-1], 2, function(c)sum(c!=0)))
-        colnames(count) <- "Count of patients with SVs"
-        count <- count %>% arrange(desc(count))
-        count
-      })
-    }
-    })
-
-    reactive_no_NAs_metadata <- reactive({
-      if(checkInput(input)){
-        disease_genes_names <- gene_ids_table$GeneName
-        sample_names <- colnames(vcf@gt)[-1] # ignore VCF genotype information
-        # genes are repeated since a single gene can have more than one SV.
-        genes_with_svs_in_sample <- apply(vcf@fix,
-                                          1,
-                                          getGeneName,
-                                          gene_ids_table)
-        # count dataframe with patient_ids in rows and gene_ids in columns
-        count_df <- CountSVsDf(length(disease_genes_names),
-                               length(sample_names),
-                               disease_genes_names,
-                               sample_names,
-                               genes_with_svs_in_sample,
-                               vcf,
-                               input$ids)
-        new_md <- (RemoveNAs(metadata, input$time)
-                   %>% rename(ids = input$ids,
-                              trial_group_bin = input$group,
-                              time = input$time,
-                              event = input$event)
-        )
-        # what happen if the input$target_gene is not in the vcf file?
-        new_df <- (subset(count_df, ids %in% new_md$ids)
-                   %>% rename(SV_count_per_gene = input$target_gene)
-        )
-        no_na_df <- merge(new_df, new_md, by = "ids")
-        no_na_df <- transform(no_na_df,
-                              time = as.numeric(time),
-                              event = as.numeric(event),
-                              SV_count_per_gene = as.numeric(SV_count_per_gene)
-        )
-        no_na_df <- (no_na_df
-                     %>% mutate(SV_bin = ifelse(new_df$SV_count_per_gene>0, 1, 0)
-                     )
-                     %>% mutate(trial_group = ifelse(trial_group_bin=="0",
-                                                     "Placebo",
-                                                     "Treatment")
-                     )
-                     %>% mutate(SV = ifelse(SV_bin=="0", "with", "without")
-                     )
-        )
-        if(input$time_unit == 'years'){
-          no_na_df$time_days <- floor(no_na_df[["time"]] * days_year)
-        } else{
-          no_na_df$time_years <- no_na_df[["time"]] / days_year
-        }
-        no_na_df
-      }
-    }
+  })
+}
+  })
+####
+reactive_no_NAs_metadata <- reactive({
+  if(checkInput(input)){
+    disease_genes_names <- gene_ids_table$GeneName
+    sample_names <- colnames(vcf@gt)[-1] # ignore VCF genotype information
+    # genes are repeated since a single gene can have more than one SV.
+    genes_with_svs_in_sample <- apply(vcf@fix,
+                                      1,
+                                      getGeneName,
+                                      gene_ids_table)
+    # count dataframe with patient_ids in rows and gene_ids in columns
+    count_df <- CountSVsDf(length(disease_genes_names),
+                           length(sample_names),
+                           disease_genes_names,
+                           sample_names,
+                           genes_with_svs_in_sample,
+                           vcf,
+                           input$ids)
+    new_md <- (RemoveNAs(metadata, input$time)
+               %>% rename(ids = input$ids,
+                          trial_group_bin = input$group,
+                          time = input$time,
+                          event = input$event)
     )
-
-    ## output - histogram ##
-    output$histogram <- renderPlot(
-      {
-        if(checkInput(input)){
-          new_df <- reactive_no_NAs_metadata()
-          # get a dataframe with counts
-          svs_gene_input_df <-  new_df[c("ids", "trial_group", "SV_count_per_gene")]
-          legend_title <- "Group"
-          ggplot(svs_gene_input_df, aes(SV_count_per_gene, fill=trial_group)) +
-            geom_histogram(binwidth=1) +
-            stat_bin(binwidth=1,
-                     geom='text',
-                     color='white',
-                     aes(label=after_stat(if_else(condition = count>0,
-                                                  as.character(count), ""))),
-                     position=position_stack(vjust = 0.5)) +
-            xlab("Number of SVs in target gene") + ylab("Frequency") +
-            theme(text = element_text(size = 20),
-                  panel.background = element_rect(fill = "white",
-                                                  colour = "white"),
-                  axis.line = element_line(colour = "black"),
-                  panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  legend.position="top"
-            ) +
-            scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
-        }
-      },
-      height = 500,
-      width = 700
+    # what happen if the input$target_gene is not in the vcf file?
+    new_df <- (subset(count_df, ids %in% new_md$ids)
+               %>% rename(SV_count_per_gene = input$target_gene)
     )
+    no_na_df <- merge(new_df, new_md, by = "ids")
+    no_na_df <- transform(no_na_df,
+                          time = as.numeric(time),
+                          event = as.numeric(event),
+                          SV_count_per_gene = as.numeric(SV_count_per_gene)
+    )
+    no_na_df <- (no_na_df
+                 %>% mutate(SV_bin = ifelse(new_df$SV_count_per_gene>0, 1, 0)
+                 )
+                 %>% mutate(trial_group = ifelse(trial_group_bin=="0",
+                                                 "Placebo",
+                                                 "Treatment")
+                 )
+                 %>% mutate(SV = ifelse(SV_bin=="0", "with", "without")
+                 )
+    )
+    if(input$time_unit == 'years'){
+      no_na_df$time_days <- floor(no_na_df[["time"]] * days_year)
+    } else{
+      no_na_df$time_years <- no_na_df[["time"]] / days_year
+    }
+    no_na_df
+  }
+}
+)
 
-    observe({
-      if(checkInput(input) & !is.null(input$target_gene)){
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        # renaming back to original column names, so it's not confusing for the user.
-        # maybe not the best approach
-        rename_cols <- c("ids", "trial_group_bin", "time", "event")
-        rename_cols_with <- c(input$ids, input$group, input$time, input$event)
-        names(svs_gene_input_df)[names(svs_gene_input_df) %in% rename_cols]<- rename_cols_with
-        coln_list <- colnames(svs_gene_input_df)
-        coln_list <- coln_list[!(coln_list %in% c(input$ids,"SV_count_per_gene"))]
-        updateSelectizeInput(session,
-                             input = "table_cols",
-                             choices = coln_list,
-                             selected = NULL)
+## output - histogram ##
+output$histogram <- renderPlot(
+  {
+    if(checkInput(input)){
+      new_df <- reactive_no_NAs_metadata()
+      # get a dataframe with counts
+      svs_gene_input_df <-  new_df[c("ids", "trial_group", "SV_count_per_gene")]
+      legend_title <- "Group"
+      ggplot(svs_gene_input_df, aes(SV_count_per_gene, fill=trial_group)) +
+        geom_histogram(binwidth=1) +
+        stat_bin(binwidth=1,
+                 geom='text',
+                 color='white',
+                 aes(label=after_stat(if_else(condition = count>0,
+                                              as.character(count), ""))),
+                 position=position_stack(vjust = 0.5)) +
+        xlab("Number of SVs in target gene") + ylab("Frequency") +
+        theme(text = element_text(size = 20),
+              panel.background = element_rect(fill = "white",
+                                              colour = "white"),
+              axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              legend.position="top"
+        ) +
+        scale_fill_manual(legend_title, values=c("#8B1D4D", "#5275A6"))
+    }
+  },
+  height = 500,
+  width = 700
+)
+
+############################""" tab 2 km #################################
+observe({
+  if(checkInput(input)){
+    svs_gene_input_df <- reactive_no_NAs_metadata()
+    null_model <- survfit(Surv(time, event)~1,
+                          data = svs_gene_input_df,
+                          type = "kaplan-meier")
+    output$null_model_km <- renderPlot({
+      ggsurvplot_combine(list(null_model),
+                         data=no_na_df,
+                         risk.table = FALSE,
+                         conf.int = FALSE,
+                         conf.int.style = "step",
+                         risk.table.y.text = FALSE,
+                         xlab = "Years",
+                         ylab = "Overall survival probability",
+                         legend = "none",
+                         ggtheme = theme(
+                           text = element_text(size = 20),
+                           panel.background = element_rect(fill = "white",
+                                                           colour = "white"),
+                           axis.line = element_line(colour = "black"),
+                           panel.grid.major.y = element_line(colour='white'),
+                           panel.grid.minor.y = element_line(colour='white'),
+                           # legend.position = c(0.2, 0.5)
+                         ))
+    },
+    height = 500,
+    width = 700)
+
+    observeEvent(input$life_table_null_model, {
+      if(input$life_table_null_model == FALSE){
+        shinyjs::hide(id = "myBox")
       }
-    })
-
-    observe({
-      if(checkInput(input)){
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        # renaming back to original column names, so it's not confusing for the user.
-        # maybe not the best approach
-        rename_cols <- c("ids", "trial_group_bin", "time", "event")
-        rename_cols_with <- c(input$ids, input$group, input$time, input$event)
-        names(svs_gene_input_df)[names(svs_gene_input_df) %in% rename_cols]<- rename_cols_with
-        if(any(!is.na(input$table_cols))){
-          output$table <- DT::renderDataTable({
-            col_names_list <- c(c(input$ids, "SV_count_per_gene"),
-                                input$table_cols)
-            svs_gene_input_df <- as_tibble(svs_gene_input_df[col_names_list])
-            svs_gene_input_df
-          })
-        }
-        else{
-          output$table <- DT::renderDataTable({
-            svs_gene_input_df <- as_tibble(svs_gene_input_df[c(input$ids, "SV_count_per_gene")])
-            colnames(svs_gene_input_df) <- c("ID", "SV count in gene of interest")
-            svs_gene_input_df
-          })
-        }
-      }
-    })
-
-    observe({
-      if(checkInput(input)){
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        null_model <- survfit(Surv(time, event)~1,
-                              data = svs_gene_input_df,
-                              type = "kaplan-meier")
-        output$null_model_km <- renderPlot({
-          ggsurvplot_combine(list(null_model),
-                             data=no_na_df,
-                             risk.table = FALSE,
-                             conf.int = FALSE,
-                             conf.int.style = "step",
-                             risk.table.y.text = FALSE,
-                             xlab = "Years",
-                             ylab = "Overall survival probability",
-                             legend = "none",
-                             ggtheme = theme(
-                               text = element_text(size = 20),
-                               panel.background = element_rect(fill = "white",
-                                                               colour = "white"),
-                               axis.line = element_line(colour = "black"),
-                               panel.grid.major.y = element_line(colour='white'),
-                               panel.grid.minor.y = element_line(colour='white'),
-                               # legend.position = c(0.2, 0.5)
-                             ))
-        },
-        height = 500,
-        width = 700)
-
-        observeEvent(input$life_table_null_model, {
-          if(input$life_table_null_model == FALSE){
-            shinyjs::hide(id = "myBox")
-          }
-          else if(input$life_table_null_model==TRUE){
-            shinyjs::show(id = "myBox")
-            output$null_model_life_table <- DT::renderDataTable({
-              as_tibble(round_df(as.data.frame(surv_summary(null_model)), 3))
-            })
-          }
+      else if(input$life_table_null_model==TRUE){
+        shinyjs::show(id = "myBox")
+        output$null_model_life_table <- DT::renderDataTable({
+          as_tibble(round_df(as.data.frame(surv_summary(null_model)), 3))
         })
       }
     })
+  }
+})
 
-    observe({
-      if(checkInput(input)){
-        risk_table = FALSE
-        conf_itv = FALSE
-        grid_line = "white"
-        if(!is.null(input$km_feat)){
-          if("conf_itv" %in% input$km_feat){
-            conf_itv = TRUE}
-          if("risk_table" %in% input$km_feat){
-            risk_table = TRUE}
-          if("grid_line" %in% input$km_feat){
-            grid_line = "grey"}
-        }
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        if (input$all_n_svs == FALSE
-            & input$n_svs_min!= ""
-            & input$n_svs_max!= ""){
-          if (input$n_svs_max > input$n_svs_min){
-            n_svs_min = as.numeric(input$n_svs_min)
-            n_svs_max = as.numeric(input$n_svs_max)
-            sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min
-                    & svs_gene_input_df$SV_count_per_gene <= n_svs_max)
-            svs_gene_input_df <- svs_gene_input_df[sub,]
-          }
-        }
-        groups_df <- (unique(svs_gene_input_df[c("SV_bin", "trial_group_bin")])
-                      %>% arrange(SV_bin, trial_group_bin))
-        lables <- c()
-        cols <- c()
-        for (row in 1:nrow(groups_df)){
-          sv_bin <- groups_df[row, "SV_bin"]
-          trial_g <- groups_df[row, "trial_group_bin"]
-          if (sv_bin == 0){
-            if (trial_g == 0){
-              lables <- c(lables, "without sv - placebo")
-              cols <- c(cols, "Violetred2")
-            }
-            else if (trial_g == 1){
-              lables <- c(lables, "without sv - treatment")
-              cols <- c(cols, "turquoise3")
-            }
-          }
-          if (sv_bin == 1){
-            if (trial_g == 0){
-              lables <- c(lables, "with sv - placebo")
-              cols <- c(cols, "Violetred4")
-            }
-            else if (trial_g == 1){
-              lables <- c(lables, "with sv - treatment")
-              cols <- c(cols, "steelblue")
-            }
-          }
-        }
-        n_sv_groups <- unique(svs_gene_input_df[["SV_bin"]])
-        # can it happen that there are more than 1 patient groups?
-        if(length(n_sv_groups) == 2){
-          # generate survival curve objects for each group
-          sc_without <- survfit2(Surv(time, event)~trial_group_bin,
-                                 data = svs_gene_input_df,
-                                 subset=(SV_bin==0),
-                                 type = "kaplan-meier")
-          sv_with <- survfit2(Surv(time, event)~trial_group_bin,
-                              data = svs_gene_input_df,
-                              subset=(SV_bin==1),
-                              type = "kaplan-meier")
-          surv_fit_list <- list("with SV" = sv_with, "without SV" = sc_without)
-        }
-        else if(length(n_sv_groups) ==1){
-          if (n_sv_groups == 0){
-            type = "without"}
-          else if (n_sv_groups == 1){
-            type = "with"}
-          temp <- paste(type , " SV")
-          sc <- survfit2(Surv(time, event)~trial_group_bin,
-                         data = svs_gene_input_df,
-                         type = "kaplan-meier")
-          surv_fit_list <- list(temp = sc)
-        }
-
-        output$plot_km <- renderPlot({
-          ggsurvplot_combine(surv_fit_list,
-                             data=svs_gene_input_df,
-                             risk.table = risk_table,
-                             conf.int = conf_itv,
-                             conf.int.style = "step",
-                             risk.table.y.text = FALSE,
-                             xlab = toTitleCase(input$time_unit),
-                             ggtheme = theme(
-                               text = element_text(size = 20),
-                               panel.background = element_rect(fill = "white",
-                                                               colour = "white"),
-                               axis.line = element_line(colour = "black"),
-                               panel.grid.major.y = element_line(colour=grid_line),
-                               panel.grid.minor.y = element_line(colour=grid_line),
-                               # legend.position = c(0.2, 0.5)
-                             ),
-                             legend = "right",
-                             legend.title = "Group",
-                             legend.labs =lables,
-                             palette = cols
-          )},
-          height = 600,
-          width = 1000)
+observe({
+  if(checkInput(input)){
+    risk_table = FALSE
+    conf_itv = FALSE
+    grid_line = "white"
+    if(!is.null(input$km_feat)){
+      if("conf_itv" %in% input$km_feat){
+        conf_itv = TRUE}
+      if("risk_table" %in% input$km_feat){
+        risk_table = TRUE}
+      if("grid_line" %in% input$km_feat){
+        grid_line = "grey"}
+    }
+    svs_gene_input_df <- reactive_no_NAs_metadata()
+    if (input$all_n_svs == FALSE
+        & input$n_svs_min!= ""
+        & input$n_svs_max!= ""){
+      if (input$n_svs_max > input$n_svs_min){
+        n_svs_min = as.numeric(input$n_svs_min)
+        n_svs_max = as.numeric(input$n_svs_max)
+        sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min
+                & svs_gene_input_df$SV_count_per_gene <= n_svs_max)
+        svs_gene_input_df <- svs_gene_input_df[sub,]
       }
-      else{
-        output$plot_km <- renderText({ "Missing input data"})
-      }
-    })
-
-    inputs_react <- reactive({list(input$event,
-                                   input$time,
-                                   input$ids,
-                                   input$target_gene
-    )})
-    # hide the event, time and ids covariates from the covariates  and strata
-    # drop-down
-    observeEvent(inputs_react(),
-                 {if(checkInput(input)){
-                   svs_gene_input_df <- reactive_no_NAs_metadata()
-                   svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
-                   cov_list <- c(get_cov_list(metadata, input), "SV_bin")
-                   # update the covariate drop down
-                   updateSelectizeInput(session,
-                                        input = "sel_cov",
-                                        choices = cov_list,
-                                        options = list(create = TRUE))
-                   # update the strata drop down, this field is optional
-                   updateSelectizeInput(session,
-                                        input = "sel_cov_cont",
-                                        choices = cov_list,
-                                        options = list(create = TRUE))
-                   updateSelectizeInput(session,
-                                        input = "sel_strata",
-                                        choices = c(cov_list, c("SV_bin","N/A")),
-                                        selected = "N/A")
-                 }
-                 }
-    )
-
-    observeEvent(input$all_n_svs, {
-      if (checkInput(input)){
-        if (input$all_n_svs == FALSE){
-          shinyjs::enable("n_svs_min")
-          shinyjs::enable("n_svs_max")
-          svs_gene_input_df <- reactive_no_NAs_metadata()
-          svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
-          updateSelectizeInput(session,
-                               input = "n_svs_min",
-                               choices = sort(svs_levels))
+    }
+    groups_df <- (unique(svs_gene_input_df[c("SV_bin", "trial_group_bin")])
+                  %>% arrange(SV_bin, trial_group_bin))
+    lables <- c()
+    cols <- c()
+    for (row in 1:nrow(groups_df)){
+      sv_bin <- groups_df[row, "SV_bin"]
+      trial_g <- groups_df[row, "trial_group_bin"]
+      if (sv_bin == 0){
+        if (trial_g == 0){
+          lables <- c(lables, "without sv - placebo")
+          cols <- c(cols, "Violetred2")
         }
-        else {
-          shinyjs::disable("n_svs_min")
-          shinyjs::disable("n_svs_max")
+        else if (trial_g == 1){
+          lables <- c(lables, "without sv - treatment")
+          cols <- c(cols, "turquoise3")
+        }
+      }
+      if (sv_bin == 1){
+        if (trial_g == 0){
+          lables <- c(lables, "with sv - placebo")
+          cols <- c(cols, "Violetred4")
+        }
+        else if (trial_g == 1){
+          lables <- c(lables, "with sv - treatment")
+          cols <- c(cols, "steelblue")
         }
       }
     }
-    )
-
-    observeEvent(input$n_svs_min, {
-      if (checkInput(input)){
-        if (input$all_n_svs == FALSE & input$n_svs_min!=""){
-          svs_gene_input_df <- reactive_no_NAs_metadata()
-          svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
-          max_levels <- sort(svs_levels[svs_levels >= as.numeric(input$n_svs_min)])
-          updateSelectizeInput(session,
-                               input = "n_svs_max",
-                               choices = max_levels)
-        }
-      }
+    n_sv_groups <- unique(svs_gene_input_df[["SV_bin"]])
+    # can it happen that there are more than 1 patient groups?
+    if(length(n_sv_groups) == 2){
+      # generate survival curve objects for each group
+      sc_without <- survfit2(Surv(time, event)~trial_group_bin,
+                             data = svs_gene_input_df,
+                             subset=(SV_bin==0),
+                             type = "kaplan-meier")
+      sv_with <- survfit2(Surv(time, event)~trial_group_bin,
+                          data = svs_gene_input_df,
+                          subset=(SV_bin==1),
+                          type = "kaplan-meier")
+      surv_fit_list <- list("with SV" = sv_with, "without SV" = sc_without)
     }
-    )
+    else if(length(n_sv_groups) ==1){
+      if (n_sv_groups == 0){
+        type = "without"}
+      else if (n_sv_groups == 1){
+        type = "with"}
+      temp <- paste(type , " SV")
+      sc <- survfit2(Surv(time, event)~trial_group_bin,
+                     data = svs_gene_input_df,
+                     type = "kaplan-meier")
+      surv_fit_list <- list(temp = sc)
+    }
+
+    output$plot_km <- renderPlot({
+      ggsurvplot_combine(surv_fit_list,
+                         data=svs_gene_input_df,
+                         risk.table = risk_table,
+                         conf.int = conf_itv,
+                         conf.int.style = "step",
+                         risk.table.y.text = FALSE,
+                         xlab = toTitleCase(input$time_unit),
+                         ggtheme = theme(
+                           text = element_text(size = 20),
+                           panel.background = element_rect(fill = "white",
+                                                           colour = "white"),
+                           axis.line = element_line(colour = "black"),
+                           panel.grid.major.y = element_line(colour=grid_line),
+                           panel.grid.minor.y = element_line(colour=grid_line),
+                           # legend.position = c(0.2, 0.5)
+                         ),
+                         legend = "right",
+                         legend.title = "Group",
+                         legend.labs =lables,
+                         palette = cols
+      )},
+      height = 600,
+      width = 1000)
+  }
+  else{
+    output$plot_km <- renderText({ "Missing input data"})
+  }
+})
+
+inputs_react <- reactive({list(input$event,
+                               input$time,
+                               input$ids,
+                               input$target_gene
+)})
+# hide the event, time and ids covariates from the covariates  and strata
+# drop-down
+observeEvent(inputs_react(),
+             {if(checkInput(input)){
+               svs_gene_input_df <- reactive_no_NAs_metadata()
+               svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
+               cov_list <- c(get_cov_list(metadata, input), "SV_bin")
+               # update the covariate drop down
+               updateSelectizeInput(session,
+                                    input = "sel_cov",
+                                    choices = cov_list,
+                                    options = list(create = TRUE))
+               # update the strata drop down, this field is optional
+               updateSelectizeInput(session,
+                                    input = "sel_cov_cont",
+                                    choices = cov_list,
+                                    options = list(create = TRUE))
+               updateSelectizeInput(session,
+                                    input = "sel_strata",
+                                    choices = c(cov_list, c("SV_bin","N/A")),
+                                    selected = "N/A")
+             }
+             }
+)
+
+observeEvent(input$all_n_svs, {
+  if (checkInput(input)){
+    if (input$all_n_svs == FALSE){
+      shinyjs::enable("n_svs_min")
+      shinyjs::enable("n_svs_max")
+      svs_gene_input_df <- reactive_no_NAs_metadata()
+      svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
+      updateSelectizeInput(session,
+                           input = "n_svs_min",
+                           choices = sort(svs_levels))
+    }
+    else {
+      shinyjs::disable("n_svs_min")
+      shinyjs::disable("n_svs_max")
+    }
+  }
+}
+)
+
+observeEvent(input$n_svs_min, {
+  if (checkInput(input)){
+    if (input$all_n_svs == FALSE & input$n_svs_min!=""){
+      svs_gene_input_df <- reactive_no_NAs_metadata()
+      svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
+      max_levels <- sort(svs_levels[svs_levels >= as.numeric(input$n_svs_min)])
+      updateSelectizeInput(session,
+                           input = "n_svs_max",
+                           choices = max_levels)
+    }
+  }
+}
+)
 
 
-    output$table3 <- DT::renderDataTable({
-      if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
-        covariates <- c()
-        input_df <- reactive_no_NAs_metadata()
-        if (any(!is.na(input$sel_cov_cont))){
-          input_cov_cont <- map_col_names(input, input$sel_cov_cont)
-          input_df[input_cov_cont] <- sapply(input_df[input_cov_cont],as.numeric)
-          covariates <- c(covariates, input_cov_cont)
-        }
-        if(any(!is.na(input$sel_cov))){
-          input_cov_cat <- map_col_names(input, input$sel_cov)
-          input_df[input_cov_cat] <- sapply(input_df[input_cov_cat],as.character)
-          covariates <- c(covariates, input_cov_cat)
-        }
-        formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
-        x3 <- (coxph(as.formula(formulaString), data=input_df)
-               %>% tbl_regression(exp = TRUE))
-        proport_hazard_assump <- cox.zph(cox_reg.std)
-        t3 <-as_tibble(x3)
-        t3
-      }
-    })
+output$table3 <- DT::renderDataTable({
+  if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
+    covariates <- c()
+    input_df <- reactive_no_NAs_metadata()
+    if (any(!is.na(input$sel_cov_cont))){
+      input_cov_cont <- map_col_names(input, input$sel_cov_cont)
+      input_df[input_cov_cont] <- sapply(input_df[input_cov_cont],as.numeric)
+      covariates <- c(covariates, input_cov_cont)
+    }
+    if(any(!is.na(input$sel_cov))){
+      input_cov_cat <- map_col_names(input, input$sel_cov)
+      input_df[input_cov_cat] <- sapply(input_df[input_cov_cat],as.character)
+      covariates <- c(covariates, input_cov_cat)
+    }
+    formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
+    x3 <- (coxph(as.formula(formulaString), data=input_df)
+           %>% tbl_regression(exp = TRUE))
+    proport_hazard_assump <- cox.zph(cox_reg.std)
+    t3 <-as_tibble(x3)
+    t3
+  }
+})
 
 
 
@@ -788,8 +797,7 @@ get_disease_gene_list <- function(disease_gene, input_disease) {
                  %>% rename(genes = input_disease))
   return(genes_list$genes)
 }
-
-
+################################
 #' `checkInput`
 #' @param info
 #' @return
