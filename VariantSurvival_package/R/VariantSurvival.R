@@ -1,13 +1,15 @@
+
+
 #' VariantSurvival
 #'
 #' @param vcffile path to the vcf file containing the Structural variant data
 #' @param metadatafile path to the txt file containing the samples metadata
-#' @param demo true or false
+#' @param demo
 #'
 #' @return
 #' @export
 #'
-
+#' @examples
 VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
   install_load_requirements()
   #demo or input files
@@ -98,9 +100,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                br(),
                                DT::dataTableOutput("summ_table") ),
                             box(width = 6,plotOutput(outputId = "histogram") )
-
-
-
                           )
                         )
                ),
@@ -196,14 +195,14 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                 span(DT::dataTableOutput("table3")))
                                                 #,style="color:white;"
                                                 )
-                                                ,style="background-color:olive;")#change background color
+                                                ,style="background-color:white;")#change background color
                                      ,
                                      fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",right  = 0,
                                                 div(box(
                                                   ### add in hee value
                                                   "information 2 here"
                                                 ),
-                                                style="color:white;") ,style="background-color:aqua;"),#change background color
+                                                style="color:black;") ,style="background-color:white;"),#change background color
                                    ),#fixed row
                                    br(),
                                    br(),
@@ -214,16 +213,16 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                   ### add in hee value
                                                   "information 3 here"
                                                 )
-                                                ,style="color:white;"
+                                                ,style="color:black;"
                                                 )
-                                                ,style="background-color:green;")#change background color
+                                                ,style="background-color:white;")#change background color
                                      ,
                                      fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",left  = 0,bottom = 0,
                                                 div(box(
                                                   ### add in hee value
                                                   "information 4 here"
                                                 ),
-                                                style="color:white;") ,style="background-color:yellow;"),#change background color
+                                                style="color:black;") ,style="background-color:white;"),#change background color
                                    )
 
 
@@ -263,14 +262,14 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                 span(DT::dataTableOutput("table4")))  ###☻ change id
                                                 #,style="color:white;"
                                                 )
-                                                ,style="background-color:olive;")#change background color
+                                                ,style="background-color:white;")#change background color
                                      ,
                                      fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",right  = 0,
                                                 div(box(
                                                   ### add in hee value
                                                   "information 2 here"
                                                 ),
-                                                style="color:white;") ,style="background-color:aqua;"),#change background color
+                                                style="color:black;") ,style="background-color:white;"),#change background color
                                    ),#fixed row
                                    br(),
                                    br(),
@@ -282,9 +281,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                   ### add in hee value
                                                   "information 3 here"
                                                 )
-                                                ,style="color:white;"
+                                                ,style="color:black;"
                                                 )
-                                                ,style="background-color:green;")#change background color
+                                                ,style="background-color:white;")#change background color
                                      ,
                                      fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",left  = 0,bottom = 0,
                                                 div(box(
@@ -292,7 +291,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                   "information 4 here"
                                                 ),
 
-                                                style="color:white;") ,style="background-color:yellow;"),#change background color
+                                                style="color:black;") ,style="background-color:white;"),#change background color
                                    )#fixed row
                           )
                         )
