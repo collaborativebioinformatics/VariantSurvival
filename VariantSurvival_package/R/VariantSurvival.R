@@ -104,10 +104,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                         )
                ),
                #######################""" tab2 ###############################
-               tabPanel("Survival Analysis",
+               tabPanel("Kaplan–Meier",
 
-                          span(shiny::tags$i( h2("Kaplan–Meier"))),
-                          span(shiny::tags$i(h3("ADD text = Difference between the two models !!"))),
                           # to enable/disable the n_svs_min & n_svs_max fields,
                           #this should be added at the panel level
                           shinyjs::useShinyjs(),
@@ -115,7 +113,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                             tabPanel("Null model",
                                      checkboxInput("life_table_null_model","Display life table",value = FALSE),
                                      fixedPanel(title = "", draggable = TRUE, left=50,width="50%",
-                                                # id = "",
+
                                                 shinycssloaders::withSpinner(plotOutput(outputId = "null_model_km"))
                                      ),
 
@@ -160,148 +158,37 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 
                             )
                           )),
+               ###########################################"""
                tabPanel("Cox regression",
-                        span(shiny::tags$i(h3("ADD text = Difference between the two models !!")),style="color:#045a8d"),
-                        shinyjs::useShinyjs(),
-                        tabBox(
-                          tabPanel("Standard model",
-                                   fixedRow(
-                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = "50%", left = 0,
-                                                div(box( dropdownButton(
-                                                  checkboxInput("cox_reg_td",
-                                                                "With time-dependent covariates",
-                                                                value = TRUE),
-                                                  selectizeInput(inputId = "sel_cov",
-                                                                 label = "Select categorical covariates",
-                                                                 # SV_bin is added by us, 0/1 without/with SV
-                                                                 choices = NULL,
-                                                                 selected = FALSE,
-                                                                 multiple = TRUE
-                                                  ),
-                                                  selectizeInput(inputId = "sel_cov_cont",
-                                                                 label = "Select continuous covariates",
-                                                                 choices = NULL,
-                                                                 selected = FALSE,
-                                                                 multiple = TRUE
-                                                  ),
-                                                  selectInput(inputId = "sel_strata",
-                                                              label = "Select strata covariate (optional)",
-                                                              choices = NULL),
-                                                  circle = TRUE,
-                                                  status = "danger",
-                                                  icon = icon("gear"), width = "300",
-                                                  tooltip = tooltipOptions(title = "Click to see inputs !")
-                                                ),#button
-                                                span(DT::dataTableOutput("table3")))
-                                                #,style="color:white;"
-                                                )
-                                                ,style="background-color:white;")#change background color
-                                     ,
-                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",right  = 0,
-                                                div(box(
-                                                  ### add in hee value
-                                                  "information 2 here"
-                                                ),
-                                                style="color:black;") ,style="background-color:white;"),#change background color
-                                   ),#fixed row
-                                   br(),
-                                   br(),
-                                   fixedRow(
-                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = "50%", right = 0,bottom = 0,
-
-                                                div(box(
-                                                  ### add in hee value
-                                                  "information 3 here"
-                                                )
-                                                ,style="color:black;"
-                                                )
-                                                ,style="background-color:white;")#change background color
-                                     ,
-                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",left  = 0,bottom = 0,
-                                                div(box(
-                                                  ### add in hee value
-                                                  "information 4 here"
-                                                ),
-                                                style="color:black;") ,style="background-color:white;"),#change background color
-                                   )
-
-
-
+                        span(shiny::tags$i(
+                          h3("Cox regression table")),
+                          style="color:#045a8d",
+                          shinyjs::useShinyjs(),
+                          checkboxInput("cox_reg_td",
+                                        "With time-dependent covariates",
+                                        value = TRUE),
+                          selectizeInput(inputId = "sel_cov",
+                                         label = "Select categorical covariates",
+                                         # SV_bin is added by us, 0/1 without/with SV
+                                         choices = NULL,
+                                         selected = FALSE,
+                                         multiple = TRUE
                           ),
-                          tabPanel("Multiple model",
+                          selectizeInput(inputId = "sel_cov_cont",
+                                         label = "Select continuous covariates",
+                                         choices = NULL,
+                                         selected = FALSE,
+                                         multiple = TRUE
+                          ),
+                          selectInput(inputId = "sel_strata",
+                                      label = "Select strata covariate (optional)",
+                                      choices = NULL),
+                         box(span(DT::dataTableOutput("table3")))
 
-                                   fluidRow(
-
-                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = "50%", left = 0,
-
-                                                div(box( dropdownButton(
-                                                  checkboxInput("cox_reg_td",
-                                                                "With time-dependent covariates",
-                                                                value = TRUE),
-                                                  selectizeInput(inputId = "sel_cov",
-                                                                 label = "Select categorical covariates",
-                                                                 # SV_bin is added by us, 0/1 without/with SV
-                                                                 choices = NULL,
-                                                                 selected = FALSE,
-                                                                 multiple = TRUE
-                                                  ),
-                                                  selectizeInput(inputId = "sel_cov_cont",
-                                                                 label = "Select continuous covariates",
-                                                                 choices = NULL,
-                                                                 selected = FALSE,
-                                                                 multiple = TRUE
-                                                  ),
-                                                  selectInput(inputId = "sel_strata",
-                                                              label = "Select strata covariate (optional)",
-                                                              choices = NULL),
-                                                  circle = TRUE,
-                                                  status = "danger",
-                                                  icon = icon("gear"), width = "300",
-                                                  tooltip = tooltipOptions(title = "Click to see inputs !")
-                                                ),#button
-                                                span(DT::dataTableOutput("table4")))  ###☻ change id
-                                                #,style="color:white;"
-                                                )
-                                                ,style="background-color:white;")#change background color
-                                     ,
-                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",right  = 0,
-                                                div(box(
-                                                  ### add in hee value
-                                                  "information 2 here"
-                                                ),
-                                                style="color:black;") ,style="background-color:white;"),#change background color
-                                   ),#fixed row
-                                   br(),
-                                   br(),
-                                   fluidRow(
-
-                                     fixedPanel(title = "",  draggable = FALSE,  width="50%",height = "50%", right = 0,bottom = 0,
-
-                                                div(box(
-                                                  ### add in hee value
-                                                  "information 3 here"
-                                                )
-                                                ,style="color:black;"
-                                                )
-                                                ,style="background-color:white;")#change background color
-                                     ,
-                                     fixedPanel(title = "",  draggable = FALSE, width="50%",height = "50%",left  = 0,bottom = 0,
-                                                div(box(
-                                                  ### add in hee value
-                                                  "information 4 here"
-                                                ),
-
-                                                style="color:black;") ,style="background-color:white;"),#change background color
-                                   )#fixed row
+                        )
+               )
                           )
                         )
-               )#cox panel
-
-                          )
-                        )
-
-
-
 
   server <- function(input, output, session) {
 
@@ -711,8 +598,9 @@ observeEvent(input$n_svs_min, {
 }
 )
 
+#############################" cox
 
-output$table3 <- DT::renderDataTable({
+observe({
   if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
     covariates <- c()
     input_df <- reactive_no_NAs_metadata()
@@ -726,18 +614,40 @@ output$table3 <- DT::renderDataTable({
       input_df[input_cov_cat] <- sapply(input_df[input_cov_cat],as.character)
       covariates <- c(covariates, input_cov_cat)
     }
+    if(input$sel_strata != "N/A"){
+      covariates <- c(covariates[covariates != input$sel_strata], sprintf("strata(%s)", input$sel_strata))
+    }
+    # Standard model
     formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
-    x3 <- (coxph(as.formula(formulaString), data=input_df)
-           %>% tbl_regression(exp = TRUE))
-    proport_hazard_assump <- cox.zph(cox_reg.std)
-    t3 <-as_tibble(x3)
-    t3
+    cox_reg.std <- coxph(as.formula(formulaString), data=input_df)
+    res.std <- cox.zph(cox_reg.std)
   }
+
+
+  output$table3 <- DT::renderDataTable({
+    if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
+      covariates <- c()
+      input_df <- reactive_no_NAs_metadata()
+      if (any(!is.na(input$sel_cov_cont))){
+        input_cov_cont <- map_col_names(input, input$sel_cov_cont)
+        input_df[input_cov_cont] <- sapply(input_df[input_cov_cont],as.numeric)
+        covariates <- c(covariates, input_cov_cont)
+      }
+      if(any(!is.na(input$sel_cov))){
+        input_cov_cat <- map_col_names(input, input$sel_cov)
+        input_df[input_cov_cat] <- sapply(input_df[input_cov_cat],as.character)
+        covariates <- c(covariates, input_cov_cat)
+      }
+      formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
+      x3 <- (coxph(as.formula(formulaString), data=input_df)
+             %>% tbl_regression(exp = TRUE))
+      proport_hazard_assump <- cox.zph(cox_reg.std)
+      t3 <-as_tibble(x3)
+      t3
+    }
+  })
+
 })
-
-
-
-
   }
 
   # Run the application
