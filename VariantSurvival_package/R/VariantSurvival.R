@@ -190,14 +190,14 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                         "With time-dependent covariates",
                                         value = TRUE),
                           selectizeInput(inputId = "sel_cov",
-                                         label = "Select categorical covariates",
+                                         label = "Select categorical covariate(s)",
                                          # SV_bin is added by us, 0/1 without/with SV
                                          choices = NULL,
                                          selected = FALSE,
                                          multiple = TRUE
                           ),
                           selectizeInput(inputId = "sel_cov_cont",
-                                         label = "Select continuous covariates",
+                                         label = "Select numerical covariate(s)",
                                          choices = NULL,
                                          selected = FALSE,
                                          multiple = TRUE
@@ -210,7 +210,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                      span(DT::dataTableOutput("summ_std")),
                                      br(),
                                      br(),
-                                     span(DT::dataTableOutput("prop_h_std"))
+                                     span(DT::dataTableOutput("prop_h_std")),
+                                     br(),
+                                     uiOutput("tabers", style = "display: none;")
                                      
                             ),
                             tabPanel("Multiple model",
@@ -637,6 +639,17 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
       )
     
+    output$creationPool <- renderUI({})
+    outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
+    
+    addTabToTabset <- function(covariates, tabsetName){
+      titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
+      Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
+      
+      output$creationPool <- renderUI({Panels})
+      session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
+    }
+    
     observe({
       if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
         covariates <- c()
@@ -657,6 +670,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         # Standard model
         formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
         cox_reg.std <- coxph(as.formula(formulaString), data=input_df)
+        ## Check for violation of proportional hazard 
         res.std <- cox.zph(cox_reg.std)
         # Multiple model
         input_df_mm <- data.frame(input_df)
@@ -676,6 +690,14 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         })
         output$prop_h_std <- DT::renderDataTable({
           as_tibble(rownames_to_column(round_df(as.data.frame(res.std$table),3), " "))
+        })
+        output$tabers<-renderUI({
+          tabsetPanel(
+            id="tabC",
+            type = "tabs")
+          for (variable in covariates) {
+            insertTab(inputId = "tabC", tabPanel(variable))
+            }
         })
         # MM
         output$summ_mm_0 <- DT::renderDataTable({
