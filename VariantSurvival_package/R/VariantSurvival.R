@@ -106,10 +106,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                           )
                         )
                ),
-               tabPanel("Survival Analysis",
+               tabPanel("Kaplan–Meier",
                         mainPanel(
-                          span(shiny::tags$i(
-                            h2("Kaplan–Meier")),
+                          span(
                             # to enable/disable the n_svs_min & n_svs_max fields, 
                             #this should be added at the panel level
                             shinyjs::useShinyjs(), 
@@ -212,7 +211,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                      br(),
                                      span(DT::dataTableOutput("prop_h_std")),
                                      br(),
-                                     uiOutput("tabers", style = "display: none;")
+                                     span(shiny::tags$i(
+                                       h2("Residuals"))),
+                                     shinycssloaders::withSpinner(
+                                       plotOutput(outputId = "residues_std"))
                                      
                             ),
                             tabPanel("Multiple model",
@@ -221,12 +223,24 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                 span(DT::dataTableOutput("summ_mm_1")),
                                                 br(),
                                                 br(),
-                                                tabPanel("with",span(DT::dataTableOutput("prop_h_mm0")))), 
+                                                tabPanel("with",
+                                                         span(DT::dataTableOutput("prop_h_mm0")),
+                                                         br(),
+                                                         span(shiny::tags$i(h2("Residuals"))),
+                                                         shinycssloaders::withSpinner(plotOutput(outputId = "residues_std_mm0"))
+                                                         ),
+                                                br()), 
                                        tabPanel("without SV",
                                                 span(DT::dataTableOutput("summ_mm_0")),
                                                 br(),
                                                 br(),
-                                                tabPanel("without",span(DT::dataTableOutput("prop_h_mm1"))))
+                                                tabPanel("without",
+                                                         span(DT::dataTableOutput("prop_h_mm1")),
+                                                         br(),
+                                                         span(shiny::tags$i(h2("Residuals"))),
+                                                         shinycssloaders::withSpinner(plotOutput(outputId = "residues_std_mm1"))
+                                                         )
+                                                )
                                        )
                                      )
                             )
@@ -639,16 +653,16 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
       )
     
-    output$creationPool <- renderUI({})
-    outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
-    
-    addTabToTabset <- function(covariates, tabsetName){
-      titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
-      Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
-      
-      output$creationPool <- renderUI({Panels})
-      session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
-    }
+    # output$creationPool <- renderUI({})
+    # outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
+    # 
+    # addTabToTabset <- function(covariates, tabsetName){
+    #   titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
+    #   Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
+    #   
+    #   output$creationPool <- renderUI({Panels})
+    #   session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
+    # }
     
     observe({
       if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
@@ -672,6 +686,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         cox_reg.std <- coxph(as.formula(formulaString), data=input_df)
         ## Check for violation of proportional hazard 
         res.std <- cox.zph(cox_reg.std)
+        
+        
         # Multiple model
         input_df_mm <- data.frame(input_df)
         input_df_mm["SV_bin"] <- sapply(input_df_mm["SV_bin"], as.numeric)
@@ -691,26 +707,30 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         output$prop_h_std <- DT::renderDataTable({
           as_tibble(rownames_to_column(round_df(as.data.frame(res.std$table),3), " "))
         })
-        output$tabers<-renderUI({
-          tabsetPanel(
-            id="tabC",
-            type = "tabs")
-          for (variable in covariates) {
-            insertTab(inputId = "tabC", tabPanel(variable))
-            }
-        })
-        # MM
+        output$residues_std <- renderPlot({
+          par(mfrow=c(length(covariates),1))
+          plot(res.std)
+          })
         output$summ_mm_0 <- DT::renderDataTable({
           as_tibble(cox_reg.mul0 %>% tbl_regression(exp = TRUE))
         })
+        
         output$summ_mm_1 <- DT::renderDataTable({
           as_tibble(cox_reg.mul1 %>% tbl_regression(exp = TRUE))
         })
         output$prop_h_mm0 <- DT::renderDataTable({
           as_tibble(rownames_to_column(round_df(as.data.frame(res.std_mul0$table),3), " "))
         })
+        output$residues_std_mm0 <- renderPlot({
+          par(mfrow=c(length(covariates),1))
+          plot(res.std_mul0)
+        })
         output$prop_h_mm1 <- DT::renderDataTable({
           as_tibble(rownames_to_column(round_df(as.data.frame(res.std_mul1$table),3), " "))
+        })
+        output$residues_std_mm1 <- renderPlot({
+          par(mfrow=c(length(covariates),1))
+          plot(res.std_mul1)
         })
         }
     })
