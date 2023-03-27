@@ -213,9 +213,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                           h3("Cox regression table")),
                           style="color:#045a8d",
                           shinyjs::useShinyjs(),
-                          checkboxInput("cox_reg_td",
-                                        "With time-dependent covariates",
-                                        value = TRUE),
+                          # checkboxInput("cox_reg_td",
+                          #               "With time-dependent covariates",
+                          #               value = TRUE),
                           selectizeInput(inputId = "sel_cov",
                                          label = "Select categorical covariate(s)",
                                          # SV_bin is added by us, 0/1 without/with SV
