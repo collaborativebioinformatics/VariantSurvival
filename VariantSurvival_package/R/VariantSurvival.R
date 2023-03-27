@@ -111,7 +111,11 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                             br(),br(),br(),br(),
                             fluidRow(column(12,
                                             tabBox(
-                                              selected = "Structural Variants Distribution",
+                                              selected = "Information Summary",
+                                              tabPanel("Information Summary",
+                                                       DT::dataTableOutput("gene_summary_table"),
+                                                       DT::dataTableOutput("gene_summary_table_i")
+                                                       ),
                                               tabPanel("Structural Variants Distribution",
                                                        shinycssloaders::withSpinner(
                                                          plotOutput(outputId = "histogram"))
@@ -293,31 +297,15 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         })
       }
     })
-    
     observe({ if(input$disease_n != "N/A" 
                  & input$ids != "N/A" 
                  &input$time != "N/A"){
-      genes_with_svs_in_sample <- apply(vcf@fix, 1, getGeneName,gene_ids_table)
-      sample_names <- colnames(vcf@gt)[-1]
-      disease_genes_names <- gene_ids_table$GeneName
+      count_table<- genesCountTable(vcf, metadata, input, gene_ids_table)
       output$summ_table <- DT::renderDataTable({
         # count dataframe with patient_ids in rows and gene_ids in columns
-        count_df <- CountSVsDf(length(disease_genes_names),
-                               length(sample_names),
-                               disease_genes_names,
-                               sample_names,
-                               genes_with_svs_in_sample,
-                               vcf,
-                               input$ids)
-        new_md <- RemoveNAs(metadata, input$time) %>% rename(ids = input$ids)
-        # what happen if the input$target_gene is not in the vcf file?
-        new_df <- subset(count_df, ids %in% new_md$ids)
-        count <- as.data.frame(apply(new_df[,-1], 2, function(c)sum(c!=0)))
-        colnames(count) <- "Count of patients with SVs"
-        count <- count %>% arrange(desc(count))
-        count
+        count_table
       })
-    }
+      }
     })
     
     reactive_no_NAs_metadata <- reactive({
@@ -372,6 +360,105 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
     }
     )
+    observe({
+      if(checkInput(input)){
+        new_df <- reactive_no_NAs_metadata()
+        count_tab<- genesCountTable(vcf, metadata, input, gene_ids_table)
+        target_gene_df <- new_df[,c("SV_count_per_gene", "trial_group_bin")]
+        print(target_gene_df)
+        control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
+        treatment <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 1]
+        print(c(min(control), max(control), min(treatment), max(treatment)))
+        number_of_patients <- (count_tab 
+                               %>% filter(count_tab$Gene_ID == input$target_gene) 
+                               %>% select(`Count of patients with SVs`))
+        if(number_of_patients$`Count of patients with SVs` == 0){
+          output$gene_summary_table <-  DT::renderDataTable({
+            print(dplyr::tibble("No patient carries structural variants in this gene"))
+          })
+        }
+        else{
+          output$gene_summary_table <-  DT::renderDataTable({
+            sketch = htmltools::withTags(table(
+              class = 'display',
+              thead(tr(th(rowspan = 2, 'Group'),
+                       th(colspan = 2, 'Number of patients')
+              ),
+              tr(
+                lapply(rep(c('Min', 'Max'), 1), th)
+              )
+              )
+            ))
+            rows_names <-c('control', 'treatment')
+            first_column <- c(min(control), min(treatment))
+            second_column <- c(max(control), max(treatment))
+            df <- data.frame(rows_names, first_column, second_column)
+            datatable(df, container = sketch, rownames = FALSE,options = list(dom = 't'))
+          })
+          output$gene_summary_table_i <-  DT::renderDataTable({
+            sketch = htmltools::withTags(table(
+              class = 'display',
+              thead(
+                tr(th(rowspan = 2, 'Group'),
+                   th(colspan = 2, 'Patients with Structural Variants')
+                ),
+                tr(lapply(rep(c('Total', 'Percentage over entire sample'), 1), th)
+                )
+              )
+            )
+            )
+            rows_names <-c('control', 'treatment')
+            length(control[control>0])
+            control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
+            treatment <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 1]
+            
+            n_control <- length(control[control>0])
+            n_trearment <- length(treatment[treatment>0])
+            n_indiv <- nrow(target_gene_df)
+            first_column <- c(n_control, n_trearment)
+            second_column <- c(round(n_control/n_indiv, 2), round(n_trearment/n_indiv, 2))
+            
+            df <- data.frame(rows_names, first_column, second_column)
+            datatable(df, container = sketch, rownames = FALSE,options = list(dom = 't'))
+          })
+          }}
+      })
+    # output$gene_summary_table <-  DT::renderDataTable({
+    #   if(checkInput(input)){
+    #     new_df <- reactive_no_NAs_metadata()
+    #     count_tab<- genesCountTable(vcf, metadata, input, gene_ids_table)
+    #     target_gene_df <- new_df[,c("SV_count_per_gene", "trial_group_bin")]
+    #     print(target_gene_df)
+    #     control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
+    #     treatment <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 1]
+    #     print(c(min(control), max(control), min(treatment), max(treatment)))
+    #     number_of_patients <- (count_tab 
+    #                            %>% filter(count_tab$Gene_ID == input$target_gene) 
+    #                            %>% select(`Count of patients with SVs`))
+    # 
+    #     if(number_of_patients$`Count of patients with SVs` == 0){
+    #       print(dplyr::tibble("No patient carries structural variants in this gene"))
+    #     } else {
+    #       sketch = htmltools::withTags(table(
+    #         class = 'display',
+    #         thead(
+    #           tr(
+    #             th(rowspan = 2, 'Patient group'),
+    #             th(colspan = 2, 'Number of patients'),
+    #           ),
+    #           tr(
+    #             lapply(rep(c('Min', 'Max'), 1), th)
+    #           )
+    #         )
+    #       ))
+    #       rows_names <-c('control', 'treatment')
+    #       first_column <- c(min(control), min(treatment))
+    #       second_column <- c(max(control), max(treatment))
+    #       df <- data.frame(rows_names, first_column, second_column)
+    #       datatable(df, container = sketch, rownames = FALSE,options = list(dom = 't'))
+    #     }
+    #     }
+    #   })
     
     ## output - histogram ##
     output$histogram <- renderPlot(
@@ -682,17 +769,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
       )
     
-    # output$creationPool <- renderUI({})
-    # outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
-    # 
-    # addTabToTabset <- function(covariates, tabsetName){
-    #   titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
-    #   Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
-    #   
-    #   output$creationPool <- renderUI({Panels})
-    #   session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
-    # }
-    
     observe({
       if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
         covariates <- c()
@@ -855,6 +931,27 @@ get_cov_list <- function(metadata, input) {
   return(cov_list)
 }
 
+genesCountTable <- function(vcf, metadata, input, gene_ids_table){
+  genes_with_svs_in_sample <- apply(vcf@fix, 1, getGeneName, gene_ids_table)
+  sample_names <- colnames(vcf@gt)[-1]
+  disease_genes_names <- gene_ids_table$GeneName
+  count_df <- CountSVsDf(length(disease_genes_names),
+                         length(sample_names),
+                         disease_genes_names,
+                         sample_names,
+                         genes_with_svs_in_sample,
+                         vcf,
+                         input$ids)
+  new_md <- RemoveNAs(metadata, input$time) %>% rename(ids = input$ids)
+  # what happen if the input$target_gene is not in the vcf file?
+  new_df <- subset(count_df, ids %in% new_md$ids)
+  ##
+  count_table <- as.data.frame(apply(new_df[,-1], 2, function(c)sum(c!=0)))
+  colnames(count_table) <- "Count of patients with SVs"
+  count_table <- rownames_to_column(count_table, "Gene_ID")
+  count_table <- count_table %>% arrange(desc(count_table["Count of patients with SVs"]))
+  return(count_table)
+}
 
 #' `CountSVsDf`
 #' @param ncol
