@@ -376,6 +376,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           output$gene_summary_table <-  DT::renderDataTable({
             print(dplyr::tibble("No patient carries structural variants in this gene"))
           })
+          output$gene_summary_table_i <-  DT::renderDataTable({
+            print(dplyr::tibble("No patient carries structural variants in this gene"))
+          })
         }
         else{
           output$gene_summary_table <-  DT::renderDataTable({
