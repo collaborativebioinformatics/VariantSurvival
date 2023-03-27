@@ -25,6 +25,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
   }
   disease_gene <- read_excel("disease_gene.xlsx")
   days_year <- 365.25
+  disease_type_gene <- read_csv("disease_type_gene.csv")
   
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
@@ -58,16 +59,16 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                          choices =  c("years", "days"),
                                          inline = TRUE
                             ),
-                            span(shiny::tags$i(
-                              h6("Based on literature the following genes are
-                      associated with the disease mechanism")
-                            ),
-                            style="color:#045a8d"),
-                            selectInput(inputId = "target_gene",
-                                        label = "Gene of interest:",
-                                        choices = NULL,
-                                        selected = FALSE
-                            ),
+                      #       span(shiny::tags$i(
+                      #         h6("Based on literature the following genes are
+                      # associated with the disease mechanism")
+                      #       ),
+                      #       style="color:#045a8d"),
+                      #       selectInput(inputId = "target_gene",
+                      #                   label = "Gene of interest:",
+                      #                   choices = NULL,
+                      #                   selected = FALSE
+                      #       ),
                             span(shiny::tags$i(
                               h6("The following selections must refer to binary factors")),
                               style="color:#045a8d"),
@@ -83,26 +84,49 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                             )
                           ),
                           mainPanel(
-                            tabBox(
-                              selected = "Summary",
-                              tabPanel("Summary",
-                                       span(DT::dataTableOutput("summ_table"))
-                              ),
-                              tabPanel("Histogram",
-                                       span(shiny::tags$i(
-                                         h2("Structural Variants Distribution"))),
-                                       shinycssloaders::withSpinner(
-                                         plotOutput(outputId = "histogram"))
-                              ),
-                              tabPanel("Table",
-                                       selectInput(inputId = "table_cols",
-                                                   label = "Include columns (optional)",
-                                                   choices = NULL,
-                                                   selected = FALSE,
-                                                   multiple = TRUE),
-                                       span(DT::dataTableOutput("table"))
-                              )
-                            )
+                            h6("The following table resume the Biomarkers associated
+                               with the diseases based on the ClinGen database"),
+                            fluidRow(column(12,
+                                            tabBox(
+                                              selected="Biomarkers table",
+                                              tabPanel("Biomarkers Table",
+                                                       span(DT::dataTableOutput("biomarkers_table")
+                                                            )
+                                                       ),
+                                              tabPanel("Summary",
+                                                       span(DT::dataTableOutput("summ_table"))
+                                                       )
+                                              )
+                                            )
+                                     ),
+                            br(),br(),
+                            h2("Select Target Gene"),
+                            box(width = 6,
+                                selectInput(inputId = "target_gene",
+                                            label = "Gene of interest:",
+                                            choices = NULL,
+                                            selected = FALSE
+                                            )
+                                ),
+                            br(),br(),br(),br(),
+                            fluidRow(column(12,
+                                            tabBox(
+                                              selected = "Structural Variants Distribution",
+                                              tabPanel("Structural Variants Distribution",
+                                                       shinycssloaders::withSpinner(
+                                                         plotOutput(outputId = "histogram"))
+                                                       ),
+                                              tabPanel("Participants table",
+                                                       selectInput(inputId = "table_cols",
+                                                                   label = "Include columns (optional)",
+                                                                   choices = NULL,
+                                                                   selected = FALSE,
+                                                                   multiple = TRUE),
+                                                       span(DT::dataTableOutput("table"))
+                                                       )
+                                              )
+                                            )
+                                     )
                           )
                         )
                ),
@@ -262,6 +286,11 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                              input = "target_gene",
                              choices = genes_list,
                              selected = NULL)
+        output$biomarkers_table <- DT::renderDataTable({
+          disease_type_gene <- disease_type_gene %>% filter(disease_type_gene$GCEP ==input$disease_n )
+          disease_type_gene <-unique( disease_type_gene[,-c(2,4,6,9,10)])
+          disease_type_gene %>% arrange(DISEASE_LABEL)
+        })
       }
     })
     
