@@ -84,9 +84,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                             )
                           ),
                           mainPanel(
-                            h6("The following table resume the Biomarkers associated
-                               with the diseases based on the ClinGen database"),
                             fluidRow(column(12,
+                                            h4("The Biomarkers table resumes the Biomarkers associated
+                                                          with the diseases based on the ClinGen database"),
                                             tabBox(
                                               selected="Biomarkers table",
                                               tabPanel("Biomarkers Table",
@@ -100,7 +100,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                             )
                                      ),
                             br(),br(),
-                            h2("Select Target Gene"),
+                            h4("Select Target Gene"),
                             box(width = 6,
                                 selectInput(inputId = "target_gene",
                                             label = "Gene of interest:",
@@ -373,7 +373,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                %>% select(`Count of patients with SVs`))
         if(number_of_patients$`Count of patients with SVs` == 0){
           output$gene_summary_table <-  DT::renderDataTable({
-            print(dplyr::tibble("No patient carries structural variants in this gene"))
+            print(dplyr::datatable("No patient carries structural variants in this gene"))
           })
           output$gene_summary_table_i <-  DT::renderDataTable({
             print(dplyr::tibble("No patient carries structural variants in this gene"))
