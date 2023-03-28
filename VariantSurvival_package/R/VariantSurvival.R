@@ -113,8 +113,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                             tabBox(
                                               selected = "Information Summary",
                                               tabPanel("Information Summary",
-                                                       DT::dataTableOutput("gene_summary_table"),
-                                                       DT::dataTableOutput("gene_summary_table_i")
+                                                       DT::dataTableOutput("gene_summary_table_i"),
+                                                       DT::dataTableOutput("gene_summary_table")
                                                        ),
                                               tabPanel("Structural Variants Distribution",
                                                        shinycssloaders::withSpinner(
@@ -402,7 +402,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
               class = 'display',
               thead(
                 tr(th(rowspan = 2, 'Group'),
-                   th(colspan = 2, 'Patients with Structural Variants')
+                   th(colspan = 2, 'Patients with SVs in target gene')
                 ),
                 tr(lapply(rep(c('Total', 'Percentage over entire sample'), 1), th)
                 )
