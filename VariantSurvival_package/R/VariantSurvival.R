@@ -365,10 +365,9 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         new_df <- reactive_no_NAs_metadata()
         count_tab<- genesCountTable(vcf, metadata, input, gene_ids_table)
         target_gene_df <- new_df[,c("SV_count_per_gene", "trial_group_bin")]
-        print(target_gene_df)
+        # subset the count of structural variants in the control/treatment patients
         control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
         treatment <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 1]
-        print(c(min(control), max(control), min(treatment), max(treatment)))
         number_of_patients <- (count_tab 
                                %>% filter(count_tab$Gene_ID == input$target_gene) 
                                %>% select(`Count of patients with SVs`))
@@ -813,7 +812,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           as_tibble(cox_reg.std %>% tbl_regression(exp = TRUE))
         })
         output$prop_h_std <- DT::renderDataTable({
-          as_tibble(rownames_to_column(round_df(as.data.frame(res.std$table),3), " "))
+          datatable(rownames_to_column(round_df(as.data.frame(res.std$table),3), " "), 
+                    options = list(dom = 't'))
         })
         output$residues_std <- renderPlot({
           par(mfrow=c(length(covariates),1))
@@ -827,14 +827,16 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           as_tibble(cox_reg.mul1 %>% tbl_regression(exp = TRUE))
         })
         output$prop_h_mm0 <- DT::renderDataTable({
-          as_tibble(rownames_to_column(round_df(as.data.frame(res.std_mul0$table),3), " "))
+          datatable(rownames_to_column(round_df(as.data.frame(res.std_mul0$table),3), " "),
+                    options = list(dom = 't'))
         })
         output$residues_std_mm0 <- renderPlot({
           par(mfrow=c(length(covariates),1))
           plot(res.std_mul0)
         })
         output$prop_h_mm1 <- DT::renderDataTable({
-          as_tibble(rownames_to_column(round_df(as.data.frame(res.std_mul1$table),3), " "))
+          datatable(rownames_to_column(round_df(as.data.frame(res.std_mul1$table),3), " "),
+                    options = list(dom = 't'))
         })
         output$residues_std_mm1 <- renderPlot({
           par(mfrow=c(length(covariates),1))
