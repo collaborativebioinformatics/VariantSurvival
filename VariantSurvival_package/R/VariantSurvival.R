@@ -6,6 +6,7 @@
 #' @export
 
 VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
+    VariantSurvival:::load()
   ## read input
   #demo or input files
   if (demo==TRUE){
