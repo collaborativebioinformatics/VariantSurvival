@@ -25,7 +25,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
   if (!require("survminer")) install.packages("survminer")
   if (!require("lubridate")) install.packages("lubridate")
   if (!require("gtsummary")) install.packages("gtsummary")
-  if (!require("tools")) install.packages("tools")
   library(shiny)
   library(shinyjs)
   library(shinydashboard)
@@ -45,14 +44,11 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
   library(lubridate)
   library(gtsummary)
 
-
   ## read input
   #demo or input files
   if (demo==TRUE){
-    vcffile_demo <- "merged.filtered.vcf"
-    vcf <- vcfR::read.vcfR(vcffile_demo, verbose = FALSE)
-    metadata_demo <-"metadata.xlsx"
-    metadata <- readxl::read_excel(metadata_demo)
+    vcf <- VariantSurvival:::vcf_demo
+    metadata <-  VariantSurvival:::metadata_demo
     metadata <- na.omit(metadata)
   } else if (demo==FALSE){
     vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
@@ -60,13 +56,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     metadata <- na.omit(metadata)
 
   }
-  ### read system data
-  disease_gene <- read_excel("disease_gene.xlsx")
-  days_year <- 365.25
-  disease_type_gene <- read_csv("disease_type_gene.csv")
-  gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
+  #system data
+    disease_gene <-VariantSurvival:::disease_gene
+    disease_type_gene <- VariantSurvival:::disease_type_gene
+    gene_ids_table <- VariantSurvival:::gene_ids_table
+  #
   rownames(gene_ids_table) <- gene_ids_table$ensembleID
-
+  days_year <- 365.25
   ## run app
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
