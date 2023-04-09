@@ -6,7 +6,7 @@
 #' @export
 
 VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
-    VariantSurvival:::load()
+  load()
   ## read input
   #demo or input files
   if (demo==TRUE){
@@ -22,6 +22,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
   disease_type_gene <- VariantSurvival:::disease_type_gene
   gene_ids_table <- VariantSurvival:::gene_ids_table
   rownames(gene_ids_table) <- gene_ids_table$ensembleID
+  days_year <- 365.25
   ## run app
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
