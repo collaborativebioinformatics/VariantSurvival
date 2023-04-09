@@ -4,7 +4,7 @@
 #' @param metadata file
 #' @param input input
 #' @param gene_ids_table table
-#'
+#' @noRd
 #' @return count_table
 genesCountTable <- function(vcf, metadata, input, gene_ids_table){
   genes_with_svs_in_sample <- apply(vcf@fix, 1, getGeneName, gene_ids_table)

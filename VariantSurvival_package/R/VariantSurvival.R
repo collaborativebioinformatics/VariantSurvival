@@ -3,66 +3,24 @@
 #' @param vcffile path to the vcf file containing the Structural variant data
 #' @param metadatafile path to the txt file containing the samples metadata
 #' @param demo true or false
-#' @return
 #' @export
 
 VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
-  ###load requirements
-  if (!require("shiny")) install.packages("shiny")
-  if (!require("shinyjs")) install.packages("shinyjs")
-  if (!require("shinyWidgets")) install.packages("shinyWidgets")
-  if (!require("shinythemes")) install.packages("shinythemes")
-  if (!require("shinycssloaders")) install.packages("shinycssloaders")
-  if (!require("shinydashboard")) install.packages("shinydashboard")
-  if (!require("DT")) install.packages("DT")
-  if (!require("dplyr")) install.packages("dplyr")
-  if (!require("tidyverse")) install.packages("tidyverse")
-  if (!require("vcfR")) install.packages("vcfR")
-  if (!require("readr")) install.packages("readr")
-  if (!require("ggsurvfit")) install.packages("ggsurvfit")
-  if (!require("survival")) install.packages("survival")
-  if (!require("ggplot2")) install.packages("ggplot2")
-  if (!require("survminer")) install.packages("survminer")
-  if (!require("lubridate")) install.packages("lubridate")
-  if (!require("gtsummary")) install.packages("gtsummary")
-  library(shiny)
-  library(shinyjs)
-  library(shinydashboard)
-  library(shinythemes)
-  library(shinyWidgets)
-  library(shinycssloaders)
-  library(DT)
-  library(dplyr)
-  library(tidyverse)
-  library(vcfR)
-  library(readr)
-  library(readxl)
-  library(ggsurvfit)
-  library(survival)
-  library(ggplot2)
-  library(survminer)
-  library(lubridate)
-  library(gtsummary)
-
   ## read input
   #demo or input files
   if (demo==TRUE){
     vcf <- VariantSurvival:::vcf_demo
     metadata <-  VariantSurvival:::metadata_demo
-    metadata <- na.omit(metadata)
   } else if (demo==FALSE){
     vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
     metadata <- readxl::read_excel(metadatafile)
-    metadata <- na.omit(metadata)
-
   }
+  metadata <- na.omit(metadata)
   #system data
-    disease_gene <-VariantSurvival:::disease_gene
-    disease_type_gene <- VariantSurvival:::disease_type_gene
-    gene_ids_table <- VariantSurvival:::gene_ids_table
-  #
+  disease_gene <-VariantSurvival:::disease_gene
+  disease_type_gene <- VariantSurvival:::disease_type_gene
+  gene_ids_table <- VariantSurvival:::gene_ids_table
   rownames(gene_ids_table) <- gene_ids_table$ensembleID
-  days_year <- 365.25
   ## run app
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
@@ -889,6 +847,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 
 #' implementation of += operator
 #' https://stackoverflow.com/questions/5738831/
+#' @noRd
 `%+=%` <- function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
 
 

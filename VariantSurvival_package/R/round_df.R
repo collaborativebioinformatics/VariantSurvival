@@ -2,7 +2,7 @@
 #' round all numeric variables
 #' @param x data frame
 #' @param digits number of digits to round
-#'
+#' @noRd
 #' @return x
 
 round_df <- function(x, digits) {

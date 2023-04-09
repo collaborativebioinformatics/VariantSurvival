@@ -2,7 +2,7 @@
 #'
 #' @param metadata file
 #' @param input file
-#'
+#' @noRd
 #' @return cov_list
 
 get_cov_list <- function(metadata, input) {

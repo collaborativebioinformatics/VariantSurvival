@@ -6,6 +6,7 @@
 #' @param genes_with_svs_in_sample gene
 #' @param vcf file
 #' @return sample_disease_gene_df
+#' @noRd
 CountSVsDf <- function(ncol, nrow,
                        disease_genes_names,
                        sample_names,

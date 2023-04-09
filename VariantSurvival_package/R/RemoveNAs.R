@@ -3,6 +3,7 @@
 #' @param df: metadata data frame
 #' @param time_col: time factor input
 #' @return df
+#' @noRd
 RemoveNAs <- function(df, time_col) {
   entries <- df[[time_col]]
   nas_entries <- is.na(entries)

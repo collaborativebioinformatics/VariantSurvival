@@ -2,7 +2,7 @@
 #'
 #' @param input input
 #' @param cov_list list
-#'
+#' @noRd
 #' @return cov_list
 map_col_names <- function(input, cov_list){
   if(input$event %in% cov_list){

@@ -1,6 +1,7 @@
 #' `checkInput`
 #' @param info info
 #' @return true or false
+#' @noRd
 checkInput <- function(input) {
   if (input$ids != "N/A"
       & input$time != "N/A"
