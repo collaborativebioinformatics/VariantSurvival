@@ -50,6 +50,12 @@ devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSur
 ```
 Note: All required packages will be installed automatically when installing "VariantSurvival".
 
+### Demonstration
+```
+VariantSurvival::VariantSurvival(demo="TRUE")
+```
+
+
 
 ### Running your data analysis
 * WIP: what input to load into VariantSurvival: [VCF file](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/docs/preprocessing/prepareVCF.md), study groups metadata
