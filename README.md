@@ -2,9 +2,10 @@
 <img src="https://user-images.githubusercontent.com/41301333/195215088-8404f200-8297-4322-a30f-c84f526aa620.png" width="200" height="200" align="right">
 
 ### Table of Contents
-1. [VariantSurvival](#variantsurvival)
-2. [The shiny app](#the-shiny-app)
-3. [The developers team](#the-developers-team)
+1. [About](#About)
+2. [VariantSurvival](#variantsurvival)
+3. [The shiny app](#the-shiny-app)
+4. [The developers team](#the-developers-team)
 <br>
 
 
