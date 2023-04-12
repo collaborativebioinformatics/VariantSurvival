@@ -2,7 +2,7 @@
 #'
 #' @param vcffile path to the vcf file containing the Structural variant data
 #' @param metadatafile path to the txt file containing the samples metadata
-#' @param demo true or false
+#' @param demo Request demonstration ( without input). value = TRUE or FALSE 
 #' @export
 
 VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
@@ -35,7 +35,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                windowTitle ="VariantSurvival",
                tabPanel("Select Target Gene",
                         sidebarLayout(
-                          sidebarPanel(
+                          sidebarPanel( h3("Annotate your data"),
                             pickerInput(inputId ="disease_n",
                                         label = "Select the disease of interest:",
                                         choices = c(colnames(disease_gene), "N/A"),
@@ -81,78 +81,79 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                             )
                           ),
                           mainPanel(
-                            fluidRow(column(12,
-                                            h4("The Biomarkers table resumes the Biomarkers associated
-                                                          with the diseases based on the ClinGen database"),
-                                            tabBox(
-                                              selected="Biomarkers table",
-                                              tabPanel("Biomarkers Table",
-                                                       span(DT::dataTableOutput("biomarkers_table")
-                                                            )
-                                                       ),
-                                              tabPanel("Summary",
-                                                       span(DT::dataTableOutput("summ_table"))
-                                                       )
-                                              )
-                                            )
-                                     ),
-                            br(),br(),
-                            h4("Select Target Gene"),
-                            box(width = 6,
-                                selectInput(inputId = "target_gene",
-                                            label = "Gene of interest:",
-                                            choices = NULL,
-                                            selected = FALSE
-                                            )
-                                ),
-                            br(),br(),br(),br(),
-                            fluidRow(column(12,
-                                            tabBox(
-                                              selected = "Information Summary",
-                                              tabPanel("Information Summary",
-                                                       DT::dataTableOutput("gene_summary_table_i"),
-                                                       DT::dataTableOutput("gene_summary_table")
-                                                       ),
-                                              tabPanel("Structural Variants Distribution",
-                                                       shinycssloaders::withSpinner(
-                                                         plotOutput(outputId = "histogram"))
-                                                       ),
-                                              tabPanel("Participants table",
-                                                       selectInput(inputId = "table_cols",
-                                                                   label = "Include columns (optional)",
-                                                                   choices = NULL,
-                                                                   selected = FALSE,
-                                                                   multiple = TRUE),
-                                                       span(DT::dataTableOutput("table"))
-                                                       )
-                                              )
-                                            )
-                                     )
+                            fluidRow(h4("Data summary"), width = 11,
+                                     shinycssloaders::withSpinner(DT::dataTableOutput("gene_summary_table_i")),
+                                     shinycssloaders::withSpinner( DT::dataTableOutput("gene_summary_table"))
+                            )
+
                           )
+                        ),
+                      br(),br(),
+                      sidebarLayout(
+                        sidebarPanel(
+                                     h3("Select Target Gene"),
+                                     selectInput(inputId = "target_gene",
+                                                 label = "List of biomarkers:",
+                                                 choices = NULL,
+                                                 selected = FALSE
+                                     )
+                        ),
+                        mainPanel(
+                                      fluidRow(width = 12,
+                                          tabBox(width = 11,
+                                            selected="All Disease Biomarkers",
+                                            tabPanel("All Disease Biomarkers",
+                                                     h4("The Biomarkers table resumes the Biomarkers associated
+                                                          with the diseases based on the ClinGen database"),
+                                                     shinycssloaders::withSpinner(DT::dataTableOutput("biomarkers_table"))
+
+                                            ),
+                                            tabPanel("Structural Variants in all Biomarkers",
+                                                     shinycssloaders::withSpinner(DT::dataTableOutput("summ_table"))
+                                            ),
+                                            tabPanel("Structural Variants in Selected Biomarker",
+                                                    tabBox(selected= "Histogram", width = 11,
+                                                     tabPanel(width = 5, "Histogram",
+                                                           h4("Histogram Structural Variants distribution"),
+                                                           shinycssloaders::withSpinner(
+                                                             plotOutput(outputId = "histogram"))
+                                                           ),
+
+                                                    tabPanel(width = 5, "Table",
+                                                           selectInput(inputId = "table_cols",
+                                                                       label = "Include columns (optional)",
+                                                                       choices = NULL, selected = FALSE,
+                                                                       multiple = TRUE),
+                                                           shinycssloaders::withSpinner(DT::dataTableOutput("table"))
+                                                           )
+                                                    )
+
+                                            )
+                                          )
+                                      )
                         )
+                      )
                ),
                tabPanel("Kaplan–Meier",
-                        mainPanel(
-                          span(
-                            # to enable/disable the n_svs_min & n_svs_max fields,
-                            #this should be added at the panel level
                             shinyjs::useShinyjs(),
                             tabBox(
                               tabPanel("Null model",
-                                       fluidRow(column(12,
-                                                       div(style = "height:70px; Topleft"),
+                                       shiny::splitLayout(
+                                       box(height = "100%", width ="100%",
+
                                                        shinycssloaders::withSpinner(
                                                          plotOutput(outputId = "null_model_km")))
-                                       ),
-                                       fluidRow(column(12,
-                                                       div(style = "height:200px; Bottomleft"),
+                                       ,
+                                       box(height = "100%", width ="100%",
+
                                                        checkboxInput("life_table_null_model",
                                                                      "Display life table",
                                                                      value = FALSE),
-                                                       box(id = "myBox", title = "", width = '200px',
+                                                       box(id = "myBox",
                                                            span(DT::dataTableOutput("null_model_life_table"))))
-                                       )
-                              ),
+
+                                                        )
+                                       ),
                               tabPanel("Multiple model",
                                        fluidRow(column(12,
                                                        div(style = "height:70px; Topleft"),
@@ -191,20 +192,20 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                                      "Display life table",
                                                                      value = FALSE),
                                                        tabBox(id = "myBox_mm", title = "", width = 12,
-                                                            tabPanel("with SV",
-                                                                     span(DT::dataTableOutput("lt_mm_0"))
-                                                                     ),
-                                                            tabPanel("without SV",
-                                                                     span(DT::dataTableOutput("lt_mm_1"))
-                                                                     )
-                                                           )
+                                                              tabPanel("with SV",
+                                                                       span(DT::dataTableOutput("lt_mm_0"))
+                                                              ),
+                                                              tabPanel("without SV",
+                                                                       span(DT::dataTableOutput("lt_mm_1"))
+                                                              )
                                                        )
-                                                )
+                                       )
                                        )
                               )
                             )
-                          )
-                        ),
+
+
+               ),
                tabPanel("Cox regression",
                         span(shiny::tags$i(
                           h3("Cox regression table")),
@@ -249,7 +250,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                 br(),
                                                 br(),
                                                 tabPanel("with",
-                                                         span(DT::dataTableOutput("prop_h_mm0")),
+                                                         shinycssloaders::withSpinner(DT::dataTableOutput("prop_h_mm0")),
                                                          br(),
                                                          span(shiny::tags$i(h2("Residuals"))),
                                                          shinycssloaders::withSpinner(plotOutput(outputId = "residues_std_mm0"))
@@ -260,7 +261,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                 br(),
                                                 br(),
                                                 tabPanel("without",
-                                                         span(DT::dataTableOutput("prop_h_mm1")),
+                                                         shinycssloaders::withSpinner(DT::dataTableOutput("prop_h_mm1")),
                                                          br(),
                                                          span(shiny::tags$i(h2("Residuals"))),
                                                          shinycssloaders::withSpinner(plotOutput(outputId = "residues_std_mm1"))
@@ -851,6 +852,3 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
 #' https://stackoverflow.com/questions/5738831/
 #' @noRd
 `%+=%` <- function(e1,e2) eval.parent(substitute(e1 <- e1 + e2))
-
-
-
