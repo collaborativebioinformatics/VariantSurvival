@@ -8,6 +8,24 @@
 <br>
 
 
+## About
+VariantSurvival is a tool to identify genotype-treatment response in neurological disseaes
+<br>
+* List of currently supported neurological disorders syndroms:
+- Amyotrophic Lateral Sclerosis Spectrum Disorders
+- Brain Malformations
+- Cerebral Palsy
+- Craniofacial Malformations
+- Epilepsy
+- Glaucoma and Neuro-Ophthalmology
+- Intellectual Disability and Autism
+- Leigh syndrome
+- Parkinson disease
+- Rett and Angelman-like Disorders
+- Charcot-Marie-Tooth
+<br>
+
+
 ## VariantSurvival
 We present VariantSurvival, a lightweight dashboard application to visualize genotype-treatment response.
 The dashboard provides full functionality to import VCF data, metadata and to select a neurological disease.
@@ -40,8 +58,6 @@ VariantSurvival run example:
 library(VariantSurvival)
 VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile= "metadata_file.xlsx")
 ```
-
-
 
 
 ## The developers team
