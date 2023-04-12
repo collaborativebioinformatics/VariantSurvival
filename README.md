@@ -11,7 +11,8 @@
 ## About
 VariantSurvival is a tool to identify genotype-treatment response in neurological disseaes
 <br>
-* List of currently supported neurological disorders syndroms:
+List of currently supported neurological disorders syndroms:
+
 - Amyotrophic Lateral Sclerosis Spectrum Disorders
 - Brain Malformations
 - Cerebral Palsy
