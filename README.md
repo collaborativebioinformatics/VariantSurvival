@@ -46,7 +46,7 @@ The package can be installed in R studio using the following command:
 ```
 #install.packages('devtools') #install devtools package
 library(devtools)
-devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
+devtools::install_github("collaborativebioinformatics/VariantSurvival/variantsurvival")
 ```
 Note: All required packages will be installed automatically when installing "VariantSurvival".
 
