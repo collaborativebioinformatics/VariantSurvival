@@ -2,9 +2,29 @@
 <img src="https://user-images.githubusercontent.com/41301333/195215088-8404f200-8297-4322-a30f-c84f526aa620.png" width="200" height="200" align="right">
 
 ### Table of Contents
-1. [VariantSurvival](#variantsurvival)
-2. [The shiny app](#the-shiny-app)
-3. [The developers team](#the-developers-team)
+1. [About](#About)
+2. [VariantSurvival](#variantsurvival)
+3. [The shiny app](#the-shiny-app)
+4. [The developers team](#the-developers-team)
+<br>
+
+
+## About
+VariantSurvival is a tool to identify genotype-treatment response in neurological disseaes
+<br>
+List of currently supported neurological disorders syndroms:
+
+- Amyotrophic Lateral Sclerosis Spectrum Disorders
+- Brain Malformations
+- Cerebral Palsy
+- Craniofacial Malformations
+- Epilepsy
+- Glaucoma and Neuro-Ophthalmology
+- Intellectual Disability and Autism
+- Leigh syndrome
+- Parkinson disease
+- Rett and Angelman-like Disorders
+- Charcot-Marie-Tooth
 <br>
 
 
@@ -26,9 +46,15 @@ The package can be installed in R studio using the following command:
 ```
 #install.packages('devtools') #install devtools package
 library(devtools)
-devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
+devtools::install_github("collaborativebioinformatics/VariantSurvival/variantsurvival")
 ```
 Note: All required packages will be installed automatically when installing "VariantSurvival".
+
+### Demonstration
+```
+VariantSurvival::VariantSurvival(demo="TRUE")
+```
+
 
 
 ### Running your data analysis
@@ -40,8 +66,6 @@ VariantSurvival run example:
 library(VariantSurvival)
 VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile= "metadata_file.xlsx")
 ```
-
-
 
 
 ## The developers team
