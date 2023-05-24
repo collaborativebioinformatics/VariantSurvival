@@ -287,8 +287,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                              selected = NULL)
         output$biomarkers_table <- DT::renderDataTable({
           disease_type_gene <- disease_type_gene %>% filter(disease_type_gene$GCEP ==input$disease_n )
-          disease_type_gene <-unique( disease_type_gene[,-c(2,4,6,9,10)])
+          disease_type_gene <-unique( disease_type_gene[,-c(2,4,6,9)])
           disease_type_gene %>% arrange(DISEASE_LABEL)
+          df <- disease_type_gene[,-c(6)]
+          df
         })
       }
     })
