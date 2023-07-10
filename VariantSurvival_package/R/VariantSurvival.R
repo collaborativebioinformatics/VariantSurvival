@@ -21,12 +21,12 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
     metadata <- readxl::read_excel(metadatafile)
     metadata <- na.omit(metadata)
-    
+
   }
   disease_gene <- read_excel("disease_gene.xlsx")
   days_year <- 365.25
   disease_type_gene <- read_csv("disease_type_gene.csv")
-  
+
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
                collapsible = TRUE,
@@ -113,7 +113,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                             tabBox(
                                               selected = "Information Summary",
                                               tabPanel("Information Summary",
-                                                       DT::dataTableOutput("gene_summary_table_i"),
                                                        DT::dataTableOutput("gene_summary_table")
                                                        ),
                                               tabPanel("Structural Variants Distribution",
@@ -137,27 +136,27 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                tabPanel("Kaplan–Meier",
                         mainPanel(
                           span(
-                            # to enable/disable the n_svs_min & n_svs_max fields, 
+                            # to enable/disable the n_svs_min & n_svs_max fields,
                             #this should be added at the panel level
-                            shinyjs::useShinyjs(), 
+                            shinyjs::useShinyjs(),
                             tabBox(
                               tabPanel("Null model",
-                                       fluidRow(column(12, 
+                                       fluidRow(column(12,
                                                        div(style = "height:70px; Topleft"),
                                                        shinycssloaders::withSpinner(
                                                          plotOutput(outputId = "null_model_km")))
                                        ),
-                                       fluidRow(column(12, 
+                                       fluidRow(column(12,
                                                        div(style = "height:200px; Bottomleft"),
                                                        checkboxInput("life_table_null_model",
                                                                      "Display life table",
-                                                                     value = FALSE), 
+                                                                     value = FALSE),
                                                        box(id = "myBox", title = "", width = '200px',
                                                            span(DT::dataTableOutput("null_model_life_table"))))
                                        )
                               ),
                               tabPanel("Multiple model",
-                                       fluidRow(column(12, 
+                                       fluidRow(column(12,
                                                        div(style = "height:70px; Topleft"),
                                                        dropdownButton(
                                                          checkboxInput("all_n_svs",
@@ -192,11 +191,11 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                        div(style = "height:200px; Bottomleft"),
                                                        checkboxInput("life_table_multiple_model",
                                                                      "Display life table",
-                                                                     value = FALSE), 
+                                                                     value = FALSE),
                                                        tabBox(id = "myBox_mm", title = "", width = 12,
                                                             tabPanel("with SV",
                                                                      span(DT::dataTableOutput("lt_mm_0"))
-                                                                     ), 
+                                                                     ),
                                                             tabPanel("without SV",
                                                                      span(DT::dataTableOutput("lt_mm_1"))
                                                                      )
@@ -206,7 +205,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                        )
                               )
                             )
-                          ) 
+                          )
                         ),
                tabPanel("Cox regression",
                         span(shiny::tags$i(
@@ -243,7 +242,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                        h2("Residuals"))),
                                      shinycssloaders::withSpinner(
                                        plotOutput(outputId = "residues_std"))
-                                     
+
                             ),
                             tabPanel("Multiple model",
                                      tabBox(width = 12,
@@ -257,7 +256,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                                          span(shiny::tags$i(h2("Residuals"))),
                                                          shinycssloaders::withSpinner(plotOutput(outputId = "residues_std_mm0"))
                                                          ),
-                                                br()), 
+                                                br()),
                                        tabPanel("without SV",
                                                 span(DT::dataTableOutput("summ_mm_0")),
                                                 br(),
@@ -276,8 +275,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                         )
                )
     )
-  
-  
+
+
   server <- function(input, output, session) {
     gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
@@ -297,8 +296,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         })
       }
     })
-    observe({ if(input$disease_n != "N/A" 
-                 & input$ids != "N/A" 
+    observe({ if(input$disease_n != "N/A"
+                 & input$ids != "N/A"
                  &input$time != "N/A"){
       count_table<- genesCountTable(vcf, metadata, input, gene_ids_table)
       output$summ_table <- DT::renderDataTable({
@@ -307,7 +306,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       })
       }
     })
-    
+
     reactive_no_NAs_metadata <- reactive({
       if(checkInput(input)){
         disease_genes_names <- gene_ids_table$GeneName
@@ -368,8 +367,8 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         # subset the count of structural variants in the control/treatment patients
         control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
         treatment <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 1]
-        number_of_patients <- (count_tab 
-                               %>% filter(count_tab$Gene_ID == input$target_gene) 
+        number_of_patients <- (count_tab
+                               %>% filter(count_tab$Gene_ID == input$target_gene)
                                %>% select(`Count of patients with SVs`))
         if(number_of_patients$`Count of patients with SVs` == 0){
           output$gene_summary_table <-  DT::renderDataTable({
@@ -380,23 +379,6 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           })
         }
         else{
-          output$gene_summary_table <-  DT::renderDataTable({
-            sketch = htmltools::withTags(table(
-              class = 'display',
-              thead(tr(th(rowspan = 2, 'Group'),
-                       th(colspan = 2, 'Number of patients')
-              ),
-              tr(
-                lapply(rep(c('Min', 'Max'), 1), th)
-              )
-              )
-            ))
-            rows_names <-c('control', 'treatment')
-            first_column <- c(min(control), min(treatment))
-            second_column <- c(max(control), max(treatment))
-            df <- data.frame(rows_names, first_column, second_column)
-            datatable(df, container = sketch, rownames = FALSE,options = list(dom = 't'))
-          })
           output$gene_summary_table_i <-  DT::renderDataTable({
             sketch = htmltools::withTags(table(
               class = 'display',
@@ -413,13 +395,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
             length(control[control>0])
             control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
             treatment <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 1]
-            
+
             n_control <- length(control[control>0])
             n_trearment <- length(treatment[treatment>0])
             n_indiv <- nrow(target_gene_df)
             first_column <- c(n_control, n_trearment)
             second_column <- c(round(n_control/n_indiv, 2), round(n_trearment/n_indiv, 2))
-            
+
             df <- data.frame(rows_names, first_column, second_column)
             datatable(df, container = sketch, rownames = FALSE,options = list(dom = 't'))
           })
@@ -434,10 +416,10 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     #     control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
     #     treatment <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 1]
     #     print(c(min(control), max(control), min(treatment), max(treatment)))
-    #     number_of_patients <- (count_tab 
-    #                            %>% filter(count_tab$Gene_ID == input$target_gene) 
+    #     number_of_patients <- (count_tab
+    #                            %>% filter(count_tab$Gene_ID == input$target_gene)
     #                            %>% select(`Count of patients with SVs`))
-    # 
+    #
     #     if(number_of_patients$`Count of patients with SVs` == 0){
     #       print(dplyr::tibble("No patient carries structural variants in this gene"))
     #     } else {
@@ -461,7 +443,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
     #     }
     #     }
     #   })
-    
+
     ## output - histogram ##
     output$histogram <- renderPlot(
       {
@@ -493,7 +475,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       height = 500,
       width = 700
     )
-    
+
     observe({
       if(checkInput(input) & !is.null(input$target_gene)){
         svs_gene_input_df <- reactive_no_NAs_metadata()
@@ -510,7 +492,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                              selected = NULL)
       }
     })
-    
+
     observe({
       if(checkInput(input)){
         svs_gene_input_df <- reactive_no_NAs_metadata()
@@ -536,7 +518,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         }
       }
     })
-    
+
     observe({
       if(checkInput(input)){
         svs_gene_input_df <- reactive_no_NAs_metadata()
@@ -565,7 +547,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         },
         height = 500,
         width = 700)
-        
+
         observeEvent(input$life_table_null_model, {
           if(input$life_table_null_model == FALSE){
             shinyjs::hide(id = "myBox")
@@ -574,12 +556,12 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
             shinyjs::show(id = "myBox")
             output$null_model_life_table <- DT::renderDataTable({
               as_tibble(round_df(as.data.frame(surv_summary(null_model)), 3))
-            }) 
+            })
           }
         })
       }
     })
-    
+
     observe({
       if(checkInput(input)){
         risk_table = FALSE
@@ -594,13 +576,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
               grid_line = "grey"}
           }
         svs_gene_input_df <- reactive_no_NAs_metadata()
-        if (input$all_n_svs == FALSE 
-            & input$n_svs_min!= "" 
+        if (input$all_n_svs == FALSE
+            & input$n_svs_min!= ""
             & input$n_svs_max!= ""){
           if (input$n_svs_max > input$n_svs_min){
             n_svs_min = as.numeric(input$n_svs_min)
             n_svs_max = as.numeric(input$n_svs_max)
-            sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min 
+            sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min
                     & svs_gene_input_df$SV_count_per_gene <= n_svs_max)
             svs_gene_input_df <- svs_gene_input_df[sub,]
           }
@@ -652,13 +634,13 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
             type = "without"}
           else if (n_sv_groups == 1){
             type = "with"}
-          temp <- paste(type , " SV") 
+          temp <- paste(type , " SV")
           sc <- survfit2(Surv(time, event)~trial_group_bin,
                          data = svs_gene_input_df,
                          type = "kaplan-meier")
           surv_fit_list <- list(temp = sc)
         }
-        
+
         output$plot_km <- renderPlot({
           ggsurvplot_combine(surv_fit_list,
                              data=svs_gene_input_df,
@@ -683,7 +665,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
           )},
           height = 600,
           width = 1000)
-        
+
         observeEvent(input$life_table_multiple_model, {
           if(input$life_table_multiple_model == FALSE){
             shinyjs::hide(id = "myBox_mm")
@@ -709,7 +691,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         output$plot_km <- renderText({ "Missing input data"})
       }
     })
-    
+
     inputs_react <- reactive({list(input$event,
                                    input$time,
                                    input$ids,
@@ -739,7 +721,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
       }
       )
-    
+
     observeEvent(input$all_n_svs, {
       if (checkInput(input)){
         if (input$all_n_svs == FALSE){
@@ -758,7 +740,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
     }
     )
-    
+
     observeEvent(input$n_svs_min, {
       if (checkInput(input)){
         if (input$all_n_svs == FALSE & input$n_svs_min!=""){
@@ -770,7 +752,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
       }
       }
       )
-    
+
     observe({
       if(checkInput(input) & (any(!is.na(input$sel_cov)) | any(!is.na(input$sel_cov_cont)))){
         covariates <- c()
@@ -791,28 +773,28 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         # Standard model
         formulaString <- paste("Surv(time, event) ~", paste(covariates, collapse="+"))
         cox_reg.std <- coxph(as.formula(formulaString), data=input_df)
-        ## Check for violation of proportional hazard 
+        ## Check for violation of proportional hazard
         res.std <- cox.zph(cox_reg.std)
-        
-        
+
+
         # Multiple model
         input_df_mm <- data.frame(input_df)
         input_df_mm["SV_bin"] <- sapply(input_df_mm["SV_bin"], as.numeric)
         formulaString_mm <- paste("Surv(time, event) ~", paste(covariates[!(covariates %in% c("SV_bin", "strata(SV_bin)"))], collapse="+"))
         cox_reg.mul0 <- coxph(as.formula(formulaString_mm),
-                              data=input_df_mm, 
+                              data=input_df_mm,
                               subset=(SV_bin==0))
         cox_reg.mul1 <- coxph(as.formula(formulaString_mm),
                               data=input_df_mm,
                               subset=(SV_bin==1))
         res.std_mul0 <- cox.zph(cox_reg.mul0)
         res.std_mul1 <- cox.zph(cox_reg.mul1)
-        
+
         output$summ_std <- DT::renderDataTable({
           as_tibble(cox_reg.std %>% tbl_regression(exp = TRUE))
         })
         output$prop_h_std <- DT::renderDataTable({
-          datatable(rownames_to_column(round_df(as.data.frame(res.std$table),3), " "), 
+          datatable(rownames_to_column(round_df(as.data.frame(res.std$table),3), " "),
                     options = list(dom = 't'))
         })
         output$residues_std <- renderPlot({
@@ -822,7 +804,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         output$summ_mm_0 <- DT::renderDataTable({
           as_tibble(cox_reg.mul0 %>% tbl_regression(exp = TRUE))
         })
-        
+
         output$summ_mm_1 <- DT::renderDataTable({
           as_tibble(cox_reg.mul1 %>% tbl_regression(exp = TRUE))
         })
@@ -845,7 +827,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         }
     })
     }
-  
+
   # Run the application
   shinyApp(ui = ui, server = server)
 }
@@ -975,7 +957,7 @@ CountSVsDf <- function(ncol, nrow,
   sample_disease_gene_df <- data.frame(matrix(0, ncol = ncol, nrow = nrow))
   colnames(sample_disease_gene_df) <- disease_genes_names
   rownames(sample_disease_gene_df) <- sample_names
-  
+
   for (sv_idx in 1:length(genes_with_svs_in_sample)) {
     # if the sv is in a gene of interest
     sv_gene_name <- genes_with_svs_in_sample[sv_idx]
@@ -1017,7 +999,7 @@ RemoveNAs <- function(df, time_col) {
 
 round_df <- function(x, digits) {
   # round all numeric variables
-  # x: data frame 
+  # x: data frame
   # digits: number of digits to round
   numeric_columns <- sapply(x, mode) == 'numeric'
   x[numeric_columns] <-  round(x[numeric_columns], digits)
