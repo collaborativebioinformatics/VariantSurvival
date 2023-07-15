@@ -25,7 +25,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
   }
   disease_gene <- read_excel("disease_gene.xlsx")
   days_year <- 365.25
-  disease_type_gene <- read_csv("disease_type_gene.csv")
+  disease_type_gene <- read_csv("disease_type_gene.csv", show_col_types = FALSE)
 
   ui <- bootstrapPage(
     navbarPage(theme = shinytheme("flatly"),
@@ -113,7 +113,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
                                             tabBox(
                                               selected = "Information Summary",
                                               tabPanel("Information Summary",
-                                                       DT::dataTableOutput("gene_summary_table")
+                                                       DT::dataTableOutput("gene_summary_table_i")
                                                        ),
                                               tabPanel("Structural Variants Distribution",
                                                        shinycssloaders::withSpinner(
@@ -312,8 +312,7 @@ VariantSurvival <- function(vcffile, metadatafile,demo=FALSE){
         disease_genes_names <- gene_ids_table$GeneName
         sample_names <- colnames(vcf@gt)[-1] # ignore VCF genotype information
         # genes are repeated since a single gene can have more than one SV.
-        genes_with_svs_in_sample <- apply(vcf@fix,
-                                          1,
+        genes_with_svs_in_sample <- apply(vcf@fix, 1,
                                           getGeneName,
                                           gene_ids_table)
         # count dataframe with patient_ids in rows and gene_ids in columns
@@ -902,12 +901,22 @@ checkInput <- function(input) {
 }
 
 
-#' `getGeneName`
-#' @param info
-#' @return
+get_id <- function(x, geneIDS){
+  gene_name <- geneIDS[x,]$GeneName
+  if(is.na(gene_name)){
+    print(paste('Please include the gene ID ', gene_name, 'in the input file'))
+  }
+  return(gene_name)
+}
+
 getGeneName <- function(info, geneIDS) {
   x <- str_extract(info['INFO'], "(?<=ensembl_gene_id=)[^;]+")
-  return(geneIDS[x,]$GeneName)
+  gene_id <- geneIDS[x,]$GeneName
+  if(grepl(",", x,  fixed=TRUE)){
+    grep_id <- strsplit(x, split = ",")[[1]]
+    return(sapply(t, get_id, geneIDS, USE.NAMES = FALSE))
+  }
+  return(get_id(x, geneIDS))
 }
 
 
@@ -957,23 +966,22 @@ CountSVsDf <- function(ncol, nrow,
   sample_disease_gene_df <- data.frame(matrix(0, ncol = ncol, nrow = nrow))
   colnames(sample_disease_gene_df) <- disease_genes_names
   rownames(sample_disease_gene_df) <- sample_names
-
   for (sv_idx in 1:length(genes_with_svs_in_sample)) {
     # if the sv is in a gene of interest
-    sv_gene_name <- genes_with_svs_in_sample[sv_idx]
-    if(is.na(sv_gene_name))
-      next
     for(individual_idx in 1:length(sample_names)){
       indiv_id <- sample_names[individual_idx]
       gt <- vcf@gt[sv_idx, indiv_id]
       if(!is.na(gt))
       {
-        sample_disease_gene_df[indiv_id, sv_gene_name] %+=% 1
+        sv_gene_name <- genes_with_svs_in_sample[sv_idx]
+        for (gene_id in unlist(sv_gene_name)) {
+          sample_disease_gene_df[indiv_id, gene_id] %+=% 1
+        }
       }
     }
   }
-  sample_disease_gene_df <- (rownames_to_column(sample_disease_gene_df,ids_col)
-                             %>%  rename(ids = ids_col))
+  sample_disease_gene_df <- rownames_to_column(sample_disease_gene_df,ids_col)
+  sample_disease_gene_df <- sample_disease_gene_df %>%rename(ids = ids_col)
   return(sample_disease_gene_df)
 }
 
