@@ -100,10 +100,10 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
               12,
               h4(
                 "The Biomarkers table resumes the Biomarkers associated
-                                                          with the diseases based on the ClinGen database"
+                with the diseases based on the ClinGen database"
               ),
               tabBox(
-                selected = "Biomarkers table",
+                selected = "Biomarkers Table",
                 tabPanel("Biomarkers Table",
                          span(
                            DT::dataTableOutput("biomarkers_table")
@@ -335,11 +335,9 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
           choices = c(genes_list, 'N/A'),
           selected = 'N/A'
         )
+        disease_type_gene <- disease_type_gene %>% filter(disease_type_gene$GCEP == input$disease_n)
+        disease_type_gene <- unique(disease_type_gene[, -c(2, 4, 6, 9, 10)])
         output$biomarkers_table <- DT::renderDataTable({
-          disease_type_gene <-
-            disease_type_gene %>% filter(disease_type_gene$GCEP == input$disease_n)
-          disease_type_gene <-
-            unique(disease_type_gene[, -c(2, 4, 6, 9, 10)])
           disease_type_gene %>% arrange(DISEASE_LABEL)
         })
       }
@@ -558,7 +556,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
             )),
             position = position_stack(vjust = 0.5)
           ) +
-          xlab("Number of SVs in target gene") + ylab("Frequency") +
+          xlab("Number of SVs in target gene") + ylab("Number of patients") +
           theme(
             text = element_text(size = 20),
             panel.background = element_rect(fill = "white",
