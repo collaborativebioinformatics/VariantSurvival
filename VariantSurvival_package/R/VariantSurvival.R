@@ -162,27 +162,6 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
                  #this should be added at the panel level
                  shinyjs::useShinyjs(),
                  tabBox(
-                   tabPanel("Null model",
-                            fluidRow(
-                              column(
-                                12,
-                                div(style = "height:70px; Topleft"),
-                                shinycssloaders::withSpinner(plotOutput(outputId = "null_model_km"))
-                              )
-                            ),
-                            fluidRow(column(
-                              12,
-                              div(style = "height:200px; Bottomleft"),
-                              checkboxInput("life_table_null_model",
-                                            "Display life table",
-                                            value = FALSE),
-                              box(
-                                id = "myBox",
-                                title = "",
-                                width = '200px',
-                                span(DT::dataTableOutput("null_model_life_table"))
-                              )
-                            ))),
                    tabPanel("Multiple model",
                             fluidRow(
                               column(
@@ -239,7 +218,28 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
                                            span(DT::dataTableOutput("lt_mm_1")))
                                 )
                               )
-                            ))
+                            )),
+                   tabPanel("Null model",
+                            fluidRow(
+                              column(
+                                12,
+                                div(style = "height:70px; Topleft"),
+                                shinycssloaders::withSpinner(plotOutput(outputId = "null_model_km"))
+                              )
+                            ),
+                            fluidRow(column(
+                              12,
+                              div(style = "height:200px; Bottomleft"),
+                              checkboxInput("life_table_null_model",
+                                            "Display life table",
+                                            value = FALSE),
+                              box(
+                                id = "myBox",
+                                title = "",
+                                width = '200px',
+                                span(DT::dataTableOutput("null_model_life_table"))
+                              )
+                            )))
                  )
                ))),
       tabPanel(
