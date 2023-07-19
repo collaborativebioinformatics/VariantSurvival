@@ -1110,7 +1110,7 @@ getGeneName <- function(info, geneIDS) {
     grep_id <- strsplit(x, split = ",")[[1]]
     return(sapply(grep_id, getID, geneIDS, USE.NAMES = FALSE))
   }
-  return(get_id(x, geneIDS))
+  return(getID(x, geneIDS))
 }
 
 
