@@ -704,7 +704,11 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
         },
         height = 600,
         width = 1000)
+
         pval_tab <- surv_pvalue(surv_fit_list, data=svs_gene_input_df, combine = TRUE)
+        pval_tab <- pval_tab[c("id","method","pval.txt")]
+        colnames(pval_tab)[3] <- "p-value"
+
         output$p_values_km <- DT::renderDataTable({as_tibble(pval_tab)})
         observeEvent(input$life_table_multiple_model, {
           if (input$life_table_multiple_model == FALSE) {
