@@ -25,8 +25,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
   }
   disease_gene <- read_excel("disease_gene.xlsx")
   days_year <- 365.25
-  disease_type_gene <-
-    read_csv("disease_type_gene.csv", show_col_types = FALSE)
+  disease_type_gene <- read_csv("disease_type_gene.csv", show_col_types = FALSE)
 
   ui <- bootstrapPage(
     navbarPage(
@@ -186,9 +185,16 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
                                   width = "300px",
                                   tooltip = tooltipOptions(title = "Click to see inputs!")
                                   ),
-                                shinycssloaders::withSpinner(plotOutput(outputId = "plot_km", width = "100%"))
+                                shinycssloaders::withSpinner(plotOutput(outputId = "plot_km", width = "100%")),
                                 )
                               ),
+                            fluidRow(
+                              column(
+                                12,
+                                div(style = "height:200px; Bottomleft"),
+                                span(DT::dataTableOutput("p_values_km"))
+                              )
+                            ),
                             fluidRow(
                               column(
                                 12,
@@ -336,8 +342,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
       if (checkInput(input)) {
         disease_genes_names <- gene_ids_table$GeneName
         if (input$target_gene %in% disease_genes_names) {
-          sample_names <-
-            colnames(vcf@gt)[-1] # ignore VCF genotype information
+          sample_names <- colnames(vcf@gt)[-1] # ignore VCF genotype information
           # genes are repeated since a single gene can have more than one SV.
           genes_with_svs_in_sample <- apply(vcf@fix, 1, getGeneName, gene_ids_table)
           # count dataframe with patient_ids in rows and gene_ids in columns
@@ -348,40 +353,32 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
             sample_names,
             genes_with_svs_in_sample,
             vcf,
-            input$ids
-          )
+            input$ids)
           new_md <- (
             RemoveNAs(metadata, input$time)
             %>% rename(
               ids = input$ids,
               trial_group_bin = input$group,
               time = input$time,
-              event = input$event
-            )
+              event = input$event)
           )
           # what happen if the input$target_gene is not in the vcf file?
           new_df <- (
             subset(count_df, ids %in% new_md$ids)
-            %>% rename(SV_count_per_gene = input$target_gene)
-          )
+            %>% rename(SV_count_per_gene = input$target_gene))
           no_na_df <- merge(new_df, new_md, by = "ids")
           no_na_df <- transform(
             no_na_df,
             time = as.numeric(time),
             event = as.numeric(event),
-            SV_count_per_gene = as.numeric(SV_count_per_gene)
-            )
-          no_na_df <- (
-            no_na_df
-            %>% mutate(SV_bin = ifelse(
-              new_df$SV_count_per_gene > 0, 1, 0
-              ))
-            %>% mutate(
-              trial_group = ifelse(trial_group_bin == "0",
-                                   "Placebo", "Treatment")
-            )
-            %>% mutate(SV = ifelse(SV_bin == "0", "with", "without"))
-          )
+            SV_count_per_gene = as.numeric(SV_count_per_gene))
+          no_na_df <- (no_na_df
+                       %>% mutate(SV_bin = ifelse(
+                         new_df$SV_count_per_gene > 0, 1, 0))
+                       %>% mutate(
+                         trial_group = ifelse(trial_group_bin == "0",
+                                              "Placebo", "Treatment"))
+                       %>% mutate(SV = ifelse(SV_bin == "0", "with", "without")))
           if (input$time_unit == 'years') {
             no_na_df$time_days <- floor(no_na_df[["time"]] * days_year)
           } else{
@@ -679,7 +676,6 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
                          type = "kaplan-meier")
           surv_fit_list <- list(temp = sc)
         }
-
         output$plot_km <- renderPlot({
           ggsurvplot_combine(
             surv_fit_list,
@@ -688,7 +684,6 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
             conf.int = conf_itv,
             conf.int.style = "step",
             risk.table.y.text = FALSE,
-            pval=TRUE,
             xlab = toTitleCase(input$time_unit),
             ggtheme = theme(
               text = element_text(size = 20),
@@ -709,7 +704,8 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
         },
         height = 600,
         width = 1000)
-
+        pval_tab <- surv_pvalue(surv_fit_list, data=svs_gene_input_df, combine = TRUE)
+        output$p_values_km <- DT::renderDataTable({as_tibble(pval_tab)})
         observeEvent(input$life_table_multiple_model, {
           if (input$life_table_multiple_model == FALSE) {
             shinyjs::hide(id = "myBox_mm")
@@ -839,7 +835,8 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
         input_df_mm <- data.frame(input_df)
         input_df_mm["SV_bin"] <- sapply(input_df_mm["SV_bin"], as.numeric)
         formulaString_mm <- paste("Surv(time, event) ~",
-                                  paste(covariates[!(covariates %in% c("SV_bin", "strata(SV_bin)"))],
+                                  paste(covariates[!(covariates %in% c("SV_bin",
+                                                                       "strata(SV_bin)"))],
                                         collapse = "+"))
         cox_reg.mul0 <- coxph(as.formula(formulaString_mm),
                                data = input_df_mm,
