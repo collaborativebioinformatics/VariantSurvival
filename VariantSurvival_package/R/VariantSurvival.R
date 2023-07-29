@@ -307,7 +307,6 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
     observeEvent(input$disease_n, {
       if (input$disease_n != "N/A") {
         genes_list <- c(get_disease_gene_list(disease_gene, input$disease_n))
-        disease_genes_names <- gene_ids_table$GeneName
         updateSelectizeInput(
           session,
           input = "target_gene",
@@ -416,7 +415,6 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
         target_gene_df <- new_df[, c("SV_count_per_gene", "trial_group_bin")]
         # subset the count of structural variants in the control/treatment patients
         control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
-        treatment <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 1]
         number_of_patients <- (
           count_tab
           %>% filter(count_tab$Gene_ID == input$target_gene)
@@ -432,7 +430,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
         }
         else{
           output$gene_summary_table_i <- DT::renderDataTable({
-            sketch = htmltools::withTags(table(class = 'display',
+            sketch <- htmltools::withTags(table(class = 'display',
                                                thead(
                                                  tr(
                                                    th(rowspan = 2, 'Group'),
@@ -552,22 +550,22 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
         output$null_model_km <- renderPlot({
           ggsurvplot_combine(
             list(null_model),
-            data = no_na_df,
-            risk.table = FALSE,
-            conf.int = FALSE,
-            conf.int.style = "step",
-            risk.table.y.text = FALSE,
-            xlab = "Years",
-            ylab = "Overall survival probability",
-            legend = "none",
-            ggtheme = theme(
-              text = element_text(size = 20),
-              panel.background = element_rect(fill = "white",
+            data=no_na_df,
+            risk.table=FALSE,
+            conf.int=FALSE,
+            conf.int.style="step",
+            risk.table.y.text=FALSE,
+            xlab="Years",
+            ylab="Overall survival probability",
+            legend="none",
+            ggtheme=theme(
+              text=element_text(size = 20),
+              panel.background=element_rect(fill = "white",
                                               colour = "white"),
-              axis.line = element_line(colour = "black"),
-              panel.grid.major.y = element_line(colour =
+              axis.line=element_line(colour = "black"),
+              panel.grid.major.y=element_line(colour =
                                                   'white'),
-              panel.grid.minor.y = element_line(colour =
+              panel.grid.minor.y=element_line(colour =
                                                   'white'),
               # legend.position = c(0.2, 0.5)
             )
@@ -594,18 +592,18 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
 
     observe({
       if (checkInput(input)) {
-        risk_table = FALSE
-        conf_itv = FALSE
-        grid_line = "white"
+        risk_table <- FALSE
+        conf_itv <- FALSE
+        grid_line <- "white"
         if (!is.null(input$km_feat)) {
           if ("conf_itv" %in% input$km_feat) {
-            conf_itv = TRUE
+            conf_itv <- TRUE
           }
           if ("risk_table" %in% input$km_feat) {
-            risk_table = TRUE
+            risk_table <- TRUE
           }
           if ("grid_line" %in% input$km_feat) {
-            grid_line = "grey"
+            grid_line <- "grey"
           }
         }
         svs_gene_input_df <- reactive_no_NAs_metadata()
@@ -613,10 +611,9 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
             & input$n_svs_min != ""
             & input$n_svs_max != "") {
           if (input$n_svs_max > input$n_svs_min) {
-            n_svs_min = as.numeric(input$n_svs_min)
-            n_svs_max = as.numeric(input$n_svs_max)
-            sub <- (
-              svs_gene_input_df$SV_count_per_gene >= n_svs_min
+            n_svs_min <- as.numeric(input$n_svs_min)
+            n_svs_max <- as.numeric(input$n_svs_max)
+            sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min
               &
                 svs_gene_input_df$SV_count_per_gene <= n_svs_max
             )
@@ -671,10 +668,10 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
         }
         else if (length(n_sv_groups) == 1) {
           if (n_sv_groups == 0) {
-            type = "without"
+            type <- "without"
           }
           else if (n_sv_groups == 1) {
-            type = "with"
+            type <- "with"
           }
           temp <- paste(type , " SV")
           sc <- survfit2(Surv(time, event) ~ trial_group_bin,
@@ -691,6 +688,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
             conf.int = conf_itv,
             conf.int.style = "step",
             risk.table.y.text = FALSE,
+            pval=TRUE,
             xlab = toTitleCase(input$time_unit),
             ggtheme = theme(
               text = element_text(size = 20),
@@ -757,8 +755,6 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
     # drop-down
     observeEvent(inputs_react(), {
       if (checkInput(input)) {
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        svs_levels <- unique(svs_gene_input_df["SV_count_per_gene"])$SV_count_per_gene
         cov_list <- c(get_cov_list(metadata, input), "SV_bin")
         # update the covariate drop down
         updateSelectizeInput(
@@ -1001,7 +997,6 @@ getID <- function(x, geneIDS) {
 
 getGeneName <- function(info, geneIDS) {
   x <- str_extract(info['INFO'], "(?<=ensembl_gene_id=)[^;]+")
-  gene_id <- geneIDS[x, ]$GeneName
   if (grepl(",", x,  fixed = TRUE)) {
     grep_id <- strsplit(x, split = ",")[[1]]
     return(sapply(grep_id, getID, geneIDS, USE.NAMES = FALSE))
