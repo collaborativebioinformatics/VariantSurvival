@@ -301,7 +301,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
 
 
   server <- function(input, output, session) {
-    gene_ids_table <- read.csv(file = 'ensembleTogenes.csv')
+    gene_ids_table <- read.csv(file = 'ensemblTogenes.csv')
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
     # get disease_n input and update the genes list accordingly
     observeEvent(input$disease_n, {
@@ -395,7 +395,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
             paste(
               'Please include the gene ID ',
               input$target_gene,
-              'in the ensembleTogenes.csvfile'
+              'in the ensemblTogenes.csvfile'
             )
           )
           genes_list <- c(get_disease_gene_list(disease_gene, input$disease_n))
@@ -993,7 +993,7 @@ getID <- function(x, geneIDS) {
     print(paste(
       'Please include the gene ID ',
       gene_name,
-      'in the ensembleTogenes.csvfile'
+      'in the ensemblTogenes.csvfile'
     ))
   }
   return(gene_name)
