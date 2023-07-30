@@ -376,8 +376,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
                        %>% mutate(SV_bin = ifelse(
                          new_df$SV_count_per_gene > 0, 1, 0))
                        %>% mutate(
-                         trial_group = ifelse(trial_group_bin == "0",
-                                              "Placebo", "Treatment"))
+                         trial_group = ifelse(trial_group_bin == "0", "Placebo", "Treatment"))
                        %>% mutate(SV = ifelse(SV_bin == "0", "with", "without")))
           if (input$time_unit == 'years') {
             no_na_df$time_days <- floor(no_na_df[["time"]] * days_year)
@@ -495,18 +494,12 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
 
     observe({
       if (checkInput(input) & !is.null(input$target_gene)) {
-        svs_gene_input_df <- reactive_no_NAs_metadata()
-        # renaming back to original column names, so it's not confusing for the user.
-        # maybe not the best approach
-        rename_cols <- c("ids", "trial_group_bin", "time", "event")
-        rename_cols_with <- c(input$ids, input$group, input$time, input$event)
-        names(svs_gene_input_df)[names(svs_gene_input_df) %in% rename_cols] <- rename_cols_with
-        coln_list <- colnames(svs_gene_input_df)
-        coln_list <- coln_list[!(coln_list %in% c(input$ids, "SV_count_per_gene"))]
+        count_tab <- genesCountTable(vcf, metadata, input, gene_ids_table)
+        non_zero <- count_tab[count_tab$`Count of patients with SVs`!=0,]
         updateSelectizeInput(
           session,
           input = "table_cols",
-          choices = coln_list,
+          choices = c(non_zero$Gene_ID,colnames(metadata)),
           selected = NULL
         )
         }
@@ -1014,8 +1007,7 @@ get_cov_list <- function(metadata, input) {
 }
 
 genesCountTable <- function(vcf, metadata, input, gene_ids_table) {
-  genes_with_svs_in_sample <-
-    apply(vcf@fix, 1, getGeneName, gene_ids_table)
+  genes_with_svs_in_sample <- apply(vcf@fix, 1, getGeneName, gene_ids_table)
   sample_names <- colnames(vcf@gt)[-1]
   disease_genes_names <- gene_ids_table$GeneName
   count_df <- CountSVsDf( length(disease_genes_names),
