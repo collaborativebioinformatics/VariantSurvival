@@ -9,14 +9,14 @@
 
 
 ## VariantSurvival
-We present VariantSurvival, a lightweight dashboard application to visualize genotype-treatment response.
-The dashboard provides full functionality to import VCF data, metadata and to select a neurological disease.
+We present VariantSurvival, a lightweight application to visualize genotype-treatment response.
+The application dashboard provides full functionality to import VCF data, metadata and to select a neurological disease.
 <br><br>
 <img src="https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/img/VariantSurvival.svg">
 
 
 ## The shiny app
-The VariantSurvival is implemented in R together with the 'shiny' R package. Available [_here_](https://github.com/collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package).
+The VariantSurvival Shiny application is implemented as an R package. Available [_here_](https://github.com/collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package).
 
 
 ### Installation
@@ -41,7 +41,22 @@ library(VariantSurvival)
 VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile= "metadata_file.xlsx")
 ```
 
+Follow these steps to run the VariantSurvival demonstration:
 
+  1. Clone the Repository: Open your terminal and navigate to the directory where you want to clone the repository. Run the following command to clone the repository:
+     
+  ```
+     git clone https://github.com/collaborativebioinformatics/VariantSurvival.git
+  ```
+  
+  2. Set Working Directory: Change your current working directory to the "R" folder within the cloned repository.
+     
+  3. Run the Demonstration: Launch R in your terminal or RStudio, and then execute the following command to run the demonstration:
+  
+  ```
+  library(VariantSurvival)
+  VariantSurvival::VariantSurvival(demo=TRUE)
+  ```
 
 
 ## The developers team
