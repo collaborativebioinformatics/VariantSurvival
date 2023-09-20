@@ -55,7 +55,7 @@ Details on formatting your input data for VariantSurvival: [VCF file](https://gi
 VariantSurvival run example:
 ```
 library(VariantSurvival)
-VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile= "metadata_file.xlsx")
+VariantSurvival::VariantSurvival(vcffile="my_variant_file.vcf", metadatafile= "my_metadata_file.xlsx")
 ```
 
 
