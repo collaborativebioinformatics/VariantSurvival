@@ -9,7 +9,7 @@ Description: Survival analysis and data visualization.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports: 
     dplyr,
     DT,
@@ -26,3 +26,6 @@ Imports:
     vcfR
 Depends: 
     tidyverse
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
