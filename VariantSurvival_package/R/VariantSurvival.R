@@ -12,9 +12,9 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
   install_load_requirements()
   #demo or input files
   if (demo == TRUE) {
-    vcffile_demo <- "merged.filtered.vcf"
+    vcffile_demo <- "demo/merged.filtered.vcf"
     vcf <- vcfR::read.vcfR(vcffile_demo, verbose = FALSE)
-    metadata_demo <- "metadata.xlsx"
+    metadata_demo <- "demo/metadata.xlsx"
     metadata <- readxl::read_excel(metadata_demo)
     metadata <- na.omit(metadata)
   } else if (demo == FALSE) {

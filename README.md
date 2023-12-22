@@ -9,18 +9,17 @@
 
 
 ## VariantSurvival
-We present VariantSurvival, a lightweight dashboard application to visualize genotype-treatment response.
-The dashboard provides full functionality to import VCF data, metadata and to select a neurological disease.
+We present VariantSurvival, a lightweight application to visualize genotype-treatment response.
+Its dashboard provides full functionality to import VCF data, tabular metadata as well as to select neurological diseases and target genes.
 <br><br>
 <img src="https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/img/VariantSurvival.svg">
 
 
 ## The shiny app
-The VariantSurvival is implemented in R together with the 'shiny' R package. Available [_here_](https://github.com/collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package).
+The VariantSurvival Shiny application is implemented as an R package. Available [_here_](https://github.com/collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package).
 
 
 ### Installation
-
 The package can be installed in R studio using the following command:
 
 ```
@@ -31,17 +30,33 @@ devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSur
 Note: All required packages will be installed automatically when installing "VariantSurvival".
 
 
+### Running the demo
+Follow these steps to run the VariantSurvival demonstration:
+
+  1. Clone the Repository: Open your terminal and navigate to the directory where you want to clone the repository. Run the following command to clone the repository:
+     
+  ```
+  git clone https://github.com/collaborativebioinformatics/VariantSurvival.git
+  ```
+  
+  2. Set Working Directory: Change your current working directory to the _VariantSurvival_package/R/_ subfolder within the cloned repository.
+     
+  3. Run the Demonstration: Launch R in your terminal or RStudio, and execute the following command to run the demonstration:
+  
+  ```
+  library(VariantSurvival)
+  VariantSurvival::VariantSurvival(demo=TRUE)
+  ```
+
+
 ### Running your data analysis
-* WIP: what input to load into VariantSurvival: [VCF file](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/docs/preprocessing/prepareVCF.md), study groups metadata
-* WIP: example as in “demo” folder.
+Details on formatting your input data for VariantSurvival: [VCF file](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/docs/preprocessing/prepareVCF.md), study groups metadata
 
 VariantSurvival run example:
 ```
 library(VariantSurvival)
-VariantSurvival::VariantSurvival(vcffile="variant_file_.vcf", metadatafile= "metadata_file.xlsx")
+VariantSurvival::VariantSurvival(vcffile="my_variant_file.vcf", metadatafile= "my_metadata_file.xlsx")
 ```
-
-
 
 
 ## The developers team
