@@ -15,10 +15,10 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
   if (demo == TRUE) {
     vcffile_demo <- system.file("demo",
                                 "merged.filtered.vcf", 
-                                package ="VariantSurvival_package")
+                                package ="VariantSurvival")
     metadata_demo <- system.file("demo",
                                 "metadata.xlsx", 
-                                package ="VariantSurvival_package")
+                                package ="VariantSurvival")
     vcf <- vcfR::read.vcfR(vcffile_demo, verbose = FALSE)
     metadata <- readxl::read_excel(metadata_demo)
     metadata <- na.omit(metadata)
