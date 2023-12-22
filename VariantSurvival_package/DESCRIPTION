@@ -1,36 +1,28 @@
 Package: VariantSurvival
 Type: Package
 Title: VariantSurvival
-Version: 0.1.0
-Authors: c(
-person("Ahmad", "Al khleifat", "ahmad.al_khleifat@kcl.ac.uk", role = c("aut"), comment = c(ORCID = "0000-0002-7406-9831")),
-person("Thomas", "Krannich",  "krannichT@rki.de", role = c("aut"), comment = c(ORCID = "0000-0002-5525-1849")),
-person("Hiba", "Ben Aribi", "benaribi.hiba@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-9547-8725")),
-person("Marina", "Herrera Sarrias", "marina.sarrias@math.su.se", role = c("aut", "cre"),comment = c(ORCID = "0009-0000-8077-2673")),
-person("Moustafa", "Shokrof", "meshokrof@ucdavis.edu", role = c("aut"), comment = c(ORCID = "0000-0003-1040-2145")))
-
+Version: 0.1.1
+Author: person("Hiba", "Ben Aribi", , "benaribi.hiba@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-9547-8725"))
+Maintainer: The package maintainer <benaribi.hiba@gmail.com>
 Description: Survival analysis and data visualization.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.1
 Imports: 
-    shiny,
-    shinyjs,
-    shinyWidgets,
-    shinythemes,
-    shinycssloaders,
-    shinydashboard,
-    DT,
     dplyr,
-    vcfR,
-    readr,
-    ggsurvfit,
-    survival,
+    DT,
     ggplot2,
-    survminer,
-    lubridate,
+    ggsurvfit,
     gtsummary,
-    tools
+    lubridate,
+    readr,
+    readxl,
+    shiny,
+    shinydashboard,
+    survival,
+    survminer,
+    vcfR
 Depends: 
     tidyverse
