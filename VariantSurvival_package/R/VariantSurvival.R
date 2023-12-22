@@ -1,36 +1,41 @@
 #' VariantSurvival
 #'
-#' @param vcffile path to the vcf file containing the Structural variant data
-#' @param metadatafile path to the txt file containing the samples metadata
+#' @param vcf_file path to the vcf file containing the Structural variant data
+#' @param metadata_file path to the txt file containing the samples metadata
 #' @param demo true or false
 #'
 #' @return
 #' @export
 #'
 
-VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
+VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
   install_load_requirements()
-  
+  days_year <- 365.25
+
   #demo or input files
   if (demo == TRUE) {
-    vcffile_demo <- system.file("demo",
-                                "merged.filtered.vcf", 
+    vcf_file_demo <- system.file("extdata",
+                                "merged.filtered.vcf",
                                 package ="VariantSurvival")
-    metadata_demo <- system.file("demo",
-                                "metadata.xlsx", 
+    metadata_demo <- system.file("extdata",
+                                "metadata.xlsx",
                                 package ="VariantSurvival")
-    vcf <- vcfR::read.vcfR(vcffile_demo, verbose = FALSE)
+    vcf <- vcfR::read.vcfR(vcf_file_demo, verbose = FALSE)
     metadata <- readxl::read_excel(metadata_demo)
     metadata <- na.omit(metadata)
   } else if (demo == FALSE) {
-    vcf <- vcfR::read.vcfR(vcffile, verbose = FALSE)
-    metadata <- readxl::read_excel(metadatafile)
+    vcf <- vcfR::read.vcfR(vcf_file, verbose = FALSE)
+    metadata <- readxl::read_excel(metadata_file)
     metadata <- na.omit(metadata)
-
   }
-  disease_gene <- read_excel("disease_gene.xlsx")
-  days_year <- 365.25
-  disease_type_gene <- read_csv("disease_type_gene.csv", show_col_types = FALSE)
+  
+  disease_gene <- system.file("extdata",
+                              "disease_gene.xlsx",
+                              package ="VariantSurvival")
+  disease_types <- system.file("extdata",
+                               "disease_type_gene.csv",
+                               package ="VariantSurvival")
+  disease_type_gene <- read_csv(disease_types, show_col_types = FALSE)
 
   ui <- bootstrapPage(
     navbarPage(
@@ -312,7 +317,10 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
 
 
   server <- function(input, output, session) {
-    gene_ids_table <- read.csv(file = 'ensemblTogenes.csv')
+    ensmbl_gene_ids <- system.file("extdata",
+                                   'ensemblTogenes.csv',
+                                   package ="VariantSurvival")
+    gene_ids_table <- read.csv(file = ensmbl_gene_ids)
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
     # get disease_n input and update the genes list accordingly
     observeEvent(input$disease_n, {
@@ -360,7 +368,7 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
             vcf,
             input$ids)
           new_md <- (
-            RemoveNAs(metadata, input$time)
+            Remove_NA(metadata, input$time)
             %>% rename(
               ids = input$ids,
               trial_group_bin = input$group,
@@ -897,64 +905,6 @@ VariantSurvival <- function(vcffile, metadatafile, demo = FALSE) {
 
 
 ############# Helper functions ###################
-install_load_requirements <- function() {
-  if (!require("shiny"))
-    install.packages("shiny")
-  if (!require("shinyjs"))
-    install.packages("shinyjs")
-  if (!require("shinyWidgets"))
-    install.packages("shinyWidgets")
-  if (!require("shinythemes"))
-    install.packages("shinythemes")
-  if (!require("shinycssloaders"))
-    install.packages("shinycssloaders")
-  if (!require("shinydashboard"))
-    install.packages("shinydashboard")
-  if (!require("DT"))
-    install.packages("DT")
-  if (!require("dplyr"))
-    install.packages("dplyr")
-  if (!require("tidyverse"))
-    install.packages("tidyverse")
-  if (!require("vcfR"))
-    install.packages("vcfR")
-  if (!require("readr"))
-    install.packages("readr")
-  if (!require("ggsurvfit"))
-    install.packages("ggsurvfit")
-  if (!require("survival"))
-    install.packages("survival")
-  if (!require("ggplot2"))
-    install.packages("ggplot2")
-  if (!require("survminer"))
-    install.packages("survminer")
-  if (!require("lubridate"))
-    install.packages("lubridate")
-  if (!require("gtsummary"))
-    install.packages("gtsummary")
-  if (!require("tools"))
-    install.packages("tools")
-  library(shiny)
-  library(shinyjs)
-  library(shinydashboard)
-  library(shinythemes)
-  library(shinyWidgets)
-  library(shinycssloaders)
-  library(DT)
-  library(dplyr)
-  library(tidyverse)
-  library(vcfR)
-  library(readr)
-  library(readxl)
-  library(ggsurvfit)
-  library(survival)
-  library(ggplot2)
-  library(survminer)
-  library(lubridate)
-  library(gtsummary)
-  library(tools)
-}
-
 
 #' `get_disease_gene_list` parses an existing .txt
 #' file containing all known target genes associated
@@ -1023,7 +973,7 @@ genesCountTable <- function(vcf, metadata, input, gene_ids_table) {
                           vcf,
                           input$ids
                           )
-  new_md <- RemoveNAs(metadata, input$time) %>% rename(ids = input$ids)
+  new_md <- Remove_NA(metadata, input$time) %>% rename(ids = input$ids)
   # what happen if the input$target_gene is not in the vcf file?
   new_df <- subset(count_df, ids %in% new_md$ids)
   count_table <- as.data.frame(apply(new_df[, -1], 2, function(c) sum(c != 0)))
@@ -1037,9 +987,10 @@ genesCountTable <- function(vcf, metadata, input, gene_ids_table) {
 #' @param ncol
 #' @param nrow
 #' @param disease_genes_names
-#' @param  sample_names
+#' @param sample_names
 #' @param genes_with_svs_in_sample
 #' @param vcf
+#' @param ids_col
 #' @return
 CountSVsDf <- function(ncol,
                        nrow,
@@ -1071,12 +1022,12 @@ CountSVsDf <- function(ncol,
 }
 
 
-#' `RemoveNAs` removes all rows with Na
+#' `Remove_NA` removes all rows with Na
 #' entries in the time factor column.
 #' @param df: metadata data frame
 #' @param time_col: time factor input
 #' @return
-RemoveNAs <- function(df, time_col) {
+Remove_NA <- function(df, time_col) {
   entries <- df[[time_col]]
   nas_entries <- is.na(entries)
   NAs_entries <- entries == "NA"
