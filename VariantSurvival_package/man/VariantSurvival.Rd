@@ -4,12 +4,14 @@
 \alias{VariantSurvival}
 \title{VariantSurvival}
 \usage{
-VariantSurvival(vcffile, metadatafile)
+VariantSurvival(vcf_file, metadata_file, demo = FALSE)
 }
 \arguments{
-\item{vcffile}{path to the vcf file containing the Structural variant data}
+\item{vcf_file}{path to the vcf file containing the Structural variant data}
 
-\item{metadatafile}{path to the txt file containing the samples metadata}
+\item{metadata_file}{path to the txt file containing the samples metadata}
+
+\item{demo}{true or false}
 }
 \description{
 VariantSurvival
