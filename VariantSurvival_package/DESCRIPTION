@@ -7,25 +7,33 @@ Author: person("Hiba", "Ben Aribi", , "benaribi.hiba@gmail.com", role = c("aut",
 Maintainer: The package maintainer <benaribi.hiba@gmail.com>
 Description: Survival analysis and data visualization.
 License: GPL-3
-Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+Encoding: UTF-8
 Imports: 
-    dplyr,
     DT,
-    ggplot2,
-    ggsurvfit,
-    gtsummary,
-    lubridate,
+    dplyr,
+    vcfR,
     readr,
     readxl,
-    shiny,
-    shinydashboard,
+    ggsurvfit,
+    ggplot2,
+    gtsummary,
+    htmltools,
     survival,
     survminer,
-    vcfR
+    shiny,
+    shinyjs,
+    shinydashboard,
+    shinythemes,
+    shinyWidgets,
+    stringr,
+    shinycssloaders,
+    tools,
+    tibble
 Depends: 
+    R (>= 3.5.0),
     tidyverse
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+RoxygenNote: 7.2.3
