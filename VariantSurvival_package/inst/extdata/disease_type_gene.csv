@@ -1,4 +1,4 @@
-GENE_SYMBOL,GENE_ID (HGNC),DISEASE_LABEL,DISEASE_ID (MONDO),MOI,SOP,CLASSIFICATION,ONLINE_REPORT,CLASSIFICATION DATE,GCEP
+GENE_SYMBOL,GENE_ID_HGNC,DISEASE_LABEL,DISEASE_ID_MONDO,MOI,SOP,CLASSIFICATION,ONLINE_REPORT,CLASSIFICATION_DATE,GCEP
 AASS,HGNC:17366,hyperlysinemia,MONDO:0009388,AR,SOP9,Definitive,https://search.clinicalgenome.org/kb/gene-validity/CGGV:assertion_92e04f9e-f03e-4295-baac-e9fb6b48a258-2022-10-14T160000.000Z,2022-10-14T16:00:00.000Z,Aminoacidopathy
 ACAD8,HGNC:87,isobutyryl-CoA dehydrogenase deficiency,MONDO:0012648,AR,SOP6,Definitive,https://search.clinicalgenome.org/kb/gene-validity/CGGV:assertion_0d260f0e-df71-420a-9281-92e4bddcddbb-2019-04-26T160000.000Z,2019-04-26T16:00:00.000Z,Aminoacidopathy
 ACADSB,HGNC:91,2-methylbutyryl-CoA dehydrogenase deficiency,MONDO:0012392,AR,SOP6,Definitive,https://search.clinicalgenome.org/kb/gene-validity/CGGV:assertion_8bfa3857-c96c-40ac-b4c1-2cf04fd4eb4f-2019-03-22T160000.000Z,2019-03-22T16:00:00.000Z,Aminoacidopathy
