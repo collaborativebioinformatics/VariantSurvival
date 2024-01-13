@@ -185,6 +185,10 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
               )
             )
           )
+        lapply(
+          1:3, 
+          function(x) shiny::br()
+        )
         ),
       shiny::tabPanel(
         "Kaplan-Meier",
@@ -226,7 +230,8 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                         choices = c(
                           "confidence interval" = "conf_itv",
                           "risk table" = "risk_table",
-                          "y grid line" = "grid_line"
+                          "y grid line" = "grid_line",
+                          "life table" = "life_table"
                           )
                         ),
                       circle = TRUE,
@@ -256,36 +261,34 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                     )
                   )
                   ),
-                shiny::fluidRow(
-                  shiny::column(
-                  12,
-                  shiny::div(
-                    style = "height:200px; Bottomleft"
-                    ),
-                  shiny::checkboxInput(
-                  "life_table_multiple_model",
-                  "Display life table",
-                  value = FALSE
-                  ),
-                  shinydashboard::tabBox(
-                    id = "myBox_mm",
-                    title = "",
-                    width = 12,
-                    shiny::tabPanel(
-                      "with SV",
-                      shiny::span(
-                        DT::dataTableOutput("lt_mm_0")
-                        )
+                shiny::conditionalPanel(
+                  condition = "input.km_feat.includes('life_table')",
+                  shiny::fluidRow(
+                    shiny::column(
+                      12,
+                      shiny::div(
+                        style = "height:200px; Bottomleft"
                       ),
-                    shiny::tabPanel(
-                      "without SV",
-                      shiny::span(
-                        DT::dataTableOutput("lt_mm_1")
+                      shinydashboard::tabBox(
+                        id = "myBox_mm",
+                        title = "",
+                        width = 12,
+                        shiny::tabPanel(
+                          "with SV",
+                          shiny::span(
+                            DT::dataTableOutput("lt_mm_0")
+                          )
+                        ),
+                        shiny::tabPanel(
+                          "without SV",
+                          shiny::span(
+                            DT::dataTableOutput("lt_mm_1")
+                          )
                         )
                       )
                     )
                   )
-                  )
+                )
                 ),
               shiny::tabPanel(
                 "Null model",
@@ -307,11 +310,6 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                     12,
                     shiny::div(
                       style = "height:200px; Bottomleft"
-                      ),
-                    shiny::checkboxInput(
-                      "life_table_null_model",
-                      "Display life table",
-                      value = FALSE
                       ),
                     shinydashboard::box(
                       id = "myBox",
@@ -817,11 +815,12 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
         })
       }
     })
-
+    
     observe({
       if (checkInput(input)) {
         risk_table <- FALSE
         conf_itv <- FALSE
+        life_table <- FALSE
         grid_line <- "white"
         if (!is.null(input$km_feat)) {
           if ("conf_itv" %in% input$km_feat) {
@@ -833,7 +832,11 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           if ("grid_line" %in% input$km_feat) {
             grid_line <- "grey"
           }
+          if ("life_table" %in% input$km_feat) {
+            life_table <- TRUE
+          }
         }
+        
         svs_gene_input_df <- reactive_no_NAs_metadata()
         if (input$all_n_svs == FALSE
             & input$n_svs_min != ""
@@ -842,9 +845,8 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
             n_svs_min <- as.numeric(input$n_svs_min)
             n_svs_max <- as.numeric(input$n_svs_max)
             sub <- (svs_gene_input_df$SV_count_per_gene >= n_svs_min
-              &
-                svs_gene_input_df$SV_count_per_gene <= n_svs_max
-            )
+              & svs_gene_input_df$SV_count_per_gene <= n_svs_max
+              )
             svs_gene_input_df <- svs_gene_input_df[sub, ]
           }
         }
@@ -895,7 +897,10 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
             subset = (SV_bin == 1),
             type = "kaplan-meier"
           )
-          surv_fit_list <- list("with SV" = sv_with, "without SV" = sc_without)
+          surv_fit_list <- list(
+            "with" = sv_with,
+            "without" = sc_without
+            )
         }
         else if (length(n_sv_groups) == 1) {
           if (n_sv_groups == 0) {
@@ -954,45 +959,50 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           combine = TRUE
           )
         pval_tab <- pval_tab[c("id","method","pval.txt")]
-        colnames(pval_tab)[3] <- "p-value"
+        colnames(pval_tab) <- c("Structural Variant", "Method", "p-value")
 
-        output$p_values_km <- DT::renderDataTable({tibble::as_tibble(pval_tab)})
-        shiny::observeEvent(input$life_table_multiple_model, {
-          if (input$life_table_multiple_model == FALSE) {
-            shinyjs::hide(id = "myBox_mm")
-          }
-          else if (input$life_table_multiple_model == TRUE) {
-            shinyjs::show(id = "myBox_mm")
-            output$lt_mm_0 <- DT::renderDataTable({
-              tl_sv_without <- data.frame(
-                lapply(
-                  surv_summary(
-                    sc_without,
-                    data = svs_gene_input_df
-                    ),
-                  function(x) if (is.numeric(x)) round(x, 3) else x
-                  )
-                )
-              tl_sv_without <- tl_sv_without[,!names(tl_sv_without) %in% c("strata")]
-              tibble::as_tibble(tl_sv_without)
-            })
-            output$lt_mm_1 <- DT::renderDataTable({
-              tl_sv_with <- data.frame(
-                lapply(
-                  surv_summary(
-                    sv_with,
-                    data = svs_gene_input_df
-                    ),
-                  function(x) if (is.numeric(x)) round(x, 3) else x
-                  )
-                )
-              tl_sv_with <- tl_sv_with[,!names(tl_sv_with) %in% c("strata")]
-              tibble::as_tibble(tl_sv_with)
-            }
+        output$p_values_km <- DT::renderDataTable(
+          
+          DT::datatable(
+            tibble::as_tibble(pval_tab),
+            options = list(
+              paging = FALSE, 
+              searching = FALSE,
+              lengthChange = FALSE,
+              info = FALSE  # Hides the 'Showing 1 to N of N entries' information
             )
-            }
-          }
+          )
         )
+        
+        if (life_table == TRUE){
+          shinyjs::show(id = "myBox_mm")
+          output$lt_mm_0 <- DT::renderDataTable({
+            tl_sv_without <- data.frame(
+              lapply(
+                surv_summary(
+                  sc_without,
+                  data = svs_gene_input_df
+                  ),
+                function(x) if (is.numeric(x)) round(x, 3) else x
+                )
+              )
+            tl_sv_without <- tl_sv_without[,!names(tl_sv_without) %in% c("strata")]
+            tibble::as_tibble(tl_sv_without)
+          })
+          output$lt_mm_1 <- DT::renderDataTable({
+            tl_sv_with <- data.frame(
+              lapply(
+                surv_summary(
+                  sv_with,
+                  data = svs_gene_input_df
+                  ),
+                function(x) if (is.numeric(x)) round(x, 3) else x
+                )
+              )
+            tl_sv_with <- tl_sv_with[,!names(tl_sv_with) %in% c("strata")]
+            tibble::as_tibble(tl_sv_with)
+          })
+        }
         }
       else{
         output$plot_km <- shiny::renderText({
