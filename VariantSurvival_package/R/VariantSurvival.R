@@ -49,6 +49,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
     disease_types_path,
     show_col_types = FALSE
     )
+  
   disease_gene <- readxl::read_excel(disease_genes_path)
 
   ui <- shiny::bootstrapPage(
@@ -182,13 +183,14 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                     )
                   )
                 )
-              )
+              
+              ),
+            lapply(
+              1:4,
+              function(x) shiny::br()
+            ),
             )
           )
-        lapply(
-          1:3, 
-          function(x) shiny::br()
-        )
         ),
       shiny::tabPanel(
         "Kaplan-Meier",
@@ -475,12 +477,24 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
         disease_type_gene <- unique(
           disease_type_gene[, -c(2, 4, 6, 9, 10)]
           )
+        # Convert URLs to HTML links
+        disease_type_gene$ONLINE_REPORT <- sapply(
+          disease_type_gene$ONLINE_REPORT, function(x) {
+          paste0('<a href="', x, '" target="_blank">', x, '</a>')
+        })
         
         output$biomarkers_table <- DT::renderDataTable(
           {
             disease_type_gene %>% 
               dplyr::arrange(DISEASE_LABEL)
-            }
+            },
+          escape = FALSE,  # Important to render HTML
+          options = list(
+            autoWidth = TRUE,
+            columnDefs = list(
+              list(width = '200px', targets = "_all")  # Adjust column width as needed
+            )
+          )
         )
         }
         }
