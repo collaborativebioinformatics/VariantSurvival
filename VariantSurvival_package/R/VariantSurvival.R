@@ -116,21 +116,29 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           shiny::mainPanel(
             shiny::fluidRow(
               shiny::column(
-                12,
-                htmltools::h4(
-                "The Biomarkers table resumes the Biomarkers associated
-                with the diseases based on the ClinGen database"
-                ),
+                width = 9,
                 shinydashboard::tabBox(
+                  width = "100%",
                   selected = "Biomarkers Table",
                   shiny::tabPanel(
-                    "Biomarkers Table",
-                    htmltools::span(
-                      DT::dataTableOutput("biomarkers_table")
-                      )
+                    title = "Biomarkers Table",
+                    shinydashboard::box(
+                      title = " ",
+                      status = "info",  
+                      solidHeader = TRUE, 
+                      # Descriptive text
+                      htmltools::p("The Biomarkers table resumes the Biomarkers 
+                        associated with the diseases based 
+                        on the ClinGen database"
+                        ),
+                      width = NULL  # Adjust width as needed
                     ),
+                    shiny::actionButton("toggleTable", "Show/Hide Table"), 
+                    shiny::uiOutput("collapsibleTable") 
+                  ),
                   shiny::tabPanel(
-                    "Summary",
+                    title ="Patients Gene-Specific Variant Counts",
+                    shiny::br(),
                     htmltools::span(
                       DT::dataTableOutput("summ_table")
                       )
@@ -139,34 +147,38 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                 )
               ),
             lapply(1:2, function(x) shiny::br()),
-            htmltools::h4("Select Target Gene"),
             shinydashboard::box(
+              title = "Target Gene Selection",  # Adding a title to the box
+              status = "primary",  
+              solidHeader = TRUE,  
               width = 6,
               shiny::selectInput(
                 inputId = "target_gene",
                 label = "Gene of interest:",
                 choices = NULL,
-                selected = FALSE
-                )
+                selected = NULL  
               ),
+              
+            ),
             lapply(
               1:4,
               function(x) shiny::br()
               ),
             shiny::fluidRow(
               shiny::column(
-                12,
+                width = 9,
                 shinydashboard::tabBox(
-                  selected = "Information Summary",
+                  width = "100%",
+                  selected = "Variant Frequency in Target Gene by Group",
                   shiny::tabPanel(
-                    "Information Summary",
+                    "Variant Frequency in Target Gene by Group",
                     DT::dataTableOutput("gene_summary_table_i")
                     ),
                   shiny::tabPanel(
                     "Structural Variants Distribution",
                     shinycssloaders::withSpinner(
                       shiny::plotOutput(outputId = "histogram")
-                      )
+                      ),
                     ),
                   shiny::tabPanel(
                     "Participants table",
@@ -178,7 +190,8 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                       multiple = TRUE
                       ),
                     shiny::span(
-                      DT::dataTableOutput("table")
+                      DT::dataTableOutput("table"),
+                      shiny::br()
                       )
                     )
                   )
@@ -452,6 +465,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                      output,
                      session
                      ) {
+    
     ensmbl_gene_ids <- system.file(
       "extdata",
       'ensemblTogenes.csv',
@@ -460,6 +474,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
     gene_ids_table <- utils::read.csv(file=ensmbl_gene_ids)
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
     # get disease_n input and update the genes list accordingly
+    
     shiny::observeEvent(
       input$disease_n, {
         if (input$disease_n != "N/A") {
@@ -481,6 +496,22 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
         disease_type_gene$ONLINE_REPORT <- sapply(
           disease_type_gene$ONLINE_REPORT, function(x) {
           paste0('<a href="', x, '" target="_blank">', x, '</a>')
+        })
+        
+        tableVisible <- reactiveVal(TRUE)
+        observeEvent(input$toggleTable, {
+          tableVisible(!tableVisible())  # Toggle the visibility
+        })
+        
+        output$collapsibleTable <- renderUI({
+          if (tableVisible()) {
+            shinydashboard::box(
+              title = "",
+              status = "primary",
+              DT::dataTableOutput("biomarkers_table"),
+              width = NULL
+            )
+          }
         })
         
         output$biomarkers_table <- DT::renderDataTable(
@@ -621,9 +652,9 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
         control <- target_gene_df$SV_count_per_gene[target_gene_df$trial_group_bin == 0]
         number_of_patients <- count_tab %>%
           dplyr::filter(count_tab$Gene_ID == input$target_gene) %>%
-          dplyr::select(`Count of patients with SVs`)
+          dplyr::select(`count of patients with structural variants (SVs)`)
 
-        if (number_of_patients$`Count of patients with SVs` == 0) {
+        if (number_of_patients$`count of patients with structural variants (SVs)` == 0) {
           output$gene_summary_table <- DT::renderDataTable(
             {
               print(
@@ -647,7 +678,9 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                     thead(
                       tr(
                         th(rowspan = 2, 'Group'),
-                        th(colspan = 2, 'Patients with SVs in target gene')),
+                        th(colspan = 2,
+                           'Patients with structural variants in target gene')
+                        ),
                       tr(
                         lapply(
                           rep(c('Total',  'Percentage over entire sample'), 1),
@@ -711,7 +744,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
               ),
             position=ggplot2::position_stack(vjust = 0.5)
             ) +
-          ggplot2::xlab("Number of SVs in target gene") + 
+          ggplot2::xlab("Number of structural variantes (SVs) in target gene") + 
           ggplot2::ylab("Number of patients") +
           ggplot2::theme(
             text = ggplot2::element_text(size = 20),
@@ -737,7 +770,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
     observe({
       if (checkInput(input) & !is.null(input$target_gene)) {
         count_tab <- genesCountTable(vcf, metadata, input, gene_ids_table)
-        non_zero <- count_tab[count_tab$`Count of patients with SVs`!=0,]
+        non_zero <- count_tab[count_tab$`count of patients with structural variants (SVs)`!=0,]
         shiny::updateSelectizeInput(
           session,
           input = "table_cols",
@@ -1316,11 +1349,11 @@ genesCountTable <- function(
   # what happen if the input$target_gene is not in the vcf file?
   new_df <- subset(count_df, ids %in% new_md$ids)
   count_table <- as.data.frame(apply(new_df[, -1], 2, function(c) sum(c != 0)))
-  colnames(count_table) <- "Count of patients with SVs"
+  colnames(count_table) <- "count of patients with structural variants (SVs)"
   count_table <- tibble::rownames_to_column(count_table, "Gene_ID")
   count_table <- count_table %>% 
     dplyr::arrange(
-    desc(count_table["Count of patients with SVs"])
+    desc(count_table["count of patients with structural variants (SVs)"])
     )
   return(count_table)
   }
