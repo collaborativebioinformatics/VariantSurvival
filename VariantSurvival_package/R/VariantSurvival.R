@@ -1026,7 +1026,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           output$lt_mm_0 <- DT::renderDataTable({
             tl_sv_without <- data.frame(
               lapply(
-                surv_summary(
+                survminer::surv_summary(
                   sc_without,
                   data = svs_gene_input_df
                   ),
@@ -1039,7 +1039,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           output$lt_mm_1 <- DT::renderDataTable({
             tl_sv_with <- data.frame(
               lapply(
-                surv_summary(
+                survminer::surv_summary(
                   sv_with,
                   data = svs_gene_input_df
                   ),
