@@ -65,7 +65,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
       id = "nav",
       windowTitle = "VariantSurvival",
       shiny::tabPanel(
-        "Select Target Gene",
+        "Target Gene",
         shiny::sidebarLayout(
           shiny::sidebarPanel(
             shinyWidgets::pickerInput(
@@ -178,7 +178,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                     "Structural Variants Distribution",
                     shinycssloaders::withSpinner(
                       shiny::plotOutput(outputId = "histogram")
-                      ),
+                      )
                     ),
                   shiny::tabPanel(
                     "Participants table",
@@ -190,8 +190,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                       multiple = TRUE
                       ),
                     shiny::span(
-                      DT::dataTableOutput("table"),
-                      shiny::br()
+                      DT::dataTableOutput("table")
                       )
                     )
                   )
@@ -207,255 +206,232 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
         ),
       shiny::tabPanel(
         "Kaplan-Meier",
-        shiny::mainPanel(
-          shiny::span(
-            # to enable/disable the n_svs_min & n_svs_max fields,
-            #this should be added at the panel level
-            shinyjs::useShinyjs(),
+        shiny::fluidRow(
+          shiny::column(
+            width = 12,
             shinydashboard::tabBox(
+              width = "100%",
+              id = "tabset_km",
               shiny::tabPanel(
-                "Multiple model",
+                "Multiple Model",
                 shiny::fluidRow(
                   shiny::column(
-                    12,
+                    width = 7,
                     shiny::div(
-                      style = "height:70px; Topleft"
-                      ),
-                    shinyWidgets::dropdownButton(
-                      shiny::checkboxInput(
-                        inputId = "all_n_svs",
-                        label = "Include all counts",
-                        value = TRUE
-                        ),
-                      shiny::selectInput(
-                        inputId = "n_svs_min",
-                        label = "min",
-                        choices = NULL,
-                        selected = FALSE
-                        ),
-                      shiny::selectInput(
-                        inputId = "n_svs_max",
-                        label = "max",
-                        choices = NULL,
-                        selected = FALSE
-                        ),
-                      shiny::checkboxGroupInput(
-                        "km_feat",
-                        "Plot layout options:",
+                      style = "display: flex; 
+                      align-items:
+                      center;
+                      margin-bottom: 10px;",  
+                      shiny::h4(
+                        "Kaplan-Meier survival curves", 
+                        style = "margin: 0; flex-grow: 1;"
+                      ),  
+                      shinyWidgets::dropdownButton(
+                        shiny::checkboxInput(
+                          "all_n_svs",
+                          "Include all counts",
+                          value = TRUE
+                          ),
+                        shiny::selectInput(
+                          "n_svs_min", 
+                          "Min", 
+                          choices = NULL,
+                          selected = NULL
+                          ),
+                        shiny::selectInput(
+                          "n_svs_max", 
+                          "Max", 
+                          choices = NULL,
+                          selected = NULL
+                          ),
+                        shiny::checkboxGroupInput(
+                          "km_feat",
+                          "Plot layout options:", 
                         choices = c(
                           "confidence interval" = "conf_itv",
                           "risk table" = "risk_table",
                           "y grid line" = "grid_line",
                           "life table" = "life_table"
-                          )
+                        )
                         ),
-                      circle = TRUE,
-                      status = "danger",
-                      icon = shiny::icon("gear"),
-                      width = "300px",
-                      tooltip = shinyWidgets::tooltipOptions(
-                        title = "Click to see inputs!"
+                        circle = TRUE,
+                        status = "danger",
+                        icon = shiny::icon("gear"),
+                        tooltip = shinyWidgets::tooltipOptions(
+                          title = "Click to see inputs!"
                         )
-                      ),
-                    shinycssloaders::withSpinner(
-                      shiny::plotOutput(
-                        outputId = "plot_km",
-                        width = "100%"
-                        )
-                      ),
-                    )
-                  ),
-                shiny::fluidRow(
-                  shiny::column(
-                  12,
-                  shiny::div(
-                    style = "height:200px; Bottomleft"
+                      )
                     ),
-                  shiny::span(
-                    DT::dataTableOutput("p_values_km")
-                    )
-                  )
-                  ),
-                shiny::conditionalPanel(
-                  condition = "input.km_feat.includes('life_table')",
-                  shiny::fluidRow(
-                    shiny::column(
-                      12,
-                      shiny::div(
-                        style = "height:200px; Bottomleft"
+                    shinycssloaders::withSpinner(
+                      shiny::plotOutput("plot_km", width = "100%")
                       ),
-                      shinydashboard::tabBox(
-                        id = "myBox_mm",
-                        title = "",
-                        width = 12,
-                        shiny::tabPanel(
-                          "with SV",
-                          shiny::span(
-                            DT::dataTableOutput("lt_mm_0")
-                          )
-                        ),
-                        shiny::tabPanel(
-                          "without SV",
-                          shiny::span(
-                            DT::dataTableOutput("lt_mm_1")
+                    shiny::conditionalPanel(
+                      condition = "input.km_feat.includes('life_table')",
+                      shiny::fluidRow(
+                        shiny::column(
+                          12,
+                          shiny::div(
+                          style = "display: flex; 
+                          align-items: center;
+                          margin-top: 210px; 
+                          margin-bottom: 20px;", 
+                          shiny::h4(
+                            "Life table", 
+                            style = "margin: 0; flex-grow: 1;"
+                            )
+                          ),
+                          shinydashboard::tabBox(
+                            id = "myBox_mm",
+                            title = "",
+                            width = 12,
+                            shiny::tabPanel(
+                              "with",
+                              shiny::span(
+                                DT::dataTableOutput("lt_mm_0")
+                              )
+                            ),
+                            shiny::tabPanel(
+                              "without",
+                              shiny::span(
+                                DT::dataTableOutput("lt_mm_1")
+                              )
+                            )
                           )
                         )
                       )
                     )
+                  ),
+                  shiny::column(
+                    width = 4,
+                    shiny::div(
+                      style = "display: flex; 
+                      align-items:
+                      center;
+                      margin-bottom: 10px;",  
+                      shiny::h4(
+                        "P-Values Table", 
+                        style = "margin: 0; flex-grow: 1;"
+                        ),  
+                      shiny::actionButton(
+                        "infoBtn",
+                        label = NULL, 
+                        icon = shiny::icon("info-circle"), 
+                        style = "margin-left: 3px;"
+                        ) 
+                    ),
+                    # P-values table
+                    DT::dataTableOutput("p_values_km")
                   )
                 )
-                ),
+              ),
               shiny::tabPanel(
                 "Null model",
                 shiny::fluidRow(
                   shiny::column(
-                    12,
+                    width = 7,
                     shiny::div(
-                      style = "height:70px; Topleft"
-                      ),
+                      style = "display: flex; 
+                      align-items:
+                      center;
+                      margin-bottom: 10px;",  
+                      shiny::h4(
+                        "Kaplan-Meier survival curves", 
+                        style = "margin: 0; flex-grow: 1;"
+                      )
+                    ),
                     shinycssloaders::withSpinner(
                       shiny::plotOutput(
-                        outputId = "null_model_km"
+                        "null_model_km",
+                        width = "100%"
                         )
-                      )
-                    )
-                  ),
-                shiny::fluidRow(
-                  shiny::column(
-                    12,
-                    shiny::div(
-                      style = "height:200px; Bottomleft"
-                      ),
-                    shinydashboard::box(
-                      id = "myBox",
-                      title = "",
-                      width = '200px',
-                      shiny::span(
-                        DT::dataTableOutput(
-                          "null_model_life_table"
-                          )
-                        )
-                      )
                     )
                   )
                 )
               )
             )
           )
+          
+        )
+        
         ),
       shiny::tabPanel(
         "Cox regression",
-        shiny::span(
-          shiny::tags$i(
-            htmltools::h3("Cox regression table")
+        shiny::fluidRow(
+          shiny::column(
+            width = 3,  # Adjust the width as needed
+            # Selection menus here
+            shiny::selectizeInput(
+              inputId = "sel_cov",
+              label = "Select categorical covariate(s)",
+              choices = NULL,
+              selected = FALSE,
+              multiple = TRUE
             ),
-          style = "color:#045a8d",
-          shinyjs::useShinyjs(),
-          shiny::selectizeInput(
-            inputId = "sel_cov",
-            label = "Select categorical covariate(s)",
-            # SV_bin is added by us, 0/1 without/with SV
-            choices = NULL,
-            selected = FALSE,
-            multiple = TRUE
+            shiny::selectizeInput(
+              inputId = "sel_cov_cont",
+              label = "Select numerical covariate(s)",
+              choices = NULL,
+              selected = FALSE,
+              multiple = TRUE
             ),
-          shiny::selectizeInput(
-            inputId = "sel_cov_cont",
-            label = "Select numerical covariate(s)",
-            choices = NULL,
-            selected = FALSE,
-            multiple = TRUE
-            ),
-          shiny::selectInput(
-            inputId = "sel_strata",
-            label = "Select strata covariate (optional)",
-            choices = NULL
-            ),
+            shiny::selectInput(
+              inputId = "sel_strata",
+              label = "Select strata covariate (optional)",
+              choices = NULL
+            )
+          ),
+          shiny::column(
+          width = 9,  # Adjust the width as needed
+
           shinydashboard::tabBox(
+            width = "100%",
+            id = "tabset_km",
             shiny::tabPanel(
-              "Standard model",
-              shiny::span(
-                DT::dataTableOutput("summ_std")
+              "Standard Model",
+              shiny::fluidRow(
+                shiny::column(width = 6, DT::dataTableOutput("summ_std")),
+                shiny::column(width = 6, DT::dataTableOutput("prop_h_std"))
                 ),
-              lapply(
-                1:2,
-                function(x) shiny::br()
-                ),
-              shiny::span(
-                DT::dataTableOutput("prop_h_std")
-                ),
-              shiny::br(),
-              shiny::span(
-                shiny::tags$i(
-                  htmltools::h2("Residuals")
-                  )
-                ),
+              # Residuals plot below tables
+              shiny::tags$i(htmltools::h2("Residuals")),
               shinycssloaders::withSpinner(
-                shiny::plotOutput(outputId = "residues_std")
-                )
+                shiny::plotOutput("residues_std", width = "100%")
+              )
               ),
             shiny::tabPanel(
               "Multiple model",
               shinydashboard::tabBox(
-                width = 12,
+                width = "100%",
                 shiny::tabPanel(
-                  "with SV",
-                  shiny::span(
-                    DT::dataTableOutput("summ_mm_1")
-                    ),
-                  lapply(
-                    1:2,
-                    function(x) shiny::br()
-                    ),
-                  shiny::tabPanel(
-                    "with",
-                    shiny::span(
-                      DT::dataTableOutput("prop_h_mm0")
-                      ),
-                    shiny::br(),
-                    shiny::span(
-                      shiny::tags$i(
-                        htmltools::h2("Residuals")
-                        )
-                      ),
-                    shinycssloaders::withSpinner(
-                      shiny::plotOutput(
-                        outputId = "residues_std_mm0"
-                        )
-                      )
-                    ),
-                  shiny::br()
+                  "With",
+                  shiny::fluidRow(
+                    shiny::column(width = 6, DT::dataTableOutput("summ_mm_1")),
+                    shiny::column(width = 6, DT::dataTableOutput("prop_h_mm1"))
                   ),
+                  # Residuals plot below tables
+                  shiny::tags$i(htmltools::h2("Residuals")),
+                  shinycssloaders::withSpinner(
+                    shiny::plotOutput("residues_std_mm1", width = "100%")
+                  )
+                ),
                 shiny::tabPanel(
-                  "without SV",
-                  shiny::span(
-                    DT::dataTableOutput("summ_mm_0")
-                    ),
-                  lapply(
-                    1:2, 
-                    function(x) shiny::br()
-                    ),
-                  shiny::tabPanel(
-                    "without",
-                    shiny::span(
-                      DT::dataTableOutput("prop_h_mm1")
-                      ),
-                    shiny::br(),
-                    shiny::span(
-                      shiny::tags$i(
-                        htmltools::h2("Residuals")
-                        )
-                      ),
-                    shinycssloaders::withSpinner(
-                      shiny::plotOutput(
-                        outputId = "residues_std_mm1"
-                        )
-                      )
-                    )
+                  "Without",
+                  shiny::fluidRow(
+                    shiny::column(width = 6, DT::dataTableOutput("summ_mm_0")),
+                    shiny::column(width = 6, DT::dataTableOutput("prop_h_mm0"))
+                  ),
+                  # Residuals plot below tables
+                  shiny::tags$i(htmltools::h2("Residuals")),
+                  shinycssloaders::withSpinner(
+                    shiny::plotOutput("residues_std_mm0", width = "100%")
                   )
                 )
+                
+              )
+              
               )
             )
+          )
           )
         )
       )
@@ -474,6 +450,11 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
     gene_ids_table <- utils::read.csv(file=ensmbl_gene_ids)
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
     # get disease_n input and update the genes list accordingly
+    
+    observeEvent(input$resetTrigger, {
+      # Reset inputs
+      shinyjs::reset("form_id")  
+    })
     
     shiny::observeEvent(
       input$disease_n, {
@@ -523,7 +504,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           options = list(
             autoWidth = TRUE,
             columnDefs = list(
-              list(width = '200px', targets = "_all")  # Adjust column width as needed
+              list(width = '200px', targets = "_all") 
             )
           )
         )
@@ -543,10 +524,9 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
             )
           output$summ_table <- DT::renderDataTable(
             {
-              # count data frame with patient_ids in rows and gene_ids in columns
               count_table
               }
-          )
+            )
           }
         }
       )
@@ -779,7 +759,19 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
         )
         }
     })
-
+    
+    observeEvent(input$infoBtn, {
+      shiny::showModal(shiny::modalDialog(
+        title = "Hypothesis Information",
+        "Details about the hypothesis go here...",
+        footer = tagList(
+          shiny::modalButton("Close")  # Close button in the footer
+        ),
+        easyClose = TRUE,  # Allows closing modal by clicking outside,
+        keyboard = TRUE
+      ))
+    })
+    
     observe({
       if (checkInput(input)) {
         svs_gene_input_df <- reactive_no_NAs_metadata()
@@ -1012,6 +1004,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           
           DT::datatable(
             tibble::as_tibble(pval_tab),
+            selection = 'none',
             options = list(
               paging = FALSE, 
               searching = FALSE,
@@ -1026,7 +1019,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           output$lt_mm_0 <- DT::renderDataTable({
             tl_sv_without <- data.frame(
               lapply(
-                surv_summary(
+                survminer::surv_summary(
                   sc_without,
                   data = svs_gene_input_df
                   ),
@@ -1039,7 +1032,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           output$lt_mm_1 <- DT::renderDataTable({
             tl_sv_with <- data.frame(
               lapply(
-                surv_summary(
+                survminer::surv_summary(
                   sv_with,
                   data = svs_gene_input_df
                   ),
@@ -1182,11 +1175,18 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
         res.std_mul1 <- survival::cox.zph(cox_reg.mul1)
 
         output$summ_std <- DT::renderDataTable({
-          tibble::as_tibble(
-            cox_reg.std %>% 
-              gtsummary::tbl_regression(exp = TRUE)
-            )
-        })
+          # Convert gtsummary table to tibble
+          cox_reg.std_tbl <- cox_reg.std %>% 
+            gtsummary::tbl_regression(exp = TRUE) %>%
+            as_tibble()  # Convert to tibble
+          names(cox_reg.std_tbl) <- gsub("\\*\\*", "", names(cox_reg.std_tbl))  
+          cox_reg.std_tbl
+        },
+        options = list(
+          searching = FALSE,  # Disable search bar
+          lengthChange = FALSE  # Disable "Show [number] entries" dropdown
+        ))
+        
         output$prop_h_std <- DT::renderDataTable({
           DT::datatable(tibble::rownames_to_column(
             round_df(as.data.frame(res.std$table), 3), " "),
@@ -1198,18 +1198,31 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           plot(res.std)
         })
         output$summ_mm_0 <- DT::renderDataTable({
-          tibble::as_tibble(
-            cox_reg.mul0 %>% 
-              gtsummary::tbl_regression(exp = TRUE)
-            )
-        })
-
+          cox_reg.mul0_tbl <- cox_reg.mul0 %>% 
+            gtsummary::tbl_regression(exp = TRUE) %>%
+            as_tibble()  # Convert to tibble
+          names(cox_reg.mul0_tbl) <- gsub("\\*\\*", "", names(cox_reg.mul0_tbl))  
+          cox_reg.mul0_tbl
+        },
+        options = list(
+          searching = FALSE,  # Disable search bar
+          lengthChange = FALSE  # Disable "Show [number] entries" dropdown
+        )
+        )
+        
         output$summ_mm_1 <- DT::renderDataTable({
-          tibble::as_tibble(
-            cox_reg.mul1 %>% 
-              gtsummary::tbl_regression(exp = TRUE)
-            )
-        })
+          cox_reg.mul1_tbl <- cox_reg.mul1 %>% 
+            gtsummary::tbl_regression(exp = TRUE) %>%
+            as_tibble()  # Convert to tibble
+          names(cox_reg.mul1_tbl) <- gsub("\\*\\*", "", names(cox_reg.mul1_tbl))  
+          cox_reg.mul1_tbl
+        },
+        options = list(
+          searching = FALSE,  # Disable search bar
+          lengthChange = FALSE  # Disable "Show [number] entries" dropdown
+        )
+        )
+        
         output$prop_h_mm0 <- DT::renderDataTable({
           DT::datatable(tibble::rownames_to_column(
             round_df(as.data.frame(res.std_mul0$table), 3), " "),
