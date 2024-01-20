@@ -6,7 +6,11 @@
 #' @importFrom dplyr %>%
 #' @export
 
-VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
+VariantSurvival <- function(
+    vcf_file,
+    metadata_file,
+    demo = FALSE
+    ) {
   days_year <- 365.25
   #demo or input files
   if (demo == TRUE) {
@@ -213,7 +217,14 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
               width = "100%",
               id = "tabset_km",
               shiny::tabPanel(
-                "Multiple Model",
+                title = span("Multiple Model", 
+                             actionButton("info_btn1", label = NULL, 
+                                          icon = icon("info-circle"), 
+                                          style = "background: transparent; 
+                                           border: none; 
+                                           color: blue; 
+                                           cursor: pointer;")
+                             ),
                 shiny::fluidRow(
                   shiny::column(
                     width = 7,
@@ -316,7 +327,11 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                         "infoBtn",
                         label = NULL, 
                         icon = shiny::icon("info-circle"), 
-                        style = "margin-left: 3px;"
+                        style = "margin-left: 3px;
+                                background: transparent; 
+                                 border: none; 
+                                 color: blue; 
+                                 cursor: pointer;"
                         ) 
                     ),
                     # P-values table
@@ -325,7 +340,14 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                 )
               ),
               shiny::tabPanel(
-                "Null model",
+                title = span("Null Model", 
+                             actionButton("info_btn2", label = NULL, 
+                                          icon = icon("info-circle"), 
+                                          style = "background: transparent; 
+                                           border: none; 
+                                           color: blue; 
+                                           cursor: pointer;")
+                             ),
                 shiny::fluidRow(
                   shiny::column(
                     width = 7,
@@ -360,6 +382,25 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
           shiny::column(
             width = 3,  # Adjust the width as needed
             # Selection menus here
+            shiny::div(
+              style = "display: flex;
+              align-items: center;
+              margin-bottom: 10px;",
+              shiny::h4(
+                "Select Covariates for Cox Regression", 
+                style = "margin: 0; flex-grow: 1;"
+                ),
+              shiny::actionButton(
+                "infoCovariates", 
+                label = NULL, 
+                icon = shiny::icon("info-circle"),
+                style = "margin-left: 3px;
+                          background: transparent; 
+                           border: none; 
+                           color: blue; 
+                           cursor: pointer;"
+                )
+            ),
             shiny::selectizeInput(
               inputId = "sel_cov",
               label = "Select categorical covariate(s)",
@@ -389,11 +430,35 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
             shiny::tabPanel(
               "Standard Model",
               shiny::fluidRow(
-                shiny::column(width = 6, DT::dataTableOutput("summ_std")),
-                shiny::column(width = 6, DT::dataTableOutput("prop_h_std"))
+                shiny::column(
+                  width = 6,
+                  DT::dataTableOutput("summ_std")
+                  ),
+                shiny::column(
+                  width = 6,
+                  DT::dataTableOutput("prop_h_std")
+                  )
                 ),
-              # Residuals plot below tables
-              shiny::tags$i(htmltools::h2("Residuals")),
+              shiny::div(
+                style = "display:flex;
+                align-items: center;
+                margin-bottom: 10px;",
+                shiny::tags$i(
+                  htmltools::h2(
+                    "Residuals", 
+                    style = "margin: 0; flex-grow: 1;")
+                  ),
+                shiny::actionButton(
+                  "infoResiduals", 
+                  label = NULL,
+                  icon = shiny::icon("info-circle"),
+                  style = "margin-left: 3px;
+                          background: transparent; 
+                           border: none; 
+                           color: blue; 
+                           cursor: pointer;"
+                  )
+              ),
               shinycssloaders::withSpinner(
                 shiny::plotOutput("residues_std", width = "100%")
               )
@@ -405,11 +470,35 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                 shiny::tabPanel(
                   "With",
                   shiny::fluidRow(
-                    shiny::column(width = 6, DT::dataTableOutput("summ_mm_1")),
-                    shiny::column(width = 6, DT::dataTableOutput("prop_h_mm1"))
+                    shiny::column(
+                      width = 6,
+                      DT::dataTableOutput("summ_mm_1")
+                      ),
+                    shiny::column
+                    (width = 6, 
+                      DT::dataTableOutput("prop_h_mm1")
+                      )
                   ),
-                  # Residuals plot below tables
-                  shiny::tags$i(htmltools::h2("Residuals")),
+                  shiny::div(
+                    style = "display:flex;
+                align-items: center;
+                margin-bottom: 10px;",
+                    shiny::tags$i(
+                      htmltools::h2(
+                        "Residuals", 
+                        style = "margin: 0; flex-grow: 1;")
+                    ),
+                    shiny::actionButton(
+                      "infoResiduals_with", 
+                      label = NULL,
+                      icon = shiny::icon("info-circle"),
+                      style = "margin-left: 3px;
+                                background: transparent; 
+                                 border: none; 
+                                 color: blue; 
+                                 cursor: pointer;"
+                    )
+                  ),
                   shinycssloaders::withSpinner(
                     shiny::plotOutput("residues_std_mm1", width = "100%")
                   )
@@ -417,18 +506,43 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
                 shiny::tabPanel(
                   "Without",
                   shiny::fluidRow(
-                    shiny::column(width = 6, DT::dataTableOutput("summ_mm_0")),
-                    shiny::column(width = 6, DT::dataTableOutput("prop_h_mm0"))
+                    shiny::column(
+                      width = 6,
+                      DT::dataTableOutput("summ_mm_0")
+                      ),
+                    shiny::column(
+                      width = 6, 
+                      DT::dataTableOutput("prop_h_mm0")
+                      )
                   ),
-                  # Residuals plot below tables
-                  shiny::tags$i(htmltools::h2("Residuals")),
+                  shiny::div(
+                    style = "display:flex;
+                align-items: center;
+                margin-bottom: 10px;",
+                    shiny::tags$i(
+                      htmltools::h2(
+                        "Residuals", 
+                        style = "margin: 0; flex-grow: 1;")
+                    ),
+                    shiny::actionButton(
+                      "infoResiduals_without", 
+                      label = NULL,
+                      icon = shiny::icon("info-circle"),
+                      style = "margin-left: 15px;
+                                background: transparent; 
+                                 border: none; 
+                                 color: blue; 
+                                 cursor: pointer;"
+                    )
+                  ),
                   shinycssloaders::withSpinner(
-                    shiny::plotOutput("residues_std_mm0", width = "100%")
+                    shiny::plotOutput(
+                      "residues_std_mm0",
+                      width = "100%"
+                      )
+                    )
                   )
                 )
-                
-              )
-              
               )
             )
           )
@@ -451,10 +565,91 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
     rownames(gene_ids_table) <- gene_ids_table$ensembleID
     # get disease_n input and update the genes list accordingly
     
-    observeEvent(input$resetTrigger, {
-      # Reset inputs
-      shinyjs::reset("form_id")  
+    
+    observeEvent(input$info_btn1, {
+      showModal(modalDialog(
+        title = "Information",
+        HTML("
+        <h4>Overview</h4>
+        <p>The Multiple Model evaluates the impact of structural
+        variants (SVs) and treatment types on patient survival.</p>
+        
+        <h4>Survival Analysis Method</h4>
+        <p>The model employs Kaplan-Meier estimates to generate survival curves
+        for each patient subgroup. The Multiple Model approach involves fitting
+        two survival models, each for a specific subgroup of patients.
+        These subgroups are defined based on the presence or absence
+        of structural variants in the target gene and the type of treatment 
+        received. </p>
+        
+        <h4>Interpretation</h4>
+        <p>The survival curves represent the probability of survival over time
+        for each group. 
+        
+        <h4>Sample Size</h4>
+        A sufficiently large sample size is crucial for fitting each model,
+        as it significantly influences the reliability of the statistical
+        tests used in analyzing the survival curves.
+      "),
+        easyClose = TRUE,
+        footer = modalButton("Close")
+      ))
     })
+    
+    # Null Model Info Button
+    observeEvent(input$info_btn2, {
+      showModal(modalDialog(
+        title = "Information about Null Model",
+        "Details about the Null Model...",
+        easyClose = TRUE,
+        footer = modalButton("Close")
+      ))
+    })
+    
+  
+    
+    observeEvent(input$infoCovariates, {
+      shiny::showModal(shiny::modalDialog(
+        title = "How to Choose Covariates",
+        "more about choosing covariates for the Cox regression analysis here.",
+        footer = NULL,
+        easyClose = TRUE,
+        size = "m"  
+      ))
+    })
+    
+    
+    observeEvent(input$infoResiduals, {
+      shiny::showModal(shiny::modalDialog(
+        title = "About Residuals",
+        "more about residuals here",
+        footer = NULL,
+        easyClose = TRUE,
+        size = "m"  
+      ))
+    })
+    
+    observeEvent(input$infoResiduals_with, {
+      shiny::showModal(shiny::modalDialog(
+        title = "About Residuals",
+        "more about residuals here",
+        footer = NULL,
+        easyClose = TRUE,
+        size = "m"  
+      ))
+    })
+    
+    observeEvent(input$infoResiduals_without, {
+      shiny::showModal(shiny::modalDialog(
+        title = "About Residuals",
+        "more about residuals here",
+        footer = NULL,
+        easyClose = TRUE,
+        size = "m"  
+      ))
+    })
+    
+    
     
     shiny::observeEvent(
       input$disease_n, {
@@ -522,11 +717,7 @@ VariantSurvival <- function(vcf_file, metadata_file, demo = FALSE) {
             input,
             gene_ids_table
             )
-          output$summ_table <- DT::renderDataTable(
-            {
-              count_table
-              }
-            )
+          output$summ_table <- DT::renderDataTable(count_table)
           }
         }
       )
