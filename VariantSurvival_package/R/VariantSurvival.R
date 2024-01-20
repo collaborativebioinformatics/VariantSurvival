@@ -587,9 +587,9 @@ VariantSurvival <- function(
         for each group. 
         
         <h4>Sample Size</h4>
-        A sufficiently large sample size is crucial for fitting each model,
-        as it significantly influences the reliability of the statistical
-        tests used in analyzing the survival curves.
+        A sufficiently large sample size is required to fit each model, 
+        as it influences the reliability of the statistical tests needed 
+        to assess the survival curves significance.
       "),
         easyClose = TRUE,
         footer = modalButton("Close")
