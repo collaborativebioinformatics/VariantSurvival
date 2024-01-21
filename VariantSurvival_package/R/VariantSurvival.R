@@ -305,7 +305,7 @@ VariantSurvival <- function(
                             id = "myBox_mm",
                             title = "",
                             width = 12,
-                            htmltools::tabPanel(
+                            shiny::tabPanel(
                               "with",
                               htmltools::span(
                                 DT::dataTableOutput("lt_mm_0")
