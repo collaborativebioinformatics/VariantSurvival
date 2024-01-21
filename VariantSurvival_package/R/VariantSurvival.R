@@ -228,7 +228,7 @@ VariantSurvival <- function(
                   shiny::actionButton(
                     "info_btn1",
                     label = NULL, 
-                    icon = icon("info-circle"), 
+                    icon = shiny::icon("info-circle"), 
                     style = "background: transparent; 
                     border: none; 
                     color: blue; 
@@ -355,7 +355,7 @@ VariantSurvival <- function(
                   shiny::actionButton(
                   "info_btn2",
                   label = NULL, 
-                  icon = icon("info-circle"), 
+                  icon = shiny::icon("info-circle"), 
                   style = "background: transparent; 
                   border: none; 
                   color: blue; 
