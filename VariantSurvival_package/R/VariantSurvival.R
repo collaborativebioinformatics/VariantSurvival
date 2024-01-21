@@ -989,13 +989,17 @@ VariantSurvival <- function(
         if (any(!is.na(input$table_cols))) {
           output$table <- DT::renderDataTable({
             col_names_list <- c(c(input$ids, "SV_count_per_gene"), input$table_cols)
-            svs_gene_input_df <- tibble::as_tibble(svs_gene_input_df[col_names_list])
+            svs_gene_input_df <- tibble::as_tibble(
+              svs_gene_input_df[col_names_list]
+              )
             svs_gene_input_df
           })
         }
         else{
           output$table <- DT::renderDataTable({
-            svs_gene_input_df <- tibble::as_tibble(svs_gene_input_df[c(input$ids, "SV_count_per_gene")])
+            svs_gene_input_df <- tibble::as_tibble(
+              svs_gene_input_df[c(input$ids, "SV_count_per_gene")]
+              )
             colnames(svs_gene_input_df) <- c("ID", "SV count in gene of interest")
             svs_gene_input_df
           })
@@ -1383,7 +1387,7 @@ VariantSurvival <- function(
           # Convert gtsummary table to tibble
           cox_reg.std_tbl <- cox_reg.std %>% 
             gtsummary::tbl_regression(exp = TRUE) %>%
-            as_tibble()  # Convert to tibble
+            tibble::as_tibble()  # Convert to tibble
           names(cox_reg.std_tbl) <- gsub("\\*\\*", "", names(cox_reg.std_tbl))  
           cox_reg.std_tbl
         },
@@ -1405,7 +1409,7 @@ VariantSurvival <- function(
         output$summ_mm_0 <- DT::renderDataTable({
           cox_reg.mul0_tbl <- cox_reg.mul0 %>% 
             gtsummary::tbl_regression(exp = TRUE) %>%
-            as_tibble()  # Convert to tibble
+            tibble::as_tibble()  # Convert to tibble
           names(cox_reg.mul0_tbl) <- gsub("\\*\\*", "", names(cox_reg.mul0_tbl))  
           cox_reg.mul0_tbl
         },
@@ -1418,7 +1422,7 @@ VariantSurvival <- function(
         output$summ_mm_1 <- DT::renderDataTable({
           cox_reg.mul1_tbl <- cox_reg.mul1 %>% 
             gtsummary::tbl_regression(exp = TRUE) %>%
-            as_tibble()  # Convert to tibble
+            tibble::as_tibble()  # Convert to tibble
           names(cox_reg.mul1_tbl) <- gsub("\\*\\*", "", names(cox_reg.mul1_tbl))  
           cox_reg.mul1_tbl
         },
