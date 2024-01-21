@@ -96,7 +96,7 @@ VariantSurvival <- function(
               choices =  c("years", "days"),
               inline = TRUE
               ),
-            htmltools::span(
+            shiny::span(
               shiny::tags$i(
               htmltools::h6(
                 "The following selections must refer to binary factors"
@@ -149,7 +149,7 @@ VariantSurvival <- function(
                   shiny::tabPanel(
                     title ="Patients Gene-Specific Variant Counts",
                     shiny::br(),
-                    htmltools::span(
+                    shiny::span(
                       DT::dataTableOutput("summ_table")
                       )
                     )
@@ -199,7 +199,7 @@ VariantSurvival <- function(
                       selected = FALSE,
                       multiple = TRUE
                       ),
-                    htmltools::span(
+                    shiny::span(
                       DT::dataTableOutput("table")
                       )
                     )
@@ -223,7 +223,7 @@ VariantSurvival <- function(
               width = "100%",
               id = "tabset_km",
               shiny::tabPanel(
-                title = htmltools::span(
+                title = shiny::span(
                   "Multiple Model", 
                   shiny::actionButton(
                     "info_btn1",
@@ -307,13 +307,13 @@ VariantSurvival <- function(
                             width = 12,
                             shiny::tabPanel(
                               "with",
-                              htmltools::span(
+                              shiny::span(
                                 DT::dataTableOutput("lt_mm_0")
                               )
                             ),
                             shiny::tabPanel(
                               "without",
-                              htmltools::span(
+                              shiny::span(
                                 DT::dataTableOutput("lt_mm_1")
                               )
                             )
@@ -350,7 +350,7 @@ VariantSurvival <- function(
                 )
               ),
               shiny::tabPanel(
-                title = htmltools::span(
+                title = shiny::span(
                   "Null Model",
                   shiny::actionButton(
                   "info_btn2",
