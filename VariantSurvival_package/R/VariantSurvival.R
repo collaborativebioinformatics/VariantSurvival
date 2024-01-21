@@ -131,14 +131,20 @@ VariantSurvival <- function(
                       status = "info",  
                       solidHeader = TRUE, 
                       # Descriptive text
-                      htmltools::p("The Biomarkers table resumes the Biomarkers 
+                      htmltools::p(
+                      "The Biomarkers table resumes the Biomarkers 
                         associated with the diseases based 
                         on the ClinGen database"
                         ),
                       width = NULL  # Adjust width as needed
                     ),
-                    shiny::actionButton("toggleTable", "Show/Hide Table"), 
-                    shiny::uiOutput("collapsibleTable") 
+                    shiny::actionButton(
+                      "toggleTable", 
+                      "Show/Hide Table"
+                      ), 
+                    shiny::uiOutput(
+                      "collapsibleTable"
+                      ) 
                   ),
                   shiny::tabPanel(
                     title ="Patients Gene-Specific Variant Counts",
@@ -193,7 +199,7 @@ VariantSurvival <- function(
                       selected = FALSE,
                       multiple = TRUE
                       ),
-                    shiny::span(
+                    htmltools::span(
                       DT::dataTableOutput("table")
                       )
                     )
@@ -217,14 +223,18 @@ VariantSurvival <- function(
               width = "100%",
               id = "tabset_km",
               shiny::tabPanel(
-                title = span("Multiple Model", 
-                             actionButton("info_btn1", label = NULL, 
-                                          icon = icon("info-circle"), 
-                                          style = "background: transparent; 
-                                           border: none; 
-                                           color: blue; 
-                                           cursor: pointer;")
-                             ),
+                title = htmltools::span(
+                  "Multiple Model", 
+                  shiny::actionButton(
+                    "info_btn1",
+                    label = NULL, 
+                    icon = icon("info-circle"), 
+                    style = "background: transparent; 
+                    border: none; 
+                    color: blue; 
+                    cursor: pointer;"
+                    )
+                  ),
                 shiny::fluidRow(
                   shiny::column(
                     width = 7,
@@ -295,15 +305,15 @@ VariantSurvival <- function(
                             id = "myBox_mm",
                             title = "",
                             width = 12,
-                            shiny::tabPanel(
+                            htmltools::tabPanel(
                               "with",
-                              shiny::span(
+                              htmltools::span(
                                 DT::dataTableOutput("lt_mm_0")
                               )
                             ),
                             shiny::tabPanel(
                               "without",
-                              shiny::span(
+                              htmltools::span(
                                 DT::dataTableOutput("lt_mm_1")
                               )
                             )
@@ -340,14 +350,18 @@ VariantSurvival <- function(
                 )
               ),
               shiny::tabPanel(
-                title = span("Null Model", 
-                             actionButton("info_btn2", label = NULL, 
-                                          icon = icon("info-circle"), 
-                                          style = "background: transparent; 
-                                           border: none; 
-                                           color: blue; 
-                                           cursor: pointer;")
-                             ),
+                title = htmltools::span(
+                  "Null Model",
+                  shiny::actionButton(
+                  "info_btn2",
+                  label = NULL, 
+                  icon = icon("info-circle"), 
+                  style = "background: transparent; 
+                  border: none; 
+                  color: blue; 
+                  cursor: pointer;"
+                  )
+                  ),
                 shiny::fluidRow(
                   shiny::column(
                     width = 7,
