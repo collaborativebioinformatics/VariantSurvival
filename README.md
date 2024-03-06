@@ -2,17 +2,15 @@
 <img src="https://user-images.githubusercontent.com/41301333/195215088-8404f200-8297-4322-a30f-c84f526aa620.png" width="200" height="200" align="right">
 
 ### Table of Contents
-1. [VariantSurvival](#variantsurvival)
+1. [About VariantSurvival](#about-variantsurvival)
 2. [The developers team](#the-developers-team)
 <br>
 
-
-## VariantSurvival
+## About VariantSurvival
 We present VariantSurvival, a lightweight application to visualize genotype-treatment response.
 The R application launches a dashboard to browse variant abundances and survival statistics for neurological diseases and corresponding target genes.
 VariantSurvival requires as input a set of annotated structural variants in the standard Variant Call Format (VCF) and a file of tabular metadata about the clinical trial or cohorts.
-<br><br>
-<img src="https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/img/VariantSurvival.svg">
+<br>
 
 ### Installation
 The application is installed via the R programming language using the following commands.
@@ -30,32 +28,23 @@ library(VariantSurvival)
 ```
 
 Note that all dependencies will be installed automatically when installing VariantSurvival.
-After a successful installation the currently installed version can be retrieved via
+After a successful installation the currently installed software version can be retrieved via
 ```R
 packageVersion("VariantSurvival")
 ```
 
 ### Running the demo
-Follow these steps to run the VariantSurvival demonstration:
-
-  1. Clone the Repository: Open your terminal and navigate to the directory where you want to clone the repository. Run the following command to clone the repository:
-     
-  ```
-  git clone https://github.com/collaborativebioinformatics/VariantSurvival.git
-  ```
-  
-  2. Set Working Directory: Change your current working directory to the _VariantSurvival_package/R/_ subfolder within the cloned repository.
-     
-  3. Run the Demonstration: Launch R in your terminal or RStudio, and execute the following command to run the demonstration:
-  
-  ```
-  library(VariantSurvival)
-  VariantSurvival::VariantSurvival(demo=TRUE)
-  ```
-
+After following the installation instructions the VariantSurvival dashboard can be launched with demo data via
+```R
+VariantSurvival::VariantSurvival(demo=TRUE)
+```
 
 ### Running your data analysis
-Details on formatting your input data for VariantSurvival: [VCF file](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/docs/preprocessing/prepareVCF.md), study groups metadata
+To launch the dashboard with your own clinical data two input files have to be provided.
+One required input is a VCF file with a set of gene-annotated structural variants across the entire study cohort.
+We have compiled a dedicated manual page on [how to prepare your VCF file](https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/docs/preprocessing/prepareVCF.md) for VariantSurvival with instructions and recommendations how to merge and annotate VCF files. <br>
+
+The second strictly required input file...
 
 VariantSurvival run example:
 ```
