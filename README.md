@@ -3,32 +3,37 @@
 
 ### Table of Contents
 1. [VariantSurvival](#variantsurvival)
-2. [The shiny app](#the-shiny-app)
-3. [The developers team](#the-developers-team)
+2. [The developers team](#the-developers-team)
 <br>
 
 
 ## VariantSurvival
 We present VariantSurvival, a lightweight application to visualize genotype-treatment response.
-Its dashboard provides full functionality to import VCF data, tabular metadata as well as to select neurological diseases and target genes.
+The R application launches a dashboard to browse variant abundances and survival statistics for neurological diseases and corresponding target genes.
+VariantSurvival requires as input a set of annotated structural variants in the standard Variant Call Format (VCF) and a file of tabular metadata about the clinical trial or cohorts.
 <br><br>
 <img src="https://github.com/collaborativebioinformatics/VariantSurvival/blob/main/img/VariantSurvival.svg">
 
-
-## The shiny app
-The VariantSurvival Shiny application is implemented as an R package. Available [_here_](https://github.com/collaborativebioinformatics/VariantSurvival/tree/main/VariantSurvival_package).
-
-
 ### Installation
-The package can be installed in R studio using the following command:
-
+The application is installed via the R programming language using the following commands.
+First, the _devtools_ R package is required to download VariantSurvival from its codebase.
+If you don't have devtools installed in your active R environment use
+```R
+install.packages('devtools') #install devtools package
+library(devtools) #activate devtools package
 ```
-#install.packages('devtools') #install devtools package
-library(devtools)
+
+Now VariantSurvival itself can be installed (downloaded and activated) via
+```R
 devtools::install_github("collaborativebioinformatics/VariantSurvival/VariantSurvival_package")
+library(VariantSurvival)
 ```
-Note: All required packages will be installed automatically when installing "VariantSurvival".
 
+Note that all dependencies will be installed automatically when installing VariantSurvival.
+After a successful installation the currently installed version can be retrieved via
+```R
+packageVersion("VariantSurvival")
+```
 
 ### Running the demo
 Follow these steps to run the VariantSurvival demonstration:
