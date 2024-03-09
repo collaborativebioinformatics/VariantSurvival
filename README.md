@@ -8,6 +8,7 @@
 1.3 [Running your data analysis](#running-your-data-analysis) <br>
 2. [Citing](#citing)
 3. [The developers team](#the-developers-team)
+4. [Help](#help) 
 <br>
 
 ## About VariantSurvival
@@ -75,4 +76,4 @@ If you use VariantSurvival, please cite this [journal publication](https://www.f
 * Moustafa Shokrof [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/mostafashokrof2.svg?style=social&label=Follow%20%40mostafashokrof2)](https://twitter.com/mostafashokrof2)
 
 ## Help 
-For questions about VariantSurvival and bug reports please refer to the GitHub issues section of this repository.
+For questions about VariantSurvival and bug reports please refer to the GitHub [issues](https://github.com/collaborativebioinformatics/VariantSurvival/issues) section of this repository.
