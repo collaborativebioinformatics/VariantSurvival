@@ -1,3 +1,5 @@
+![GitHub R package version](https://img.shields.io/github/r-package/v/collaborativebioinformatics/VariantSurvival?filename=VariantSurvival_package%2FDESCRIPTION&style=flat&logo=R&label=package%20version)
+![GitHub License](https://img.shields.io/github/license/collaborativebioinformatics/VariantSurvival)
 # VariantSurvival: A tool to identify genotype-treatment response
 <img src="https://user-images.githubusercontent.com/41301333/195215088-8404f200-8297-4322-a30f-c84f526aa620.png" width="200" height="200" align="right">
 
